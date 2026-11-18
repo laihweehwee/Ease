@@ -1,0 +1,17 @@
+{
+  "name": "ease-babysitter",
+  "version": "1.0.0",
+  "description": "Ease Babysitter platform - trusted and vetted local babysitters.",
+  "type": "module",
+  "scripts": {
+    "start": "node dev-server.mjs",
+    "dev": "node dev-server.mjs"
+  },
+  "keywords": [
+    "babysitter",
+    "childcare",
+    "ease-babysitter"
+  ],
+  "author": "",
+  "license": "ISC"
+}

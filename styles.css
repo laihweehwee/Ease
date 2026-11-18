@@ -1,0 +1,1281 @@
+/* ==========================================================================
+   EASE DESIGN SYSTEM
+   Brand Feeling: Warm, cheerful, clean and trustworthy, like a bright sunrise.
+   Strict adherence to color palette, 8px grid, typography, and shape rules.
+   ========================================================================== */
+
+:root {
+  /* Colors (Only these are permitted) */
+  --lemon-yellow: #FFE66D;
+  --cherry-pink: #FF8BA7;
+  --cherry-pink-hover: #F27A99;
+  --cherry-pink-pressed: #E96B8C;
+  --cream: #FFFBF2;
+  --white: #FFFFFF;
+  --soft-yellow: #FFF6CC;
+  --soft-pink: #FFE3EA;
+  --ink: #3B2A35;
+  --muted: #6E5A66;
+  --deep-rose: #C2456B;
+  --border: #F1DDD3;
+  --success-green: #2E8B6E;
+  --error-red: #C0392B;
+
+  /* Typography */
+  --font-heading: 'Bricolage Grotesque', sans-serif;
+  --font-body: 'Figtree', sans-serif;
+
+  /* Elevation (Shadow ONLY on cards) */
+  --card-shadow: 0 2px 8px rgba(59, 42, 53, 0.08);
+
+  /* Shape: Corners are 8px on EVERYTHING */
+  --radius: 8px;
+}
+
+/* Reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--ink);
+  background-color: var(--cream);
+  text-align: left;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Container: max-width 1120px centered, 20px padding on mobile */
+.container {
+  max-width: 1120px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 20px;
+  padding-right: 20px;
+  width: 100%;
+}
+
+/* Typography Hierarchy */
+h1, h2, h3, h4 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  color: var(--ink);
+  text-align: left;
+}
+
+.page-title {
+  font-size: 56px;
+  line-height: 62px;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  max-width: 22ch;
+  margin-bottom: 16px;
+}
+
+.section-heading {
+  font-size: 28px;
+  line-height: 34px;
+  margin-bottom: 8px;
+}
+
+.card-title {
+  font-size: 20px;
+  line-height: 26px;
+}
+
+p, span, li, a, label {
+  font-family: var(--font-body);
+}
+
+.hero-body {
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--ink);
+  max-width: 54ch;
+}
+
+.section-title-wrap {
+  margin-bottom: 32px;
+}
+
+.section-subtext {
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--muted);
+  max-width: 60ch;
+}
+
+/* Links */
+a.inline-link {
+  color: var(--deep-rose);
+  text-decoration: underline;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}
+
+a.inline-link:hover {
+  color: var(--cherry-pink-hover);
+}
+
+/* Top Bar (64px desktop, 56px mobile) */
+.topbar {
+  height: 64px;
+  background-color: var(--white);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.topbar-inner {
+  max-width: 1120px;
+  height: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 20px;
+  padding-right: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.hamburger-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  min-width: 48px;
+  border-radius: var(--radius);
+}
+
+.hamburger-btn:focus-visible {
+  outline: 3px solid var(--deep-rose);
+  outline-offset: 2px;
+}
+
+.topbar-logo {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 34px;
+  color: var(--deep-rose);
+  text-decoration: none;
+}
+
+/* Hamburger Navigation Drawer */
+.drawer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(59, 42, 53, 0.4);
+  z-index: 150;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.drawer-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.nav-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 100%;
+  background-color: var(--white);
+  border-right: 1px solid var(--border);
+  z-index: 200;
+  transform: translateX(-100%);
+  transition: transform 0.25s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+}
+
+.nav-drawer.active {
+  transform: translateX(0);
+}
+
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+
+.drawer-logo {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 24px;
+  color: var(--deep-rose);
+}
+
+.drawer-close {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  min-height: 48px;
+  min-width: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius);
+}
+
+.drawer-close:focus-visible {
+  outline: 3px solid var(--deep-rose);
+  outline-offset: 2px;
+}
+
+.drawer-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex-grow: 1;
+}
+
+.drawer-link {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
+  padding: 8px 0;
+}
+
+.drawer-link:hover {
+  color: var(--deep-rose);
+}
+
+.drawer-footer {
+  margin-top: 24px;
+}
+
+/* ==========================================================================
+   FULL-BLEED PHOTO HERO
+   - One single full-width section, edge to edge (no side margins, no rounded corners)
+   - Height: ~90vh on desktop, ~80vh on mobile
+   - Real home-setting photo of babysitter & children
+   - Vertical gradient overlay with long, smooth blend:
+     0%-10% Lemon yellow #FFE66D
+     10%-35% Cherry pink #FF8BA7 (solid, headline & paragraph sit here)
+     35%-75% Pink fades smoothly into transparent
+     75%-100% Fully transparent
+   - Text is solid Ink #3B2A35.
+   ========================================================================== */
+.hero-fullbleed {
+  position: relative;
+  width: 100%;
+  min-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  overflow: hidden;
+}
+
+.hero-fullbleed-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 65%;
+  z-index: 1;
+}
+
+.hero-fullbleed-fallback {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--soft-pink);
+  z-index: 1;
+}
+
+.hero-fullbleed-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    var(--lemon-yellow) 0%,
+    var(--lemon-yellow) 8%,
+    var(--cherry-pink) 18%,
+    var(--cherry-pink) 35%,
+    rgba(255, 139, 167, 0.94) 42%,
+    rgba(255, 139, 167, 0.80) 50%,
+    rgba(255, 139, 167, 0.58) 58%,
+    rgba(255, 139, 167, 0.34) 66%,
+    rgba(255, 139, 167, 0.14) 72%,
+    rgba(255, 139, 167, 0.04) 75%,
+    rgba(255, 139, 167, 0) 78%,
+    rgba(255, 139, 167, 0) 100%
+  );
+}
+
+.hero-fullbleed-content {
+  position: relative;
+  z-index: 3;
+  padding-top: 48px;
+  padding-bottom: 24px;
+}
+
+/* ==========================================================================
+   HERO ACTIONS SECTION (Role Cards, Trust Points, Search Card)
+   Sits directly below the hero on page background Cream #FFFBF2.
+   ========================================================================== */
+.hero-actions-section {
+  padding-top: 48px;
+  padding-bottom: 48px;
+}
+
+/* ==========================================================================
+   ROLE BUTTONS (Large Clickable Cards)
+   Side by side on desktop, stacked on mobile.
+   Rectangular photo at top, label below photo inside same card.
+   Label font 20-24px, min height 56px.
+   ========================================================================== */
+.role-cards-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 16px;
+}
+
+.role-card {
+  background-color: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--card-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: border-color 0.15s ease, transform 0.1s ease;
+}
+
+.role-card:hover {
+  border-color: var(--deep-rose);
+}
+
+.role-card:focus-visible {
+  outline: 3px solid var(--deep-rose);
+  outline-offset: 2px;
+}
+
+.role-photo-wrap {
+  width: 100%;
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.role-photo {
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+  border-radius: var(--radius);
+  display: block;
+}
+
+.photo-placeholder {
+  width: 100%;
+  background-color: var(--soft-pink);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--deep-rose);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  text-align: center;
+  padding: 24px;
+}
+
+.role-photo-placeholder {
+  height: 240px;
+}
+
+.role-label {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 28px;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border-radius: var(--radius);
+  padding: 12px 24px;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+/* "I need a babysitter" - Main style */
+.role-label-primary {
+  background-color: var(--cherry-pink);
+  color: var(--ink);
+}
+
+.role-card:hover .role-label-primary {
+  background-color: var(--cherry-pink-hover);
+}
+
+/* "I am a babysitter" - Secondary style */
+.role-label-secondary {
+  background-color: transparent;
+  border: 2px solid var(--deep-rose);
+  color: var(--deep-rose);
+}
+
+.role-card:hover .role-label-secondary {
+  background-color: var(--soft-pink);
+}
+
+.login-prompt {
+  margin-bottom: 32px;
+}
+
+/* ==========================================================================
+   TRUST POINTS (3 columns desktop, 1 column mobile)
+   Side by side in one row on desktop, three equal columns, each with icon & text.
+   ========================================================================== */
+.trust-points-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-bottom: 48px;
+  padding-top: 32px;
+  border-top: 1px solid var(--border);
+}
+
+.trust-point {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.trust-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.trust-text {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+/* Featured Section Wrap */
+.featured-section-wrap {
+  margin-bottom: 32px;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 600;
+  min-height: 48px;
+  padding: 12px 24px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+
+.btn:focus-visible {
+  outline: 3px solid var(--deep-rose);
+  outline-offset: 2px;
+}
+
+/* Main Button */
+.btn-primary {
+  background-color: var(--cherry-pink);
+  color: var(--ink);
+  border: none;
+}
+
+.btn-primary:hover {
+  background-color: var(--cherry-pink-hover);
+}
+
+.btn-primary:active {
+  background-color: var(--cherry-pink-pressed);
+  transform: translateY(1px);
+}
+
+/* Secondary Button */
+.btn-secondary {
+  background-color: transparent;
+  border: 2px solid var(--deep-rose);
+  color: var(--deep-rose);
+}
+
+.btn-secondary:hover {
+  background-color: var(--soft-pink);
+}
+
+.btn-secondary:active {
+  transform: translateY(1px);
+}
+
+.full-width {
+  width: 100%;
+}
+
+/* Card Common */
+.card {
+  background-color: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--card-shadow);
+}
+
+/* Babysitter Card Rules */
+.sitter-card {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.sitter-photo-wrap {
+  flex-shrink: 0;
+}
+
+.sitter-photo {
+  width: 160px;
+  height: 200px;
+  border-radius: var(--radius);
+  display: block;
+}
+
+.sitter-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-grow: 1;
+}
+
+.sitter-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sitter-meta {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.sitter-languages {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--ink);
+}
+
+.sitter-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.sitter-price {
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--ink);
+}
+
+.sitter-price strong {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+/* Badges & Chips */
+.badge, .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--soft-pink);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  border-radius: var(--radius);
+  padding: 4px 10px;
+}
+
+.badge-ease-trained {
+  background-color: var(--soft-pink);
+  color: var(--ink);
+}
+
+.badge-icon {
+  stroke: var(--deep-rose);
+  flex-shrink: 0;
+}
+
+.chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Stars */
+.stars-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 16px;
+  line-height: 20px;
+}
+
+.star-filled {
+  color: var(--cherry-pink);
+}
+
+.star-empty {
+  color: var(--border);
+}
+
+.stars-num {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-left: 4px;
+}
+
+/* Search Card & Inputs */
+.search-card {
+  margin-top: 16px;
+}
+
+.search-card-heading {
+  margin-bottom: 16px;
+}
+
+.search-form-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr 0.9fr;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-group-btn {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.invisible-label {
+  visibility: hidden;
+  height: 20px;
+  font-size: 14px;
+}
+
+label {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.input-field {
+  height: 48px;
+  background-color: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--ink);
+  padding: 0 16px;
+  width: 100%;
+}
+
+.input-field::placeholder {
+  color: var(--muted);
+}
+
+.input-field:focus {
+  outline: none;
+  border: 2px solid var(--deep-rose);
+}
+
+.input-field.input-error {
+  border: 2px solid var(--error-red);
+}
+
+.input-error-msg {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--error-red);
+}
+
+/* Sections */
+.content-section {
+  padding-top: 64px;
+  padding-bottom: 64px;
+}
+
+.bg-soft-yellow {
+  background-color: var(--soft-yellow);
+}
+
+/* Filter Row */
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+
+.filter-chip {
+  background-color: var(--white);
+  border: 1px solid var(--border);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  border-radius: var(--radius);
+  padding: 10px 16px;
+  cursor: pointer;
+  min-height: 48px;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.filter-chip:hover {
+  background-color: var(--soft-pink);
+}
+
+.filter-chip.active {
+  background-color: var(--soft-pink);
+  border-color: var(--deep-rose);
+  font-weight: 600;
+}
+
+.filter-chip:focus-visible {
+  outline: 3px solid var(--deep-rose);
+  outline-offset: 2px;
+}
+
+/* Sitters List */
+.sitters-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+/* Steps Grid (How it works) */
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.step-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.step-num {
+  width: 40px;
+  height: 40px;
+  background-color: var(--soft-pink);
+  color: var(--ink);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius);
+}
+
+.card-body-text {
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--muted);
+}
+
+/* Pricing Grid */
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  align-items: stretch;
+}
+
+.pricing-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pricing-rate {
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--ink);
+}
+
+.pricing-rate strong {
+  font-size: 28px;
+  font-weight: 700;
+  font-family: var(--font-heading);
+}
+
+.pricing-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-grow: 1;
+}
+
+.pricing-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--ink);
+}
+
+.check-icon {
+  color: var(--success-green);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* Reviews Grid */
+.reviews-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.review-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.review-author {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--muted);
+  margin-top: auto;
+}
+
+.review-author strong {
+  color: var(--ink);
+}
+
+/* FAQ Accordion */
+.faq-container {
+  max-width: 800px;
+}
+
+.accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.accordion-item {
+  background-color: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.accordion-title {
+  width: 100%;
+  padding: 16px 24px;
+  background: transparent;
+  border: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 24px;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+  min-height: 56px;
+}
+
+.accordion-title:focus-visible {
+  outline: 3px solid var(--deep-rose);
+  outline-offset: -3px;
+}
+
+.accordion-icon {
+  font-size: 24px;
+  color: var(--deep-rose);
+  transition: transform 0.2s ease;
+  line-height: 1;
+}
+
+.accordion-item.active .accordion-icon {
+  transform: rotate(45deg);
+}
+
+.accordion-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.25s ease-out;
+  padding: 0 24px;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.accordion-item.active .accordion-content {
+  padding: 0 24px 24px;
+  max-height: 300px;
+}
+
+/* Footer */
+.site-footer {
+  background-color: var(--white);
+  border-top: 1px solid var(--border);
+  padding: 48px 0;
+}
+
+.footer-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 32px;
+}
+
+.footer-logo {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 24px;
+  color: var(--deep-rose);
+  display: block;
+  margin-bottom: 8px;
+}
+
+.footer-tagline {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.footer-copy {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--muted);
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.footer-link {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.footer-link:hover {
+  color: var(--deep-rose);
+}
+
+/* Booking Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(59, 42, 53, 0.4);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-card {
+  max-width: 520px;
+  width: 100%;
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: transparent;
+  border: none;
+  font-size: 28px;
+  color: var(--muted);
+  cursor: pointer;
+  line-height: 1;
+  min-width: 48px;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius);
+}
+
+.modal-close-btn:focus-visible {
+  outline: 3px solid var(--deep-rose);
+  outline-offset: 2px;
+}
+
+.modal-title {
+  margin-bottom: 8px;
+}
+
+.modal-subtext {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--muted);
+  margin-bottom: 24px;
+}
+
+.booking-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.input-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* Toast */
+.toast-card {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background-color: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 24px;
+  box-shadow: var(--card-shadow);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 300;
+  transform: translateY(80px);
+  opacity: 0;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.toast-card.show {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.toast-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.toast-message {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+/* ==========================================================================
+   Responsive Breakpoints (Desktop 1440, Mobile 390)
+   ========================================================================== */
+
+@media (max-width: 900px) {
+  .search-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .invisible-label {
+    display: none;
+  }
+
+  .steps-grid,
+  .pricing-grid,
+  .reviews-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Mobile Top Bar (56px) */
+  .topbar {
+    height: 56px;
+  }
+
+  /* Full-bleed Hero Mobile Height: ~80vh */
+  .hero-fullbleed {
+    min-height: 80vh;
+  }
+
+  .hero-fullbleed-content {
+    padding-top: 32px;
+    padding-bottom: 16px;
+  }
+
+  /* Mobile Typography */
+  .page-title {
+    font-size: 32px;
+    line-height: 38px;
+    max-width: 100%;
+    margin-bottom: 12px;
+  }
+
+  .section-heading {
+    font-size: 22px;
+    line-height: 28px;
+  }
+
+  .card-title {
+    font-size: 18px;
+    line-height: 24px;
+  }
+
+  .hero-actions-section {
+    padding-top: 32px;
+    padding-bottom: 32px;
+  }
+
+  .content-section {
+    padding-top: 48px;
+    padding-bottom: 48px;
+  }
+
+  .card {
+    padding: 16px;
+  }
+
+  /* Role Cards on Mobile: Stacked */
+  .role-cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .role-photo, .role-photo-placeholder {
+    height: 180px;
+  }
+
+  .role-label {
+    font-size: 20px;
+    line-height: 26px;
+    min-height: 56px;
+  }
+
+  .trust-points-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  /* Babysitter card on mobile: photo 96x120 */
+  .sitter-card {
+    flex-direction: column;
+  }
+
+  .sitter-photo {
+    width: 96px;
+    height: 120px;
+  }
+
+  .input-row {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-inner {
+    flex-direction: column;
+  }
+}
