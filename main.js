@@ -1,99 +1,7 @@
 // Ease Babysitter - Comprehensive Application Logic (Phase 1 & Phase 2)
+import { babysittersData as sittersData } from './data/babysitters.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-  // --------------------------------------------------------------------------
-  // 1. Babysitters Database
-  // --------------------------------------------------------------------------
-  const sittersData = {
-    'sarah-lim': {
-      id: 'sarah-lim',
-      name: 'Sarah Lim',
-      match: 98,
-      age: 28,
-      exp: '5 years',
-      languages: 'English, Mandarin',
-      rating: '4.9 (126 reviews)',
-      starsNum: 5,
-      price: 25,
-      rateText: 'RM 25',
-      cpr: true,
-      newborn: true,
-      degree: 'Diploma in Early Childhood Education',
-      school: 'SEGi College Kuala Lumpur (Graduated 2020)',
-      bio: 'Warm, patient, and creative caregiver dedicated to nurturing young children. Experienced in newborn care routines, developmental toddler play, and engaging educational activities. Non-smoker, clean driving record, and comfortable with household pets.',
-      certs: [
-        { name: 'Pediatric & Infant CPR Certification', expiry: 'Verified safety check • Valid until Dec 2027' },
-        { name: 'Pediatric First Aid Training', expiry: 'Malaysian Red Crescent • Valid until Oct 2027' },
-        { name: 'Newborn Care Specialist & Sleep Routine', expiry: 'Certified infant sleep guidance' },
-      ],
-      reviews: [
-        { stars: '5.0', text: 'Sarah was incredible with our 10-month-old daughter. She was punctual, so warm, and sent us photo check-ins throughout our dinner. Total peace of mind!', author: 'Michelle T. • Bangsar (Parent of 10-month-old)' },
-        { stars: '5.0', text: 'Our 3-year-old twins adore Sarah. She reads stories, plays creative games, and follows their bedtime routine to the minute. Highly recommended!', author: 'Kevin L. • Mont Kiara (Parent of 3-year-old twins)' }
-      ],
-      availability: [
-        { day: 'Monday – Friday', times: 'Afternoons & Evenings (1:00 PM – 9:00 PM)' },
-        { day: 'Saturday', times: 'Full Day (9:00 AM – 10:00 PM)' },
-        { day: 'Sunday', times: 'Available upon request' }
-      ]
-    },
-    'nur-ain': {
-      id: 'nur-ain',
-      name: 'Nur Ain',
-      match: 95,
-      age: 31,
-      exp: '4 years',
-      languages: 'Malay, English',
-      rating: '4.8 (84 reviews)',
-      starsNum: 5,
-      price: 22,
-      rateText: 'RM 22',
-      cpr: true,
-      newborn: false,
-      degree: 'Diploma in Early Childhood Education',
-      school: 'Universiti Pendidikan Sultan Idris (UPSI, 2019)',
-      bio: 'Energetic and dependable babysitter with 4 years of hands-on experience in preschool settings and private homes. Passionate about arts, reading, and gentle guidance.',
-      certs: [
-        { name: 'Pediatric First Aid & CPR', expiry: 'St John Ambulance • Valid until Aug 2027' },
-        { name: 'Early Childhood Development Certificate', expiry: 'Verified safety check' }
-      ],
-      reviews: [
-        { stars: '4.9', text: 'Nur Ain was patient and attentive with my son. He warmed up to her immediately and enjoyed every activity!', author: 'Farah A. • Damansara' }
-      ],
-      availability: [
-        { day: 'Monday – Friday', times: 'Flexible mornings and afternoons' },
-        { day: 'Weekends', times: 'Available with 24h notice' }
-      ]
-    },
-    'aisyah': {
-      id: 'aisyah',
-      name: 'Aisyah',
-      match: 93,
-      age: 24,
-      exp: '2 years',
-      languages: 'Malay, English',
-      rating: '4.7 (51 reviews)',
-      starsNum: 5,
-      price: 20,
-      rateText: 'RM 20',
-      cpr: false,
-      newborn: false,
-      degree: 'SPM & Professional Babysitter Training',
-      school: 'Ease Certified Caregiver Academy (2024)',
-      bio: 'Enthusiastic and reliable childcare assistant. Experienced in helping with homework, arts & crafts, and engaging outdoor games for toddlers and primary school kids.',
-      certs: [
-        { name: 'Basic First Aid Certification', expiry: 'Red Crescent • Valid until Jan 2027' },
-        { name: 'Ease Safety & Background Verified', expiry: 'Verified identity check' }
-      ],
-      reviews: [
-        { stars: '4.8', text: 'Aisyah was very punctual, energetic, and polite. The kids had a wonderful time doing art with her!', author: 'Nadia S. • Subang Jaya' }
-      ],
-      availability: [
-        { day: 'Weekdays', times: 'Evenings (4:00 PM – 9:00 PM)' },
-        { day: 'Saturday & Sunday', times: 'All day' }
-      ]
-    }
-  };
-
   // --------------------------------------------------------------------------
   // 2. Application State
   // --------------------------------------------------------------------------
@@ -110,12 +18,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // User & Auth state
     isLoggedIn: false,
+    writtenReviews: {},
+    authReturnScreen: 'booking',
     user: {
       name: 'Jessica Roberts',
       email: 'jessica@example.com',
       phone: '012-3456789',
     },
     hasAddedChild: false,
+    children: [],
     child: {
       name: 'Liam',
       gender: 'Boy',
@@ -162,6 +73,20 @@ document.addEventListener('DOMContentLoaded', () => {
   } catch (e) {
     console.warn('Could not load localStorage state', e);
   }
+  try {
+    const storedLoginState = localStorage.getItem('easeLoggedIn');
+    if (storedLoginState !== null) {
+      state.isLoggedIn = storedLoginState === 'true';
+    } else {
+      localStorage.setItem('easeLoggedIn', String(state.isLoggedIn));
+    }
+  } catch (e) {
+    console.warn('Could not load login state', e);
+  }
+  state.children = Array.isArray(state.children) && state.children.length
+    ? state.children
+    : (state.hasAddedChild && state.child ? [state.child] : []);
+  if (state.children.length) state.child = state.children[0];
 
   function saveState() {
     try {
@@ -172,6 +97,15 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.setItem('ease_state', JSON.stringify(serialized));
     } catch (e) {
       console.warn('Could not save localStorage state', e);
+    }
+  }
+
+  function setLoggedIn(isLoggedIn) {
+    state.isLoggedIn = isLoggedIn;
+    try {
+      localStorage.setItem('easeLoggedIn', String(isLoggedIn));
+    } catch (e) {
+      console.warn('Could not save login state', e);
     }
   }
 
@@ -187,9 +121,11 @@ document.addEventListener('DOMContentLoaded', () => {
     q5: document.getElementById('screenQ5'),
     q6: document.getElementById('screenQ6'),
     summary: document.getElementById('screenSummary'),
+    find: document.getElementById('screenFind'),
     matches: document.getElementById('screenMatches'),
     profile: document.getElementById('screenProfile'),
     compare: document.getElementById('screenCompare'),
+    review: document.getElementById('screenReview'),
     auth: document.getElementById('screenAuth'),
     verify: document.getElementById('screenVerify'),
     addChild: document.getElementById('screenAddChild'),
@@ -206,6 +142,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const navDrawer = document.getElementById('navDrawer');
   const drawerOverlay = document.getElementById('drawerOverlay');
   const drawerCloseBtn = document.getElementById('drawerCloseBtn');
+  const drawerMenu = document.getElementById('drawerMenu');
+  const drawerPanels = document.getElementById('drawerPanels');
   const bottomNav = document.getElementById('bottomNav');
 
   // Navigation History Stack
@@ -215,6 +153,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function showScreen(screenId, pushHistory = true) {
     if (!screens[screenId]) return;
+    const loggedInOnlyScreens = ['addChild', 'bookingDetails', 'bookingStatus', 'payment', 'bookingConfirmed', 'parentHome', 'chat', 'review'];
+    if (!state.isLoggedIn && loggedInOnlyScreens.includes(screenId)) {
+      state.bookingIntent = !['parentHome', 'chat', 'review'].includes(screenId);
+      state.authReturnScreen = screenId === 'parentHome' ? 'parentHome' : screenId === 'chat' ? 'chat' : screenId === 'review' ? 'review' : 'booking';
+      setAuthMode('signup');
+      screenId = 'auth';
+    }
 
     // Hide all screens
     Object.values(screens).forEach(el => {
@@ -239,6 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
       hamburgerBtn.style.display = 'none';
       window.location.hash = `#/${screenId}`;
     }
+    if (topbarLoginBtn) topbarLoginBtn.style.display = state.isLoggedIn ? 'none' : '';
 
     // Bottom Navigation visibility (Visible for logged-in parents on inner app screens)
     const loggedInScreens = ['parentHome', 'chat', 'bookingStatus', 'bookingConfirmed', 'matches'];
@@ -265,8 +211,16 @@ document.addEventListener('DOMContentLoaded', () => {
         slider.value = state.budget;
         display.textContent = `RM ${state.budget}`;
       }
+    } else if (screenId === 'find') {
+      renderFindSitters();
     } else if (screenId === 'profile') {
       populateProfile(state.selectedSitterId);
+    } else if (screenId === 'compare') {
+      populateCompareTable();
+    } else if (screenId === 'review') {
+      prepareReviewForm();
+    } else if (screenId === 'addChild') {
+      prepareAddChildForm();
     } else if (screenId === 'bookingDetails') {
       setupBookingDetails();
     } else if (screenId === 'bookingStatus') {
@@ -314,45 +268,77 @@ document.addEventListener('DOMContentLoaded', () => {
   // --------------------------------------------------------------------------
   // 4. Hamburger Drawer Controls
   // --------------------------------------------------------------------------
+  let drawerReturnButton = null;
+
+  function showDrawerMenu(returnFocus) {
+    if (drawerMenu) drawerMenu.hidden = false;
+    if (drawerPanels) drawerPanels.hidden = true;
+    navDrawer.querySelectorAll('.drawer-panel').forEach(panel => {
+      panel.hidden = true;
+    });
+    if (returnFocus && drawerReturnButton) drawerReturnButton.focus();
+    drawerReturnButton = null;
+  }
+
   function openDrawer() {
+    showDrawerMenu(false);
+    navDrawer.inert = false;
     navDrawer.classList.add('active');
     drawerOverlay.classList.add('active');
     hamburgerBtn.setAttribute('aria-expanded', 'true');
     navDrawer.setAttribute('aria-hidden', 'false');
+    drawerCloseBtn.focus();
   }
 
-  function closeDrawer() {
+  function closeDrawer(returnFocus = true) {
     navDrawer.classList.remove('active');
     drawerOverlay.classList.remove('active');
     hamburgerBtn.setAttribute('aria-expanded', 'false');
     navDrawer.setAttribute('aria-hidden', 'true');
+    navDrawer.inert = true;
+    showDrawerMenu(false);
+    if (returnFocus) hamburgerBtn.focus();
   }
 
   if (hamburgerBtn) hamburgerBtn.addEventListener('click', openDrawer);
   if (drawerCloseBtn) drawerCloseBtn.addEventListener('click', closeDrawer);
   if (drawerOverlay) drawerOverlay.addEventListener('click', closeDrawer);
 
-  document.querySelectorAll('.drawer-link').forEach(link => {
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      closeDrawer();
-      const target = link.getAttribute('data-route') || link.getAttribute('data-target');
-      const screenMap = {
-        'welcome': 'welcome',
-        'q1': 'q1',
-        'summary': 'summary',
-        'matches': 'matches',
-        'compare': 'compare',
-        'auth': 'auth',
-        'parent-home': 'parentHome',
-      };
-      const screenId = screenMap[target];
-      if (screenId && screens[screenId]) {
-        showScreen(screenId);
-      } else {
-        showToast(`${link.textContent.trim()} section`);
+  if (drawerMenu && drawerPanels) {
+    drawerMenu.addEventListener('click', event => {
+      const routeLink = event.target.closest('[data-drawer-route]');
+      if (routeLink) {
+        event.preventDefault();
+        closeDrawer(false);
+        showScreen(routeLink.dataset.drawerRoute);
+        return;
       }
+
+      const item = event.target.closest('[data-drawer-panel]');
+      if (!item) return;
+      const panel = drawerPanels.querySelector(`[data-panel="${item.dataset.drawerPanel}"]`);
+      if (!panel) return;
+
+      drawerReturnButton = item;
+      drawerMenu.hidden = true;
+      drawerPanels.hidden = false;
+      drawerPanels.querySelectorAll('.drawer-panel').forEach(drawerPanel => {
+        drawerPanel.hidden = drawerPanel !== panel;
+      });
+      panel.focus();
     });
+
+    drawerPanels.addEventListener('click', event => {
+      if (!event.target.closest('.drawer-back')) return;
+      showDrawerMenu(true);
+    });
+  }
+
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && navDrawer.classList.contains('active')) {
+      event.preventDefault();
+      closeDrawer();
+    }
   });
 
   // --------------------------------------------------------------------------
@@ -361,6 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const roleNeedSitterCard = document.getElementById('roleNeedSitterCard');
   const roleAmSitterCard = document.getElementById('roleAmSitterCard');
   const welcomeLoginLink = document.getElementById('welcomeLoginLink');
+  const topbarLoginBtn = document.getElementById('loginBtn');
 
   function activateRoleCard(card) {
     if (!card) return;
@@ -385,6 +372,17 @@ document.addEventListener('DOMContentLoaded', () => {
   if (welcomeLoginLink) {
     welcomeLoginLink.addEventListener('click', (e) => {
       e.preventDefault();
+      state.bookingIntent = false;
+      state.authReturnScreen = 'parentHome';
+      setAuthMode('login');
+      showScreen('auth');
+    });
+  }
+  if (topbarLoginBtn) {
+    topbarLoginBtn.addEventListener('click', () => {
+      state.bookingIntent = false;
+      state.authReturnScreen = 'parentHome';
+      setAuthMode('login');
       showScreen('auth');
     });
   }
@@ -633,6 +631,15 @@ document.addEventListener('DOMContentLoaded', () => {
   // --------------------------------------------------------------------------
   const filterChips = document.querySelectorAll('.filter-chip');
   const sitterCards = document.querySelectorAll('.sitter-match-card');
+  const findSitterList = document.getElementById('findSitterList');
+  const findForm = document.getElementById('findForm');
+  const findPostcode = document.getElementById('findPostcode');
+  const findActiveFilters = document.getElementById('findActiveFilters');
+  const findResultsCount = document.getElementById('findResultsCount');
+  const findEmptyState = document.getElementById('findEmptyState');
+  const findFilters = ['filterRating', 'filterPrice', 'filterDistance', 'filterAvailability']
+    .map(id => document.getElementById(id));
+  let activeFindPostcode = '50450';
 
   filterChips.forEach(chip => {
     chip.addEventListener('click', () => {
@@ -712,6 +719,138 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  function renderActiveFindFilters() {
+    const activeFilters = [];
+    if (activeFindPostcode !== '50450') activeFilters.push(`Postcode ${activeFindPostcode}`);
+    findFilters.forEach(filter => {
+      if (filter.value !== '0' && filter.value !== 'all') {
+        activeFilters.push(filter.options[filter.selectedIndex].textContent.trim());
+      }
+    });
+
+    findActiveFilters.innerHTML = activeFilters.length ? `
+      <div class="find-filter-chips">
+        ${activeFilters.map(label => `
+          <span class="find-filter-chip">
+            <span class="check-icon" aria-hidden="true">✓</span>${escapeHtml(label)}
+          </span>
+        `).join('')}
+      </div>
+      <button type="button" class="clear-filters-link">Clear filters</button>
+    ` : '';
+  }
+
+  function renderFindSitters() {
+    if (!findSitterList) return;
+    const minRating = Number(document.getElementById('filterRating').value);
+    const maxPrice = Number(document.getElementById('filterPrice').value);
+    const maxDistance = Number(document.getElementById('filterDistance').value);
+    const availability = document.getElementById('filterAvailability').value;
+    const sitters = Object.values(sittersData).filter(sitter => {
+      const servesPostcode = sitter.servicePostcodes.includes(activeFindPostcode);
+      const meetsAvailability = availability === 'all' || sitter.availability.some(slot =>
+        slot.day.toLowerCase().includes(availability.toLowerCase()) ||
+        (availability === 'Saturday' && slot.day === 'Weekends')
+      );
+      return servesPostcode &&
+        sitter.ratingValue >= minRating &&
+        (!maxPrice || sitter.price <= maxPrice) &&
+        (!maxDistance || sitter.distanceKm <= maxDistance) &&
+        meetsAvailability;
+    });
+
+    findSitterList.innerHTML = sitters.map(sitter => {
+      const certificateChips = sitter.certs.slice(0, 2).map(cert =>
+        `<span class="chip"><span class="check-icon" aria-hidden="true">✓</span>${escapeHtml(cert.name)}</span>`
+      ).join('');
+      const stars = Array.from({ length: 5 }, () => '<span class="star-filled" aria-hidden="true">★</span>').join('');
+      return `
+        <article class="card find-sitter-card" data-sitter-id="${sitter.id}" tabindex="0" role="group" aria-label="View ${escapeHtml(sitter.name)}'s profile">
+          <div class="photo-placeholder find-sitter-photo" role="img" aria-label="Photo placeholder for ${escapeHtml(sitter.name)}">
+            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <span class="photo-placeholder-caption">${escapeHtml(sitter.name)}</span>
+          </div>
+          <div class="find-sitter-details">
+            <div class="find-sitter-heading">
+              <h2 class="card-title">${escapeHtml(sitter.name)}</h2>
+              <span class="badge badge-ease-trained">
+                <svg class="badge-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+                Ease Trained
+              </span>
+            </div>
+            <span class="match-badge find-match-badge">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8z"></path></svg>
+              ${sitter.match}% match
+            </span>
+            <p class="sitter-meta">${sitter.age} years old · ${escapeHtml(sitter.exp)} experience · ${sitter.distanceKm} km away</p>
+            <div class="stars-row" aria-label="Rating: ${sitter.ratingValue} out of 5 stars">
+              <span class="find-stars">${stars}</span>
+              <strong class="find-rating-value">${sitter.ratingValue.toFixed(1)}</strong>
+              <span class="find-review-count">(${sitter.reviewsCount} reviews)</span>
+            </div>
+            <p class="sitter-languages"><strong>Languages:</strong> ${escapeHtml(sitter.languages)}</p>
+            <div class="chips-row">${certificateChips}</div>
+            <div class="find-sitter-footer">
+              <p class="find-price-tag"><strong>${escapeHtml(sitter.rateText)}</strong><span>/ hr</span></p>
+              <button type="button" class="btn btn-primary find-view-button" data-view-profile="${sitter.id}">
+                View profile
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3B2A35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+              </button>
+            </div>
+          </div>
+        </article>`;
+    }).join('');
+
+    findResultsCount.textContent = `${sitters.length} ${sitters.length === 1 ? 'babysitter' : 'babysitters'} found`;
+    findEmptyState.style.display = sitters.length ? 'none' : 'block';
+    renderActiveFindFilters();
+  }
+
+  if (findForm && findPostcode) {
+    findForm.addEventListener('submit', event => {
+      event.preventDefault();
+      const postcode = findPostcode.value.trim();
+      if (!/^\d{5}$/.test(postcode)) {
+        findPostcode.setCustomValidity('Enter a 5-digit postcode.');
+        findPostcode.reportValidity();
+        return;
+      }
+      findPostcode.setCustomValidity('');
+      activeFindPostcode = postcode;
+      renderFindSitters();
+    });
+    findPostcode.addEventListener('input', () => findPostcode.setCustomValidity(''));
+    findFilters.forEach(filter => filter.addEventListener('change', renderFindSitters));
+  }
+
+  if (findSitterList) {
+    findSitterList.addEventListener('click', event => {
+      const card = event.target.closest('.find-sitter-card');
+      if (!card) return;
+      state.selectedSitterId = card.dataset.sitterId;
+      showScreen('profile');
+    });
+    findSitterList.addEventListener('keydown', event => {
+      if ((event.key === 'Enter' || event.key === ' ') && event.target.matches('.find-sitter-card')) {
+        event.preventDefault();
+        state.selectedSitterId = event.target.dataset.sitterId;
+        showScreen('profile');
+      }
+    });
+
+    if (findActiveFilters) {
+      findActiveFilters.addEventListener('click', event => {
+        if (!event.target.closest('.clear-filters-link')) return;
+        findFilters.forEach(filter => {
+          filter.value = filter.id === 'filterAvailability' ? 'all' : '0';
+        });
+        activeFindPostcode = '50450';
+        findPostcode.value = activeFindPostcode;
+        renderFindSitters();
+      });
+    }
+  }
+
   // View Profile buttons on Matches screen
   document.querySelectorAll('.view-sitter-profile-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -735,53 +874,150 @@ document.addEventListener('DOMContentLoaded', () => {
   function populateProfile(sitterId) {
     const sitter = sittersData[sitterId] || sittersData['sarah-lim'];
 
-    const profileDisplayName = document.getElementById('profileDisplayName');
     const profileName = document.getElementById('profileName');
+    const profilePhoto = document.getElementById('profilePhoto');
     const profileRatingText = document.getElementById('profileRatingText');
     const profilePrice = document.getElementById('profilePrice');
     const btnProfileBook = document.getElementById('btnProfileBook');
     const profileAge = document.getElementById('profileAge');
     const profileExp = document.getElementById('profileExp');
+    const profileExpDetail = document.getElementById('profileExpDetail');
     const profileLanguages = document.getElementById('profileLanguages');
     const profileBio = document.getElementById('profileBio');
     const profileEduDegree = document.getElementById('profileEduDegree');
     const profileEduSchool = document.getElementById('profileEduSchool');
     const profileCertList = document.getElementById('profileCertList');
+    const profileReviews = document.getElementById('profileReviews');
+    const profileAvailability = document.getElementById('profileAvailability');
 
-    if (profileDisplayName) profileDisplayName.textContent = sitter.name;
+    if (profilePhoto) {
+      profilePhoto.setAttribute('aria-label', `Photo placeholder for ${sitter.name}`);
+      const caption = profilePhoto.querySelector('.photo-placeholder-caption');
+      if (caption) caption.textContent = sitter.name;
+    }
     if (profileName) profileName.textContent = sitter.name;
-    if (profileRatingText) profileRatingText.textContent = sitter.rating;
-    if (profilePrice) profilePrice.textContent = sitter.rateText;
+    const isSarah = sitter.id === 'sarah-lim';
+    if (profileRatingText) profileRatingText.textContent = isSarah ? '4.9 (87 reviews)' : sitter.rating;
+    const profileRate = isSarah ? 'RM 20' : (sitter.rateText || 'RM 20');
+    if (profilePrice) profilePrice.textContent = profileRate;
+    document.getElementById('stickyProfilePrice')?.replaceChildren(document.createTextNode(profileRate));
+    document.getElementById('mobileProfilePrice')?.replaceChildren(document.createTextNode(profileRate));
     if (btnProfileBook) btnProfileBook.textContent = `Book ${sitter.name.split(' ')[0]}`;
+    ['btnProfileStickyBook', 'btnProfileMobileBook'].forEach(id => {
+      const button = document.getElementById(id);
+      if (button) button.textContent = `Book ${sitter.name.split(' ')[0]}`;
+    });
     if (profileAge) profileAge.textContent = `${sitter.age} years old`;
-    if (profileExp) profileExp.textContent = sitter.exp;
+    const experience = isSarah ? '6 years' : sitter.exp;
+    if (profileExp) profileExp.textContent = experience;
+    if (profileExpDetail) profileExpDetail.textContent = experience;
     if (profileLanguages) profileLanguages.textContent = sitter.languages;
     if (profileBio) profileBio.textContent = sitter.bio;
     if (profileEduDegree) profileEduDegree.textContent = sitter.degree;
-    if (profileEduSchool) profileEduSchool.textContent = sitter.school;
+    if (profileEduSchool) profileEduSchool.textContent = `${sitter.school} · 2020`;
+    const initials = sitter.name.split(' ').map(part => part[0]).join('').slice(0, 2);
+    const initialsElement = profilePhoto?.querySelector('.profile-initials');
+    if (initialsElement) initialsElement.textContent = initials;
 
     if (profileCertList && sitter.certs) {
-      profileCertList.innerHTML = sitter.certs.map(c => `
-        <li class="cert-item">
-          <div class="cert-left">
-            <span class="check-icon">✓</span>
-            <div>
-              <strong>${c.name}</strong>
-              <span class="cert-expiry">${c.expiry}</span>
-            </div>
-          </div>
-          <span class="badge badge-verified">Verified</span>
-        </li>
+      const certificates = isSarah ? [
+        { name: 'Pediatric First Aid & CPR', expiry: 'Malaysian Red Crescent · Expires 2027' },
+        { name: 'Infant Care Specialist', expiry: 'Childcare Academy · Expires 2027' },
+      ] : sitter.certs.map(c => ({ name: c.name, expiry: c.expiry }));
+      profileCertList.innerHTML = certificates.map(c => `
+        <div class="cert-item">
+          <span class="cert-check">✓</span>
+          <div class="cert-copy"><strong>${c.name}</strong><span>${c.expiry}</span></div>
+          <span class="badge badge-verified">✓ Verified</span>
+        </div>
       `).join('');
     }
+    if (profileReviews) {
+      const writtenReviews = state.writtenReviews && state.writtenReviews[sitter.id] || [];
+      const reviews = [...sitter.reviews, ...writtenReviews];
+      const reviewCards = isSarah ? [
+        { initials: 'MT', name: 'Michelle', date: '12 Nov 2026 · 1 child, 10 months', text: 'Sarah was incredible with our 10-month-old daughter. She was punctual, so warm, and sent us photo check-ins throughout our dinner.' },
+        { initials: 'KL', name: 'Kevin', date: '8 Nov 2026 · 2 children, 3 years', text: 'Our 3-year-old twins adore Sarah. She reads stories, plays creative games, and follows their bedtime routine.' },
+      ] : reviews.map(review => ({
+        initials: 'P',
+        name: 'Parent',
+        date: 'Verified booking',
+        text: review.text,
+      }));
+      profileReviews.innerHTML = reviewCards.length ? reviewCards.map(review => `
+        <div class="review-item">
+          <div class="review-avatar${review.initials === 'KL' ? ' pink' : ''}">${review.initials}</div>
+          <div class="review-content">
+            <div class="review-head"><strong>${escapeHtml(review.name)}</strong><span>★★★★★</span></div>
+            <span class="review-date">${escapeHtml(review.date)}</span>
+            <p class="review-text">"${escapeHtml(review.text)}"</p>
+          </div>
+        </div>
+      `).join('') : '<p class="no-written-reviews">No written reviews yet.</p>';
+    }
+    if (profileAvailability) {
+      profileAvailability.innerHTML = `
+        <div class="weekly-head"></div><div class="weekly-head">Mon</div><div class="weekly-head">Tue</div><div class="weekly-head">Wed</div><div class="weekly-head">Thu</div><div class="weekly-head">Fri</div><div class="weekly-head">Sat</div><div class="weekly-head">Sun</div>
+        <div class="time-label">Morning</div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell unavailable"></div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell unavailable"></div>
+        <div class="time-label">Afternoon</div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell unavailable"></div>
+        <div class="time-label">Evening</div><div class="avail-cell available">✓</div><div class="avail-cell unavailable"></div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell unavailable"></div>
+        <div class="time-label">Overnight</div><div class="avail-cell unavailable"></div><div class="avail-cell unavailable"></div><div class="avail-cell unavailable"></div><div class="avail-cell unavailable"></div><div class="avail-cell unavailable"></div><div class="avail-cell available">✓</div><div class="avail-cell unavailable"></div>`;
+    }
+  }
+
+  function prepareReviewForm() {
+    const sitter = sittersData[state.selectedSitterId] || sittersData['sarah-lim'];
+    const form = document.getElementById('reviewForm');
+    const sitterName = document.getElementById('reviewSitterName');
+    const sitterPhoto = document.getElementById('reviewSitterPhoto');
+    if (sitterName) sitterName.textContent = sitter.name;
+    if (sitterPhoto) sitterPhoto.setAttribute('aria-label', `Photo placeholder for ${sitter.name}`);
+    if (form) {
+      form.reset();
+      form.querySelector('[name="reviewRating"][value="5"]').checked = true;
+    }
+    updateReviewRatingDisplay();
+  }
+
+  const btnWriteReview = document.getElementById('btnWriteReview');
+  const reviewForm = document.getElementById('reviewForm');
+  const reviewRatingDisplay = document.getElementById('reviewRatingDisplay');
+  const reviewRatingInputs = document.querySelectorAll('[name="reviewRating"]');
+  function updateReviewRatingDisplay() {
+    const selectedRating = Number(document.querySelector('[name="reviewRating"]:checked')?.value || 5);
+    if (reviewRatingDisplay) reviewRatingDisplay.textContent = `${selectedRating}.0`;
+    document.querySelectorAll('.review-rating-options label').forEach((label, index) => {
+      label.classList.toggle('is-filled', index < selectedRating);
+    });
+  }
+
+  if (btnWriteReview) btnWriteReview.addEventListener('click', () => showScreen('review'));
+  reviewRatingInputs.forEach(input => input.addEventListener('change', updateReviewRatingDisplay));
+  if (reviewForm) {
+    reviewForm.addEventListener('submit', event => {
+      event.preventDefault();
+      const rating = Number(reviewForm.querySelector('[name="reviewRating"]:checked')?.value || 5);
+      const text = document.getElementById('reviewText').value.trim();
+      if (!text) return;
+      if (!state.writtenReviews) state.writtenReviews = {};
+      const reviews = state.writtenReviews[state.selectedSitterId] || [];
+      const endorsements = Array.from(reviewForm.querySelectorAll('[name="reviewEndorsements"]:checked'), input => input.value);
+      reviews.push({ stars: `${rating}.0`, text, author: state.user.name, endorsements });
+      state.writtenReviews[state.selectedSitterId] = reviews;
+      saveState();
+      showScreen('parentHome');
+      showToast('Your review has been submitted.');
+    });
   }
 
   function startBookingFlow(sitterId) {
     state.selectedSitterId = sitterId || state.selectedSitterId || 'sarah-lim';
     state.bookingIntent = true;
+    state.authReturnScreen = 'booking';
     saveState();
 
     if (!state.isLoggedIn) {
+      setAuthMode('signup');
       showScreen('auth');
     } else if (!state.hasAddedChild) {
       showScreen('addChild');
@@ -790,12 +1026,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function startProfileBookingFlow(sitterId) {
+    state.selectedSitterId = sitterId || state.selectedSitterId || 'sarah-lim';
+    state.bookingIntent = true;
+    state.authReturnScreen = 'booking';
+    saveState();
+    if (state.isLoggedIn) {
+      showScreen('bookingDetails');
+    } else {
+      setAuthMode('signup');
+      showScreen('auth');
+    }
+  }
+
   function startMessageFlow(sitterId) {
     state.selectedSitterId = sitterId || state.selectedSitterId || 'sarah-lim';
     state.bookingIntent = false;
+    state.authReturnScreen = 'chat';
     saveState();
 
     if (!state.isLoggedIn) {
+      setAuthMode('signup');
       showScreen('auth');
     } else {
       showScreen('chat');
@@ -805,12 +1056,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnProfileBook = document.getElementById('btnProfileBook');
   const btnProfileMessage = document.getElementById('btnProfileMessage');
   const btnProfileCompare = document.getElementById('btnProfileCompare');
+  const btnProfileStickyBook = document.getElementById('btnProfileStickyBook');
+  const btnProfileStickyMessage = document.getElementById('btnProfileStickyMessage');
+  const btnProfileMobileBook = document.getElementById('btnProfileMobileBook');
 
   if (btnProfileBook) {
     btnProfileBook.addEventListener('click', () => {
-      startBookingFlow(state.selectedSitterId);
+      startProfileBookingFlow(state.selectedSitterId);
     });
   }
+
+  [btnProfileStickyBook, btnProfileMobileBook].forEach(button => {
+    if (button) button.addEventListener('click', () => startProfileBookingFlow(state.selectedSitterId));
+  });
 
   if (btnProfileMessage) {
     btnProfileMessage.addEventListener('click', () => {
@@ -818,8 +1076,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  if (btnProfileStickyMessage) {
+    btnProfileStickyMessage.addEventListener('click', () => {
+      startMessageFlow(state.selectedSitterId);
+    });
+  }
+
   if (btnProfileCompare) {
     btnProfileCompare.addEventListener('click', () => {
+      state.comparedSitters = new Set([
+        state.selectedSitterId,
+        ...Array.from(state.comparedSitters).filter(id => id !== state.selectedSitterId),
+      ].slice(0, 3));
       showScreen('compare');
     });
   }
@@ -827,12 +1095,228 @@ document.addEventListener('DOMContentLoaded', () => {
   // --------------------------------------------------------------------------
   // 10. Screen 6: Compare Babysitters
   // --------------------------------------------------------------------------
-  document.querySelectorAll('.btn-book-from-compare').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const sitterId = btn.getAttribute('data-sitter-id');
-      startBookingFlow(sitterId);
+  const compareFeatureIcons = {
+    rating: '<path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.8 1-6.1L3.2 9.4l6.1-.9L12 3z"></path>',
+    experience: '<rect x="3" y="7" width="18" height="14" rx="2"></rect><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18M10 12v2h4v-2"></path>',
+    price: '<path d="M20 13 11 22l-9-9V2h11z"></path><circle cx="7.5" cy="7.5" r="1.5"></circle>',
+    certificates: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline>',
+    verification: '<circle cx="12" cy="12" r="9"></circle><path d="m8 12 2.5 2.5L16 9"></path><path d="m8.5 3.8 1.4-1.1 2.1 1 2.1-1 1.4 1.1"></path>',
+    education: '<path d="m2 10 10-6 10 6-10 6-10-6z"></path><path d="M6 12.5V17c3.5 2.7 8.5 2.7 12 0v-4.5M22 10v6"></path>',
+    languages: '<path d="M4 5h12a3 3 0 0 1 3 3v5a3 3 0 0 1-3 3H9l-5 4V5z"></path><path d="M9 10h8M9 13h5"></path><path d="M16 3h4a2 2 0 0 1 2 2v7l-3-2"></path>',
+    age: '<circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path>',
+    availability: '<rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18M8 14h2M14 14h2M8 17h2"></path>',
+  };
+  const compareFeatureDefinitions = [
+    { id: 'rating', title: 'Rating', score: sitter => sitter.ratingValue, value: sitter => sitter.ratingValue.toFixed(1), detail: sitter => `${sitter.reviewsCount} reviews` },
+    { id: 'experience', title: 'Experience', score: sitter => Number.parseInt(sitter.exp, 10) || 0, value: sitter => sitter.exp },
+    { id: 'price', title: 'Price', score: sitter => -sitter.price, value: sitter => `RM ${sitter.price} / hr` },
+    {
+      id: 'certificates',
+      title: 'Certificates',
+      score: sitter => sitter.certs.length,
+      render: sitter => sitter.certs.map(cert => `
+        <div class="compare-certificate">
+          <span class="check-icon" aria-hidden="true">✓</span>
+          <span><strong>${escapeHtml(cert.name)}</strong><small>${escapeHtml(cert.expiry)}</small></span>
+        </div>
+      `).join(''),
+    },
+    { id: 'verification', title: 'Verification', value: () => 'Verified', detail: () => 'Certificates' },
+    { id: 'education', title: 'Education', value: sitter => sitter.degree, detail: sitter => sitter.school },
+    { id: 'languages', title: 'Languages', value: sitter => sitter.languages },
+    { id: 'age', title: 'Age', value: sitter => `${sitter.age}`, detail: () => 'years old' },
+    {
+      id: 'availability',
+      title: 'Availability',
+      render: sitter => sitter.availability.map(slot => `<span class="compare-detail-line">${escapeHtml(slot.day)}</span>`).join(''),
+    },
+  ];
+
+  const compareHeaderColumns = document.getElementById('compareHeaderColumns');
+  const compareFeatureSections = document.getElementById('compareFeatureSections');
+  const compareCompactColumns = document.getElementById('compareCompactColumns');
+  const compareExpandedHeader = document.getElementById('compareExpandedHeader');
+  const compareCompactBar = document.getElementById('compareCompactBar');
+  let compareCompactFrame = 0;
+
+  function updateCompareCompactBar() {
+    compareCompactFrame = 0;
+    if (!compareExpandedHeader || !compareCompactBar || !screenCompare || screenCompare.style.display === 'none') return;
+
+    const bottom = compareExpandedHeader.getBoundingClientRect().bottom;
+    const mobileTopbar = window.matchMedia('(max-width: 640px)').matches;
+    const mobileBar = window.matchMedia('(max-width: 767px)').matches;
+    const top = mobileTopbar ? 56 : 64;
+    const range = mobileBar ? 56 : 64;
+    const progress = Math.min(1, Math.max(0, 1 - (bottom - top) / range));
+    const showCompactBar = progress > 0.5;
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      compareCompactBar.style.opacity = showCompactBar ? '1' : '0';
+      compareCompactBar.style.transform = 'none';
+    } else {
+      compareCompactBar.style.opacity = String(progress);
+      compareCompactBar.style.transform = `translateY(${(1 - progress) * -8}px)`;
+    }
+    compareCompactBar.style.pointerEvents = showCompactBar ? 'auto' : 'none';
+    compareCompactBar.setAttribute('aria-hidden', String(!showCompactBar));
+  }
+
+  function scheduleCompareCompactBarUpdate() {
+    if (!compareCompactFrame) compareCompactFrame = requestAnimationFrame(updateCompareCompactBar);
+  }
+
+  window.addEventListener('scroll', scheduleCompareCompactBarUpdate, { passive: true });
+  window.addEventListener('resize', scheduleCompareCompactBarUpdate, { passive: true });
+  window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', scheduleCompareCompactBarUpdate);
+
+  function populateCompareTable() {
+    const selectedIds = Array.from(state.comparedSitters).filter(id => sittersData[id]).slice(0, 3);
+    const preferredIds = [
+      state.selectedSitterId,
+      ...Object.keys(sittersData).sort((a, b) => sittersData[b].match - sittersData[a].match),
+    ].filter(id => sittersData[id]);
+    const sitterIds = [...new Set([...selectedIds, ...preferredIds])].slice(0, Math.max(2, selectedIds.length));
+    const sitterSlots = [...sitterIds.map(id => sittersData[id]), null, null].slice(0, 3);
+    if (!compareHeaderColumns || !compareFeatureSections || !compareCompactColumns) return;
+
+    state.comparedSitters = new Set(sitterIds);
+
+    compareHeaderColumns.dataset.sitterCount = String(sitterSlots.filter(Boolean).length);
+    compareCompactColumns.dataset.sitterCount = String(sitterSlots.filter(Boolean).length);
+    compareHeaderColumns.innerHTML = sitterSlots.map((sitter, slot) => {
+      const options = Object.values(sittersData).map(option => {
+        const selectedElsewhere = sitterSlots.some((other, otherSlot) => otherSlot !== slot && other && other.id === option.id);
+        return `<option value="${option.id}"${sitter && sitter.id === option.id ? ' selected' : ''}${selectedElsewhere ? ' disabled' : ''}>${escapeHtml(option.name)}</option>`;
+      }).join('');
+      const emptyOption = `<option value=""${slot < 2 ? ' disabled' : ''}${sitter ? '' : ' selected'}>Choose a babysitter</option>`;
+      const selector = `
+        <div class="compare-selector-wrap">
+          <label class="sr-only" for="compareSitterSelect${slot}">Babysitter ${slot + 1}</label>
+          <select class="compare-sitter-select" id="compareSitterSelect${slot}" data-slot="${slot}" aria-label="Babysitter ${slot + 1}">
+            ${emptyOption}${options}
+          </select>
+          <svg class="compare-select-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3B2A35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </div>`;
+      if (!sitter) {
+        return `<article class="compare-sitter-column">${selector}
+          <button type="button" class="compare-add-placeholder" id="btnAddCompareSitter">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+            <span>Add a babysitter</span>
+          </button>
+        </article>`;
+      }
+
+      return `<article class="compare-sitter-column">${selector}
+        <div class="compare-sitter-details">
+          <div class="compare-header-identity" aria-label="${escapeHtml(sitter.name)}">
+            <div class="photo-placeholder compare-header-photo" role="img" aria-label="Photo placeholder for ${escapeHtml(sitter.name)}">
+              <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </div>
+          </div>
+          <div class="compare-header-extras">
+            <span class="badge badge-ease-trained compare-trained-badge">
+              <svg class="badge-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+              Ease Trained
+            </span>
+            <p class="compare-header-price">${escapeHtml(sitter.rateText)} / hr</p>
+            <p class="compare-header-match">${sitter.match}% match</p>
+            <div class="compare-header-actions">
+              <button type="button" class="btn btn-primary compare-book-button" data-sitter-id="${sitter.id}" aria-label="Book ${escapeHtml(sitter.name)}">Book</button>
+              <button type="button" class="compare-view-profile" data-sitter-id="${sitter.id}">
+                View profile
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </article>`;
+    }).join('');
+
+    compareCompactColumns.innerHTML = sitterSlots.map(sitter => sitter
+      ? `<div class="compare-compact-cell" aria-label="${escapeHtml(sitter.name)}">
+          <div class="photo-placeholder compare-compact-photo" role="img" aria-label="Photo placeholder for ${escapeHtml(sitter.name)}">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          </div>
+          <span class="compare-compact-name" aria-label="${escapeHtml(sitter.name)}"><span class="compare-compact-full-name">${escapeHtml(sitter.name)}</span><span class="compare-compact-first-name">${escapeHtml(sitter.name.split(' ')[0])}</span></span>
+        </div>`
+      : '<div class="compare-compact-cell compare-compact-add">+ Add</div>').join('');
+
+    compareFeatureSections.innerHTML = compareFeatureDefinitions.map(feature => {
+      const scores = feature.score ? sitterSlots.filter(Boolean).map(feature.score) : [];
+      const bestScore = scores.length ? Math.max(...scores) : null;
+      const uniqueBest = feature.score && scores.filter(score => score === bestScore).length === 1;
+      const values = sitterSlots.map(sitter => {
+        if (!sitter) return '<div class="compare-empty-value" aria-label="No babysitter selected">—</div>';
+        const value = feature.render ? feature.render(sitter) : escapeHtml(feature.value(sitter));
+        const score = feature.score ? feature.score(sitter) : null;
+        const isBest = uniqueBest && score === bestScore;
+        const valueMarkup = isBest
+          ? `<span class="compare-best-value"><span class="compare-best-check" aria-hidden="true">✓</span><span>${value}</span><small>Best</small></span>`
+          : value;
+        const detail = feature.detail ? `<p class="compare-value-detail">${escapeHtml(feature.detail(sitter))}</p>` : '';
+        return `<div class="compare-value-column"><div class="compare-value-main">${valueMarkup}</div>${detail}</div>`;
+      }).join('');
+      return `<section class="compare-feature-section" aria-labelledby="compareFeatureTitle-${feature.id}">
+        <div class="compare-feature-heading">
+          <svg class="compare-feature-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${compareFeatureIcons[feature.id]}</svg>
+          <h2 id="compareFeatureTitle-${feature.id}">${feature.title}</h2>
+        </div>
+        <div class="compare-feature-values">${values}</div>
+      </section>`;
+    }).join('');
+
+    requestAnimationFrame(() => {
+      scheduleCompareCompactBarUpdate();
     });
-  });
+  }
+
+  if (compareHeaderColumns) {
+    compareHeaderColumns.addEventListener('change', event => {
+      if (!(event.target instanceof HTMLSelectElement) || !event.target.matches('.compare-sitter-select')) return;
+      const slot = Number(event.target.dataset.slot);
+      const currentIds = [...state.comparedSitters];
+      const slots = [...currentIds, null, null].slice(0, 3);
+      const newId = event.target.value;
+      if (slot < 2 && !newId) {
+        populateCompareTable();
+        return;
+      }
+      if (newId && slots.some((id, index) => index !== slot && id === newId)) {
+        populateCompareTable();
+        return;
+      }
+      slots[slot] = newId || null;
+      state.comparedSitters = new Set(slots.filter(Boolean));
+      saveState();
+      populateCompareTable();
+    });
+
+    compareHeaderColumns.addEventListener('click', event => {
+      if (!(event.target instanceof Element)) return;
+      const addButton = event.target.closest('#btnAddCompareSitter');
+      if (addButton) {
+        const currentIds = Array.from(state.comparedSitters).filter(id => sittersData[id]);
+        if (currentIds.length >= 3) return;
+        const nextId = ['aisyah', 'sarah-lim', 'nur-ain'].find(id => !currentIds.includes(id));
+        if (!nextId) return;
+        state.comparedSitters = new Set([...currentIds, nextId]);
+        populateCompareTable();
+        saveState();
+        return;
+      }
+
+      const profileButton = event.target.closest('.compare-view-profile');
+      if (profileButton) {
+        state.selectedSitterId = profileButton.dataset.sitterId;
+        showScreen('profile');
+        return;
+      }
+
+      const bookButton = event.target.closest('.compare-book-button');
+      if (bookButton) startProfileBookingFlow(bookButton.dataset.sitterId);
+    });
+  }
 
   // --------------------------------------------------------------------------
   // 11. Screen 7: Sign Up / Log In
@@ -916,7 +1400,7 @@ document.addEventListener('DOMContentLoaded', () => {
           document.getElementById('errorAuthName').style.display = 'flex';
           hasError = true;
         }
-        if (!phoneVal) {
+        if (!/^(?:\+?60|0)[0-9\s-]{8,12}$/.test(phoneVal)) {
           document.getElementById('authPhone').classList.add('input-error');
           document.getElementById('errorAuthPhone').style.display = 'flex';
           hasError = true;
@@ -948,14 +1432,22 @@ document.addEventListener('DOMContentLoaded', () => {
         state.user.name = nameVal;
         state.user.email = emailVal;
         state.user.phone = phoneVal;
+        saveState();
+        showScreen('verify');
       } else {
         state.user.email = emailVal;
+        setLoggedIn(true);
+        saveState();
+        if (state.authReturnScreen === 'parentHome') {
+          showScreen('parentHome');
+        } else if (state.authReturnScreen === 'review') {
+          showScreen('review');
+        } else if (state.bookingIntent) {
+          showScreen(state.hasAddedChild ? 'bookingDetails' : 'addChild');
+        } else {
+          showScreen('chat');
+        }
       }
-
-      saveState();
-
-      // Proceed to Email Verification
-      showScreen('verify');
     });
   }
 
@@ -973,11 +1465,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (btnEmailVerifiedDemo) {
     btnEmailVerifiedDemo.addEventListener('click', () => {
-      state.isLoggedIn = true;
+      setLoggedIn(true);
       saveState();
       showToast('Email verified successfully!');
 
-      if (!state.hasAddedChild) {
+      if (state.authReturnScreen === 'parentHome') {
+        showScreen('parentHome');
+      } else if (state.authReturnScreen === 'review') {
+        showScreen('review');
+      } else if (state.bookingIntent && !state.hasAddedChild) {
         showScreen('addChild');
       } else if (state.bookingIntent) {
         showScreen('bookingDetails');
@@ -993,11 +1489,67 @@ document.addEventListener('DOMContentLoaded', () => {
   const addChildForm = document.getElementById('addChildForm');
   const btnAddAnotherChild = document.getElementById('btnAddAnotherChild');
 
+  function readChildForm() {
+    return {
+      name: document.getElementById('childName').value.trim(),
+      gender: document.getElementById('childGender').value,
+      birthDate: document.getElementById('childBirthDate').value,
+      allergies: document.getElementById('childAllergies').value.trim() || 'None',
+      medical: document.getElementById('childMedical').value.trim() || 'None',
+      specialNeeds: document.getElementById('childSpecialNeeds').value.trim() || 'None',
+      routine: document.getElementById('childRoutine').value.trim() || 'Standard routine',
+      emergencyName: document.getElementById('childEmergencyName').value.trim(),
+      emergencyPhone: document.getElementById('childEmergencyPhone').value.trim(),
+      description: document.getElementById('childDescription').value.trim(),
+    };
+  }
+
+  function clearChildForm() {
+    addChildForm.reset();
+    ['childName', 'childBirthDate', 'childEmergencyName', 'childEmergencyPhone'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    ['childAllergies', 'childMedical', 'childSpecialNeeds', 'childRoutine'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('childDescription').value = '';
+    if (state.children.length) {
+      ['childName', 'childBirthDate', 'childEmergencyName', 'childEmergencyPhone'].forEach(id => {
+        document.getElementById(id).required = false;
+      });
+    }
+  }
+
+  function prepareAddChildForm() {
+    if (state.hasAddedChild || state.children.length) clearChildForm();
+  }
+
+  ['childName', 'childBirthDate', 'childEmergencyName', 'childEmergencyPhone'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => {
+      if (state.children.length) {
+        ['childName', 'childBirthDate', 'childEmergencyName', 'childEmergencyPhone'].forEach(fieldId => {
+          document.getElementById(fieldId).required = true;
+        });
+      }
+    });
+  });
+
   if (btnAddAnotherChild) {
     btnAddAnotherChild.addEventListener('click', () => {
-      const name = document.getElementById('childName').value.trim() || 'Liam';
-      showToast(`Child "${name}" saved! You can add another child now.`);
-      document.getElementById('childName').value = '';
+      if (!document.getElementById('childName').value.trim()) {
+        document.getElementById('childName').required = true;
+        addChildForm.reportValidity();
+        return;
+      }
+      if (!addChildForm.checkValidity()) {
+        addChildForm.reportValidity();
+        return;
+      }
+      const child = readChildForm();
+      state.children.push(child);
+      saveState();
+      showToast(`Child "${child.name}" saved. Add another child or continue.`);
+      clearChildForm();
       document.getElementById('childName').focus();
     });
   }
@@ -1005,17 +1557,13 @@ document.addEventListener('DOMContentLoaded', () => {
   if (addChildForm) {
     addChildForm.addEventListener('submit', (e) => {
       e.preventDefault();
-
-      state.child.name = document.getElementById('childName').value.trim() || 'Liam';
-      state.child.gender = document.getElementById('childGender').value;
-      state.child.birthDate = document.getElementById('childBirthDate').value;
-      state.child.allergies = document.getElementById('childAllergies').value.trim() || 'None';
-      state.child.medical = document.getElementById('childMedical').value.trim() || 'None';
-      state.child.specialNeeds = document.getElementById('childSpecialNeeds').value.trim() || 'None';
-      state.child.routine = document.getElementById('childRoutine').value.trim() || 'Standard routine';
-      state.child.emergencyName = document.getElementById('childEmergencyName').value.trim() || 'Mark Roberts';
-      state.child.emergencyPhone = document.getElementById('childEmergencyPhone').value.trim() || '012-9876543';
-      state.child.description = document.getElementById('childDescription').value.trim();
+      const currentName = document.getElementById('childName').value.trim();
+      if ((currentName || !state.children.length) && !addChildForm.checkValidity()) {
+        addChildForm.reportValidity();
+        return;
+      }
+      if (currentName) state.children.push(readChildForm());
+      state.child = state.children[0];
 
       state.hasAddedChild = true;
       saveState();
@@ -1042,13 +1590,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (bookingSitterTitle) bookingSitterTitle.textContent = sitter.name;
     if (bookingSitterRate) bookingSitterRate.textContent = `${sitter.rateText} / hr • Ease Trained`;
-    if (bookingLocationInput) bookingLocationInput.value = `${state.postcode} Kuala Lumpur`;
+    if (bookingLocationInput) bookingLocationInput.value = state.bookingData.location || `${state.postcode} Kuala Lumpur`;
 
     if (bookingChildSelect) {
-      bookingChildSelect.innerHTML = `<option value="${state.child.name}">${state.child.name} (2 years old)</option>`;
+      const children = state.children.length ? state.children : [state.child];
+      bookingChildSelect.innerHTML = children.map(child => `
+        <option value="${escapeHtml(child.name)}">${escapeHtml(child.name)} (${getChildAge(child.birthDate)} years old)</option>
+      `).join('');
+      bookingChildSelect.value = state.bookingData.childName || children[0].name;
     }
+    document.getElementById('bookingDateInput').value = state.bookingData.date || '2026-11-20';
+    document.getElementById('bookingTimeStart').value = state.bookingData.time || '14:00';
+    document.getElementById('bookingHours').value = String(state.bookingData.hours || 4);
+    document.getElementById('bookingSpecialReq').value = state.bookingData.specialReq || '';
+    document.getElementById('bookingExtraNotes').value = state.bookingData.extraNotes || '';
+    document.getElementById('bookingTrialOption').checked = Boolean(state.bookingData.isTrial);
 
     recalcBookingPrice();
+  }
+
+  function getChildAge(birthDate) {
+    if (!birthDate) return 2;
+    const birth = new Date(`${birthDate}T00:00:00`);
+    const now = new Date();
+    let age = now.getFullYear() - birth.getFullYear();
+    if (now.getMonth() < birth.getMonth() || (now.getMonth() === birth.getMonth() && now.getDate() < birth.getDate())) age--;
+    return Math.max(0, age);
   }
 
   function recalcBookingPrice() {
@@ -1100,6 +1667,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       state.bookingData.date = document.getElementById('bookingDateInput').value || '2026-11-20';
       state.bookingData.time = document.getElementById('bookingTimeStart').value || '14:00';
+      state.bookingData.childName = document.getElementById('bookingChildSelect').value;
       state.bookingData.location = document.getElementById('bookingLocationInput').value || '50450 Kuala Lumpur';
       state.bookingData.specialReq = document.getElementById('bookingSpecialReq').value;
       state.bookingData.extraNotes = document.getElementById('bookingExtraNotes').value;
@@ -1126,9 +1694,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const sitterNameWaiting = document.getElementById('statusSitterNameWaiting');
     const statusAcceptedHeadline = document.getElementById('statusAcceptedHeadline');
+    const waitingDescription = document.querySelector('#statusStateWaiting .section-subtext');
 
     if (sitterNameWaiting) sitterNameWaiting.textContent = sitter.name;
-    if (statusAcceptedHeadline) statusAcceptedHeadline.textContent = `${sitter.name.split(' ')[0]} accepted your booking!`;
+    if (waitingDescription) waitingDescription.innerHTML = `Waiting for <strong id="statusSitterNameWaiting">${escapeHtml(sitter.name)}</strong> to accept your booking for ${escapeHtml(formatBookingDate(state.bookingData.date))}.`;
+    if (statusAcceptedHeadline) statusAcceptedHeadline.textContent = `${sitter.name.split(' ')[0]} accepted.`;
 
     if (panelWaiting) panelWaiting.style.display = statusState === 'waiting' ? 'flex' : 'none';
     if (panelAccepted) panelAccepted.style.display = statusState === 'accepted' ? 'flex' : 'none';
@@ -1218,6 +1788,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (btnRetryPayment) btnRetryPayment.style.display = 'none';
     if (paymentErrorBox) paymentErrorBox.style.display = 'none';
+    paymentOptions.forEach(card => {
+      const selected = card.getAttribute('data-pay-method') === state.selectedPaymentMethod;
+      card.classList.toggle('selected', selected);
+      card.setAttribute('aria-checked', String(selected));
+    });
 
     state.paymentAttempts = 0;
   }
@@ -1267,7 +1842,32 @@ document.addEventListener('DOMContentLoaded', () => {
   function setupBookingConfirmed() {
     const sitter = sittersData[state.selectedSitterId] || sittersData['sarah-lim'];
     const confirmedSitterName = document.getElementById('confirmedSitterName');
+    const booking = state.bookingData;
+    const confirmedMessage = document.getElementById('confirmedMessage');
+    const confirmedDate = document.getElementById('confirmedDate');
+    const confirmedTime = document.getElementById('confirmedTime');
+    const confirmedChild = document.getElementById('confirmedChild');
+    const confirmedBookingId = document.getElementById('confirmedBookingId');
     if (confirmedSitterName) confirmedSitterName.textContent = sitter.name;
+    if (confirmedMessage) confirmedMessage.textContent = `Your babysitter is locked in. We've notified ${sitter.name}.`;
+    if (confirmedDate) confirmedDate.textContent = formatBookingDate(booking.date);
+    if (confirmedTime) confirmedTime.textContent = formatBookingTime(booking.time, booking.hours + (booking.isTrial ? 1 : 0));
+    if (confirmedChild) confirmedChild.textContent = booking.childName || state.child.name;
+    if (confirmedBookingId) confirmedBookingId.textContent = 'BK001';
+  }
+
+  function formatBookingDate(dateValue) {
+    if (!dateValue) return '20 Nov 2026';
+    const date = new Date(`${dateValue}T00:00:00`);
+    return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  function formatBookingTime(timeValue, duration) {
+    const [hours, minutes] = (timeValue || '14:00').split(':').map(Number);
+    const start = new Date(2000, 0, 1, hours, minutes);
+    const end = new Date(start.getTime() + duration * 60 * 60 * 1000);
+    const options = { hour: 'numeric', minute: '2-digit', hour12: true };
+    return `${start.toLocaleTimeString('en-US', options).toUpperCase()} – ${end.toLocaleTimeString('en-US', options).toUpperCase()} (${duration} hours)`;
   }
 
   const btnAddCalendar = document.getElementById('btnAddCalendar');
@@ -1275,7 +1875,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (btnAddCalendar) {
     btnAddCalendar.addEventListener('click', () => {
-      showToast('Booking added to your Google Calendar!');
+      const booking = state.bookingData;
+      const date = booking.date || '2026-11-20';
+      const time = booking.time || '14:00';
+      const [hour, minute] = time.split(':');
+      const start = `${date.replace(/-/g, '')}T${hour}${minute}00`;
+      const endDate = new Date(`${date}T${time}:00`);
+      endDate.setHours(endDate.getHours() + booking.hours + (booking.isTrial ? 1 : 0));
+      const end = `${endDate.getFullYear()}${String(endDate.getMonth() + 1).padStart(2, '0')}${String(endDate.getDate()).padStart(2, '0')}T${String(endDate.getHours()).padStart(2, '0')}${String(endDate.getMinutes()).padStart(2, '0')}00`;
+      const sitter = sittersData[state.selectedSitterId] || sittersData['sarah-lim'];
+      const calendarEvent = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//Ease//Booking//EN',
+        'BEGIN:VEVENT',
+        `UID:${Date.now()}@ease.local`,
+        `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}`,
+        `DTSTART:${start}`,
+        `DTEND:${end}`,
+        `SUMMARY:Ease babysitting with ${sitter.name}`,
+        `LOCATION:${(booking.location || '').replace(/[,;\\]/g, ' ')}`,
+        'END:VEVENT',
+        'END:VCALENDAR',
+      ].join('\r\n');
+      const calendarUrl = URL.createObjectURL(new Blob([calendarEvent], { type: 'text/calendar' }));
+      const downloadLink = document.createElement('a');
+      downloadLink.href = calendarUrl;
+      downloadLink.download = 'ease-booking.ics';
+      downloadLink.click();
+      setTimeout(() => URL.revokeObjectURL(calendarUrl), 1000);
+      showToast('Calendar event downloaded.');
     });
   }
 
@@ -1291,10 +1920,31 @@ document.addEventListener('DOMContentLoaded', () => {
   function setupParentHome() {
     const greeting = document.getElementById('homeGreetingTitle');
     const homeChildName = document.getElementById('homeChildName');
+    const homeChildDetails = document.getElementById('homeChildDetails');
+    const homeChildSummary = document.getElementById('homeChildSummary');
+    const homeBookingDate = document.getElementById('homeBookingDate');
+    const homeBookingSitter = document.getElementById('homeBookingSitter');
+    const homeBookingTime = document.getElementById('homeBookingTime');
+    const homeBookingLocation = document.getElementById('homeBookingLocation');
+    const homeRecentMsgName = document.getElementById('homeRecentMsgName');
+    const homeBookAgainName = document.getElementById('homeBookAgainName');
+    const bookingSitter = sittersData[state.selectedSitterId] || sittersData['sarah-lim'];
+    const booking = state.bookingData;
 
     const firstName = (state.user.name || 'Jessica').split(' ')[0];
     if (greeting) greeting.textContent = `Welcome back, ${firstName}`;
     if (homeChildName) homeChildName.textContent = state.child.name || 'Liam';
+    if (homeChildDetails) homeChildDetails.textContent = `${getChildAge(state.child.birthDate)} years old • ${state.child.gender || 'Boy'}`;
+    if (homeChildSummary) {
+      homeChildSummary.textContent = `Allergies: ${state.child.allergies || 'None'} • Routine: ${state.child.routine || 'Standard routine'} • Emergency Contact: ${state.child.emergencyName || 'Not added'}`;
+    }
+    if (homeBookingDate) homeBookingDate.textContent = `Next Booking • ${formatBookingDate(booking.date)}`;
+    if (homeBookingSitter) homeBookingSitter.textContent = bookingSitter.name;
+    if (homeBookingTime) homeBookingTime.textContent = `${formatBookingTime(booking.time, booking.hours)} • ${booking.childName || state.child.name}`;
+    if (homeBookingLocation) homeBookingLocation.textContent = `📍 ${booking.location || `${state.postcode} Kuala Lumpur`}`;
+    if (btnHomeMessageSarah) btnHomeMessageSarah.textContent = `Message ${bookingSitter.name.split(' ')[0]}`;
+    if (homeRecentMsgName) homeRecentMsgName.textContent = bookingSitter.name;
+    if (homeBookAgainName) homeBookAgainName.textContent = bookingSitter.name;
   }
 
   const btnHomeViewDetails = document.getElementById('btnHomeViewDetails');
@@ -1315,7 +1965,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (btnHomeMessageSarah) {
     btnHomeMessageSarah.addEventListener('click', () => {
-      state.selectedSitterId = 'sarah-lim';
       showScreen('chat');
     });
   }
@@ -1342,6 +1991,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (btnHomeAddChild) {
     btnHomeAddChild.addEventListener('click', () => {
+      state.bookingIntent = false;
       showScreen('addChild');
     });
   }
@@ -1370,39 +2020,29 @@ document.addEventListener('DOMContentLoaded', () => {
   function setupChatScreen() {
     const sitter = sittersData[state.selectedSitterId] || sittersData['sarah-lim'];
     const chatSitterName = document.getElementById('chatSitterName');
+    const chatSitterAvatar = document.getElementById('chatSitterAvatar');
     const chatMessagesArea = document.getElementById('chatMessagesArea');
 
     if (chatSitterName) chatSitterName.textContent = sitter.name;
+    if (chatSitterAvatar) chatSitterAvatar.setAttribute('aria-label', `Photo placeholder for ${sitter.name}`);
+    if (chatMessagesArea) {
+      chatMessagesArea.innerHTML = `
+        <div class="chat-message chat-msg-parent"><p>Hello! Is Saturday free?</p><span class="chat-time">10:15 AM</span></div>
+        <div class="chat-message chat-msg-sitter"><p>Yes, I am free all day.</p><span class="chat-time">10:18 AM</span></div>
+        <div class="chat-message chat-msg-parent"><p>Great, can you do 9 am to 3 pm?</p><span class="chat-time">10:20 AM</span></div>
+      `;
+    }
     if (chatMessagesArea) chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
   }
 
-  const btnChatBack = document.getElementById('btnChatBack');
   const btnChatBook = document.getElementById('btnChatBook');
   const chatForm = document.getElementById('chatForm');
   const chatInputText = document.getElementById('chatInputText');
   const chatMessagesArea = document.getElementById('chatMessagesArea');
-  const btnChatAttach = document.getElementById('btnChatAttach');
-
-  if (btnChatBack) {
-    btnChatBack.addEventListener('click', () => {
-      if (screenHistory.length > 1) {
-        screenHistory.pop();
-        showScreen(screenHistory[screenHistory.length - 1], false);
-      } else {
-        showScreen(state.isLoggedIn ? 'parentHome' : 'profile', false);
-      }
-    });
-  }
 
   if (btnChatBook) {
     btnChatBook.addEventListener('click', () => {
-      startBookingFlow(state.selectedSitterId);
-    });
-  }
-
-  if (btnChatAttach) {
-    btnChatAttach.addEventListener('click', () => {
-      showToast('Photo or document attachment selected.');
+      startProfileBookingFlow(state.selectedSitterId);
     });
   }
 

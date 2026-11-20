@@ -43,7 +43,7 @@
 
   <!-- Hamburger Navigation Drawer -->
   <div class="drawer-overlay" id="drawerOverlay"></div>
-  <aside class="nav-drawer" id="navDrawer" aria-hidden="true">
+  <aside class="nav-drawer" id="navDrawer" aria-hidden="true" inert>
     <div class="drawer-header">
       <span class="drawer-logo">Ease</span>
       <button class="drawer-close" id="drawerCloseBtn" aria-label="Close menu">
@@ -53,16 +53,73 @@
         </svg>
       </button>
     </div>
-    <nav class="drawer-nav">
-      <a href="#/" class="drawer-link" data-route="welcome">Home</a>
-      <a href="#/q1" class="drawer-link" data-route="q1">Find a Babysitter</a>
-      <a href="#/summary" class="drawer-link" data-route="summary">My Answers</a>
-      <a href="#/matches" class="drawer-link" data-route="matches">Top Matches</a>
-      <a href="#/compare" class="drawer-link" data-route="compare">Compare Sitters</a>
-      <a href="#/parent-home" class="drawer-link" data-route="parent-home" id="drawerParentHomeLink" style="display: none;">Parent Dashboard</a>
+    <nav class="drawer-nav" id="drawerMenu" aria-label="Menu">
+      <button type="button" class="drawer-item" data-drawer-panel="how-it-works">
+        <span class="drawer-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="3"></circle><path d="m14.1 9.9 5.2-5.2"></path><path d="m19.3 4.7.7 3"></path><path d="m19.3 4.7-3-.7"></path></svg></span>
+        <span class="drawer-item-copy"><strong>How it works</strong><small>Find care in a few simple steps</small></span>
+      </button>
+      <button type="button" class="drawer-item" data-drawer-panel="safety">
+        <span class="drawer-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg></span>
+        <span class="drawer-item-copy"><strong>Safety &amp; Trust</strong><small>How we help keep care safe</small></span>
+      </button>
+      <button type="button" class="drawer-item" data-drawer-panel="care-types">
+        <span class="drawer-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></span>
+        <span class="drawer-item-copy"><strong>Types of care</strong><small>Care to fit your schedule</small></span>
+      </button>
+      <button type="button" class="drawer-item" data-drawer-panel="faq">
+        <span class="drawer-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M9.6 9a2.5 2.5 0 0 1 4.8 1c0 1.7-2.4 2-2.4 4"></path><path d="M12 17h.01"></path></svg></span>
+        <span class="drawer-item-copy"><strong>FAQ</strong><small>Answers to common questions</small></span>
+      </button>
+      <button type="button" class="drawer-item" data-drawer-panel="help">
+        <span class="drawer-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8z"></path></svg></span>
+        <span class="drawer-item-copy"><strong>Help &amp; contact</strong><small>We are here if you need help</small></span>
+      </button>
+      <a href="#/find" class="drawer-item" data-drawer-route="find">
+        <span class="drawer-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="8" r="3.5"></circle><path d="M3.5 19a7 7 0 0 1 14 0"></path><circle cx="18" cy="11" r="2.5"></circle><path d="m20 13 2 2"></path></svg></span>
+        <span class="drawer-item-copy"><strong>Find babysitters</strong><small>Browse babysitter profiles</small></span>
+      </a>
     </nav>
-    <div class="drawer-footer">
-      <button class="btn btn-primary full-width" id="drawerStartBtn">Start Matching</button>
+    <div class="drawer-panels" id="drawerPanels" hidden>
+      <section class="drawer-panel" data-panel="how-it-works" aria-labelledby="drawerHowTitle" tabindex="-1" hidden>
+        <button type="button" class="drawer-back">← Back to menu</button>
+        <h2 id="drawerHowTitle">How it works</h2>
+        <p>Tell us what you need, see matched babysitters, then book and pay safely.</p>
+      </section>
+      <section class="drawer-panel" data-panel="safety" aria-labelledby="drawerSafetyTitle" tabindex="-1" hidden>
+        <button type="button" class="drawer-back">← Back to menu</button>
+        <h2 id="drawerSafetyTitle">Safety &amp; Trust</h2>
+        <p>Every babysitter has a verified ID, a background check and checked certificates. Payment is held until the session is complete.</p>
+      </section>
+      <section class="drawer-panel" data-panel="care-types" aria-labelledby="drawerCareTitle" tabindex="-1" hidden>
+        <button type="button" class="drawer-back">← Back to menu</button>
+        <h2 id="drawerCareTitle">Types of care</h2>
+        <p>Hourly, full day, live-in or overnight. Book once or every week.</p>
+      </section>
+      <section class="drawer-panel drawer-faq-panel" data-panel="faq" aria-labelledby="drawerFaqTitle" tabindex="-1" hidden>
+        <button type="button" class="drawer-back">← Back to menu</button>
+        <h2 id="drawerFaqTitle">FAQ</h2>
+        <details class="drawer-faq-item">
+          <summary>How much does it cost?</summary>
+          <p>Rates vary by babysitter and are shown on their profile before you book.</p>
+        </details>
+        <details class="drawer-faq-item">
+          <summary>What if my babysitter cannot come?</summary>
+          <p>Message your babysitter as soon as possible. Contact Ease for help with next steps.</p>
+        </details>
+        <details class="drawer-faq-item">
+          <summary>Can I cancel a booking?</summary>
+          <p>Check your booking details for cancellation options or contact Ease for help.</p>
+        </details>
+        <details class="drawer-faq-item">
+          <summary>How do I pay?</summary>
+          <p>Pay securely through Ease. Payment is held until the session is complete.</p>
+        </details>
+      </section>
+      <section class="drawer-panel" data-panel="help" aria-labelledby="drawerHelpTitle" tabindex="-1" hidden>
+        <button type="button" class="drawer-back">← Back to menu</button>
+        <h2 id="drawerHelpTitle">Help &amp; contact</h2>
+        <p>Questions about a booking or an account? Contact details will be added here.</p>
+      </section>
     </div>
   </aside>
 
@@ -439,6 +496,78 @@
       </div>
     </section>
 
+    <section class="app-screen" id="screenFind" style="display: none;">
+      <div class="gradient-banner">
+        <div class="container banner-inner find-banner-inner">
+          <h1 class="banner-title find-banner-title">Find babysitters</h1>
+          <p class="banner-subtitle">Verified, trained and ready to help.</p>
+        </div>
+      </div>
+      <div class="content-section">
+        <div class="container find-container">
+          <form class="find-controls card" id="findForm">
+            <div class="postcode-search">
+              <div class="input-group">
+                <label for="findPostcode">Postcode</label>
+                <input type="text" id="findPostcode" class="input-field" value="50450" inputmode="numeric" maxlength="5" pattern="[0-9]{5}" required>
+              </div>
+              <button type="submit" class="btn btn-primary">Search</button>
+            </div>
+            <div class="find-filters">
+              <div class="input-group">
+                <label for="filterRating">Rating</label>
+                <select id="filterRating" class="input-field">
+                  <option value="0">Any rating</option>
+                  <option value="4.5">4.5 stars &amp; up</option>
+                  <option value="4.8">4.8 stars &amp; up</option>
+                </select>
+              </div>
+              <div class="input-group">
+                <label for="filterPrice">Price per hour</label>
+                <select id="filterPrice" class="input-field">
+                  <option value="0">Any price</option>
+                  <option value="20">Up to RM 20</option>
+                  <option value="22">Up to RM 22</option>
+                  <option value="25">Up to RM 25</option>
+                </select>
+              </div>
+              <div class="input-group">
+                <label for="filterDistance">Distance</label>
+                <select id="filterDistance" class="input-field">
+                  <option value="0">Any distance</option>
+                  <option value="5">Within 5 km</option>
+                  <option value="10">Within 10 km</option>
+                </select>
+              </div>
+              <div class="input-group">
+                <label for="filterAvailability">Availability</label>
+                <select id="filterAvailability" class="input-field">
+                  <option value="all">Any availability</option>
+                  <option value="Weekdays">Weekdays</option>
+                  <option value="Weekends">Weekends</option>
+                  <option value="Saturday">Saturday</option>
+                </select>
+              </div>
+            </div>
+          </form>
+          <div class="find-active-filters" id="findActiveFilters" aria-live="polite"></div>
+          <h2 class="section-heading find-results-count" id="findResultsCount" aria-live="polite"></h2>
+          <div class="sitters-match-list find-sitter-list" id="findSitterList"></div>
+          <div class="card find-empty-state" id="findEmptyState" style="display: none;">
+            <h2 class="card-title">No babysitters found</h2>
+            <p>Try changing your postcode or filters.</p>
+          </div>
+          <div class="find-trust-strip">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              <polyline points="9 12 11 14 15 10"></polyline>
+            </svg>
+            <p>Every babysitter is ID checked, CPR certified and reviewed by parents.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- ====================================================================
          SCREEN 4: TOP MATCHES (No Login)
          ==================================================================== -->
@@ -658,27 +787,40 @@
          SCREEN 5: BABYSITTER PROFILE (No Login)
          ==================================================================== -->
     <section class="app-screen" id="screenProfile" style="display: none;">
-      <div class="content-section">
+      <div class="gradient-banner">
+        <div class="container banner-inner">
+          <h1 class="banner-title member-banner-title">Babysitter Profile</h1>
+        </div>
+      </div>
+      <div class="content-section profile-content">
         <div class="container profile-container">
-          <!-- Profile Hero Card -->
-          <div class="card profile-hero-card">
+          <!-- Profile Hero -->
+          <div class="profile-hero-card">
             <div class="profile-photo-wrap">
-              <div class="photo-placeholder profile-large-photo">
-                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="12" cy="7" r="4"></circle>
-                </svg>
-                <span class="profile-photo-name" id="profileDisplayName">Sarah Lim</span>
+              <div class="profile-large-photo photo-placeholder" id="profilePhoto" role="img" aria-label="Photo placeholder for Sarah Lim">
+                <span class="profile-initials">SL</span>
               </div>
             </div>
 
             <div class="profile-hero-info">
               <div class="profile-hero-header">
-                <h1 class="page-title profile-title" id="profileName">Sarah Lim</h1>
-                <span class="badge badge-ease-trained">
-                  <svg class="badge-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
-                  Ease Trained
-                </span>
+                <div>
+                  <h2 class="card-title profile-title" id="profileName">Sarah Lim</h2>
+                  <span class="badge badge-ease-trained">
+                    <svg class="badge-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+                    Ease Trained
+                  </span>
+                </div>
+                <div class="profile-price-wrap">
+                  <span class="profile-price" id="profilePrice">RM 20</span>
+                  <span class="profile-price-unit">/ hour</span>
+                </div>
+              </div>
+
+              <div class="profile-verifications">
+                <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>ID verified</span>
+                <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>Background checked</span>
+                <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>References checked</span>
               </div>
 
               <div class="stars-row profile-stars" id="profileStars">
@@ -687,13 +829,10 @@
                 <span class="star-filled" aria-hidden="true">★</span>
                 <span class="star-filled" aria-hidden="true">★</span>
                 <span class="star-filled" aria-hidden="true">★</span>
-                <span class="stars-num" id="profileRatingText">4.9 (126 reviews)</span>
+                <span class="stars-num" id="profileRatingText">4.9 (87 reviews)</span>
               </div>
 
-              <div class="profile-price-wrap">
-                <span class="profile-price" id="profilePrice">RM 25</span>
-                <span class="profile-price-unit">/ hour</span>
-              </div>
+              <p class="profile-location">Bangsar, Kuala Lumpur · Replies within 1 hour</p>
 
               <!-- Main Action Buttons -->
               <div class="profile-actions-row">
@@ -704,101 +843,87 @@
             </div>
           </div>
 
-          <!-- Section: About Me -->
-          <div class="card profile-section-card">
-            <h2 class="section-heading">About Me</h2>
-            <div class="profile-meta-grid">
-              <div class="meta-item">
-                <span class="meta-label">Age</span>
-                <span class="meta-val" id="profileAge">28 years old</span>
+          <div class="profile-layout">
+            <div class="profile-main-column">
+              <div class="quick-facts-row">
+                <div class="quick-fact quick-fact-yellow"><span class="quick-fact-icon">6</span><strong id="profileExp">6 years</strong><span>experience</span></div>
+                <div class="quick-fact quick-fact-pink"><span class="quick-fact-icon">42</span><strong>42</strong><span>children cared for</span></div>
+                <div class="quick-fact quick-fact-yellow"><span class="quick-fact-icon">18</span><strong>18</strong><span>parents booked again</span></div>
+                <div class="quick-fact quick-fact-pink"><span class="quick-fact-icon">1h</span><strong>1 hour</strong><span>Replies in 1 hour</span></div>
               </div>
-              <div class="meta-item">
-                <span class="meta-label">Experience</span>
-                <span class="meta-val" id="profileExp">5 years</span>
-              </div>
-              <div class="meta-item">
-                <span class="meta-label">Languages</span>
-                <span class="meta-val" id="profileLanguages">English, Mandarin</span>
-              </div>
-            </div>
-            <p class="profile-bio-text" id="profileBio">
-              Warm, patient, and creative caregiver dedicated to nurturing young children. Experienced in newborn care routines, developmental toddler play, and engaging educational activities. Non-smoker, clean driving record, and comfortable with household pets.
-            </p>
-          </div>
 
-          <!-- Section: Certificates -->
-          <div class="card profile-section-card">
-            <h2 class="section-heading">Certificates</h2>
-            <ul class="cert-list" id="profileCertList">
-              <li class="cert-item">
-                <div class="cert-left">
-                  <span class="check-icon">✓</span>
-                  <div>
-                    <strong>Pediatric & Infant CPR Certification</strong>
-                    <span class="cert-expiry">Verified safety check • Valid until Dec 2027</span>
+              <div class="card profile-section-card">
+                <h2 class="section-heading"><span class="section-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span>About Me</h2>
+                <div class="profile-meta-grid">
+                  <div class="meta-item"><span class="meta-label">Age</span><span class="meta-val" id="profileAge">28 years old</span></div>
+                  <div class="meta-item"><span class="meta-label">Experience</span><span class="meta-val" id="profileExpDetail">6 years</span></div>
+                  <div class="meta-item"><span class="meta-label">Languages</span><span class="meta-val" id="profileLanguages">English and Mandarin</span></div>
+                  <div class="meta-item"><span class="meta-label">Ages cared for</span><span class="meta-val">6 months to 12 years</span></div>
+                </div>
+                <div class="profile-chips"><span>English</span><span>Mandarin</span><span>6 months–12 years</span></div>
+                <p class="profile-bio-text" id="profileBio">Warm, patient, and creative caregiver dedicated to nurturing young children. Experienced in newborn care routines, developmental toddler play, and engaging educational activities.</p>
+                <div class="care-offered"><span><b>✓</b> Newborn care</span><span><b>✓</b> Homework help</span><span><b>✓</b> Meal preparation</span><span><b>✓</b> Light housekeeping</span><span><b>×</b> Pet care</span></div>
+              </div>
+
+              <div class="card profile-section-card profile-section-yellow">
+                <h2 class="section-heading"><span class="section-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg></span>Certificates</h2>
+                <div class="cert-list" id="profileCertList">
+                  <div class="cert-item"><span class="cert-check">✓</span><div class="cert-copy"><strong>Pediatric First Aid & CPR</strong><span>Malaysian Red Crescent · Expires 2027</span></div><span class="badge badge-verified">✓ Verified</span></div>
+                  <div class="cert-item"><span class="cert-check">✓</span><div class="cert-copy"><strong>Infant Care Specialist</strong><span>Childcare Academy · Expires 2027</span></div><span class="badge badge-verified">✓ Verified</span></div>
+                </div>
+              </div>
+
+              <div class="card profile-section-card">
+                <h2 class="section-heading"><span class="section-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg></span>Education</h2>
+                <div class="edu-item"><span class="edu-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg></span><div><span class="edu-degree" id="profileEduDegree">Diploma in Early Childhood Education</span><span class="edu-school" id="profileEduSchool">Sunway College · 2020</span></div></div>
+              </div>
+
+              <div class="card profile-section-card profile-section-yellow">
+                <h2 class="section-heading"><span class="section-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="#FFE66D" stroke="#C2456B" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></span>Reviews</h2>
+                <div class="reviews-summary">
+                  <div class="rating-summary"><strong>4.9</strong><div>★★★★★</div><span>87 reviews</span></div>
+                  <div class="rating-bars">
+                    <div><span>5</span><div class="rating-track"><i style="width:92%"></i></div></div>
+                    <div><span>4</span><div class="rating-track"><i style="width:58%"></i></div></div>
+                    <div><span>3</span><div class="rating-track"><i style="width:18%"></i></div></div>
+                    <div><span>2</span><div class="rating-track"><i style="width:8%"></i></div></div>
+                    <div><span>1</span><div class="rating-track"><i style="width:4%"></i></div></div>
                   </div>
                 </div>
-                <span class="badge badge-verified">Verified</span>
-              </li>
-              <li class="cert-item">
-                <div class="cert-left">
-                  <span class="check-icon">✓</span>
-                  <div>
-                    <strong>Pediatric First Aid Training</strong>
-                    <span class="cert-expiry">Malaysian Red Crescent • Valid until Oct 2027</span>
-                  </div>
+                <div class="endorsement-chips"><span>Attentive and caring 24</span><span>Prioritises safety 31</span><span>Great with toddlers 19</span></div>
+                <button type="button" class="btn btn-secondary write-review-link" id="btnWriteReview">Write a review</button>
+                <div class="reviews-list" id="profileReviews">
+                  <div class="review-item"><div class="review-avatar">MT</div><div class="review-content"><div class="review-head"><strong>Michelle</strong><span>★★★★★</span></div><span class="review-date">12 Nov 2026 · 1 child, 10 months</span><p class="review-text">"Sarah was incredible with our 10-month-old daughter. She was punctual, so warm, and sent us photo check-ins throughout our dinner."</p></div></div>
+                  <div class="review-item"><div class="review-avatar pink">KL</div><div class="review-content"><div class="review-head"><strong>Kevin</strong><span>★★★★★</span></div><span class="review-date">8 Nov 2026 · 2 children, 3 years</span><p class="review-text">"Our 3-year-old twins adore Sarah. She reads stories, plays creative games, and follows their bedtime routine."</p></div></div>
                 </div>
-                <span class="badge badge-verified">Verified</span>
-              </li>
-              <li class="cert-item">
-                <div class="cert-left">
-                  <span class="check-icon">✓</span>
-                  <div>
-                    <strong>Newborn Care Specialist & Sleep Routine</strong>
-                    <span class="cert-expiry">Certified infant sleep guidance</span>
-                  </div>
-                </div>
-                <span class="badge badge-verified">Verified</span>
-              </li>
-            </ul>
-          </div>
-
-          <!-- Section: Education -->
-          <div class="card profile-section-card">
-            <h2 class="section-heading">Education</h2>
-            <div class="edu-item">
-              <span class="edu-degree" id="profileEduDegree">Diploma in Early Childhood Education</span>
-              <span class="edu-school" id="profileEduSchool">SEGi College Kuala Lumpur (Graduated 2020)</span>
-            </div>
-          </div>
-
-          <!-- Section: Reviews -->
-          <div class="card profile-section-card">
-            <h2 class="section-heading">Parent Reviews</h2>
-            <div class="reviews-list">
-              <div class="review-item">
-                <div class="stars-row"><span class="star-filled">★</span><span class="star-filled">★</span><span class="star-filled">★</span><span class="star-filled">★</span><span class="star-filled">★</span><span class="stars-num">5.0</span></div>
-                <p class="review-text">"Sarah was incredible with our 10-month-old daughter. She was punctual, so warm, and sent us photo check-ins throughout our dinner. Total peace of mind!"</p>
-                <span class="review-by">Michelle T. • Bangsar (Parent of 10-month-old)</span>
               </div>
-              <div class="review-item">
-                <div class="stars-row"><span class="star-filled">★</span><span class="star-filled">★</span><span class="star-filled">★</span><span class="star-filled">★</span><span class="star-filled">★</span><span class="stars-num">5.0</span></div>
-                <p class="review-text">"Our 3-year-old twins adore Sarah. She reads stories, plays creative games, and follows their bedtime routine to the minute. Highly recommended!"</p>
-                <span class="review-by">Kevin L. • Mont Kiara (Parent of 3-year-old twins)</span>
+
+              <div class="card profile-section-card">
+                <h2 class="section-heading"><span class="section-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></span>Availability</h2>
+                <div class="weekly-grid" id="profileAvailability">
+                  <div class="weekly-head"></div><div class="weekly-head">Mon</div><div class="weekly-head">Tue</div><div class="weekly-head">Wed</div><div class="weekly-head">Thu</div><div class="weekly-head">Fri</div><div class="weekly-head">Sat</div><div class="weekly-head">Sun</div>
+                  <div class="time-label">Morning</div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell unavailable"></div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell unavailable"></div>
+                  <div class="time-label">Afternoon</div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell unavailable"></div>
+                  <div class="time-label">Evening</div><div class="avail-cell available">✓</div><div class="avail-cell unavailable"></div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell unavailable"></div>
+                  <div class="time-label">Overnight</div><div class="avail-cell unavailable"></div><div class="avail-cell unavailable"></div><div class="avail-cell unavailable"></div><div class="avail-cell unavailable"></div><div class="avail-cell unavailable"></div><div class="avail-cell available">✓</div><div class="avail-cell unavailable"></div>
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Section: Availability -->
-          <div class="card profile-section-card">
-            <h2 class="section-heading">Availability</h2>
-            <div class="avail-grid">
-              <div class="avail-day"><span class="avail-title">Monday – Friday</span><span class="avail-times">Afternoons & Evenings (1:00 PM – 9:00 PM)</span></div>
-              <div class="avail-day"><span class="avail-title">Saturday</span><span class="avail-times">Full Day (9:00 AM – 10:00 PM)</span></div>
-              <div class="avail-day"><span class="avail-title">Sunday</span><span class="avail-times">Available upon request</span></div>
-            </div>
+            <aside class="profile-sticky-card card">
+              <div class="sticky-price"><span id="stickyProfilePrice">RM 20</span><small>/ hour</small></div>
+              <button class="btn btn-primary full-width" id="btnProfileStickyBook">Book Sarah</button>
+              <button class="btn btn-secondary full-width" id="btnProfileStickyMessage">Message</button>
+              <div class="profile-verifications sticky-verifications">
+                <span>✓ ID verified</span><span>✓ Background checked</span><span>✓ References checked</span>
+              </div>
+            </aside>
           </div>
         </div>
+      </div>
+      <div class="mobile-profile-bar">
+        <div><strong id="mobileProfilePrice">RM 20</strong><span>/ hour</span></div>
+        <button class="btn btn-primary" id="btnProfileMobileBook">Book Sarah</button>
       </div>
     </section>
 
@@ -808,101 +933,76 @@
     <section class="app-screen" id="screenCompare" style="display: none;">
       <div class="gradient-banner">
         <div class="container banner-inner">
-          <h2 class="banner-title">Compare Babysitters</h2>
+          <h1 class="banner-title member-banner-title">Compare babysitters</h1>
         </div>
       </div>
 
       <div class="content-section">
-        <div class="container compare-table-container">
-          <div class="compare-table-wrap card">
-            <table class="compare-table">
-              <thead>
-                <tr>
-                  <th class="col-feature">Feature</th>
-                  <th class="col-sitter">
-                    <div class="th-sitter-head">
-                      <strong>Sarah Lim</strong>
-                      <span class="match-badge">98% match</span>
-                    </div>
-                  </th>
-                  <th class="col-sitter">
-                    <div class="th-sitter-head">
-                      <strong>Nur Ain</strong>
-                      <span class="match-badge">95% match</span>
-                    </div>
-                  </th>
-                  <th class="col-sitter">
-                    <div class="th-sitter-head">
-                      <strong>Aisyah</strong>
-                      <span class="match-badge">93% match</span>
-                    </div>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td class="row-label">Age</td>
-                  <td>28 years old</td>
-                  <td>31 years old</td>
-                  <td class="better-val-cell"><span class="check-icon">✓</span> 24 years old</td>
-                </tr>
-                <tr>
-                  <td class="row-label">Languages</td>
-                  <td class="better-val-cell"><span class="check-icon">✓</span> English, Mandarin</td>
-                  <td>Malay, English</td>
-                  <td>Malay, English</td>
-                </tr>
-                <tr>
-                  <td class="row-label">Certificates</td>
-                  <td class="better-val-cell"><span class="check-icon">✓</span> CPR & Newborn</td>
-                  <td>CPR & First Aid</td>
-                  <td>First Aid</td>
-                </tr>
-                <tr>
-                  <td class="row-label">Verification</td>
-                  <td class="better-val-cell"><span class="check-icon">✓</span> Ease Trained</td>
-                  <td class="better-val-cell"><span class="check-icon">✓</span> Ease Trained</td>
-                  <td class="better-val-cell"><span class="check-icon">✓</span> Ease Trained</td>
-                </tr>
-                <tr>
-                  <td class="row-label">Education</td>
-                  <td class="better-val-cell"><span class="check-icon">✓</span> Early Childhood Diploma</td>
-                  <td class="better-val-cell"><span class="check-icon">✓</span> Early Childhood Diploma</td>
-                  <td>SPM & Training</td>
-                </tr>
-                <tr>
-                  <td class="row-label">Rating</td>
-                  <td class="better-val-cell"><span class="check-icon">✓</span> ⭐ 4.9 (126)</td>
-                  <td>⭐ 4.8 (84)</td>
-                  <td>⭐ 4.7 (51)</td>
-                </tr>
-                <tr>
-                  <td class="row-label">Experience</td>
-                  <td class="better-val-cell"><span class="check-icon">✓</span> 5 years</td>
-                  <td>4 years</td>
-                  <td>2 years</td>
-                </tr>
-                <tr>
-                  <td class="row-label">Availability</td>
-                  <td>Afternoons & Evenings</td>
-                  <td class="better-val-cell"><span class="check-icon">✓</span> Weekdays & Weekends</td>
-                  <td>Evenings & Weekends</td>
-                </tr>
-                <tr>
-                  <td class="row-label">Price</td>
-                  <td>RM 25 / hr</td>
-                  <td>RM 22 / hr</td>
-                  <td class="better-val-cell"><span class="check-icon">✓</span> <strong>RM 20 / hr</strong></td>
-                </tr>
-                <tr class="action-row">
-                  <td>Action</td>
-                  <td><button class="btn btn-primary full-width btn-book-from-compare" data-sitter-id="sarah-lim">Book Sarah</button></td>
-                  <td><button class="btn btn-primary full-width btn-book-from-compare" data-sitter-id="nur-ain">Book Nur Ain</button></td>
-                  <td><button class="btn btn-primary full-width btn-book-from-compare" data-sitter-id="aisyah">Book Aisyah</button></td>
-                </tr>
-              </tbody>
-            </table>
+        <div class="container compare-screen-container">
+          <div class="compare-expanded-header" id="compareExpandedHeader">
+            <div class="compare-header-scroll" id="compareHeaderScroll" role="region" aria-label="Babysitter selectors" tabindex="0">
+              <div class="compare-column-grid" id="compareHeaderColumns"></div>
+            </div>
           </div>
+          <div class="compare-compact-bar" id="compareCompactBar" aria-hidden="true">
+            <div class="compare-compact-grid" id="compareCompactColumns"></div>
+          </div>
+          <div class="compare-features-scroll" id="compareFeatureScroll" role="region" aria-label="Babysitter feature comparison" tabindex="0">
+            <div id="compareFeatureSections"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="app-screen" id="screenReview" style="display: none;">
+      <div class="gradient-banner">
+        <div class="container banner-inner">
+          <h1 class="banner-title member-banner-title">Write a review</h1>
+        </div>
+      </div>
+      <div class="content-section">
+        <div class="container review-container">
+          <form class="card review-form member-screen-card" id="reviewForm">
+            <div class="review-sitter-summary">
+              <div class="photo-placeholder review-sitter-photo" id="reviewSitterPhoto" role="img" aria-label="Photo placeholder for Sarah Lim">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+              </div>
+              <h2 class="card-title" id="reviewSitterName">Sarah Lim</h2>
+            </div>
+            <fieldset class="review-rating-field">
+              <legend>Rating</legend>
+              <div class="review-rating-row">
+                <div class="review-rating-options" role="radiogroup" aria-label="Rating">
+                <label><input type="radio" name="reviewRating" value="1"><span aria-hidden="true">★</span><span class="sr-only">1 star</span></label>
+                <label><input type="radio" name="reviewRating" value="2"><span aria-hidden="true">★</span><span class="sr-only">2 stars</span></label>
+                <label><input type="radio" name="reviewRating" value="3"><span aria-hidden="true">★</span><span class="sr-only">3 stars</span></label>
+                <label><input type="radio" name="reviewRating" value="4"><span aria-hidden="true">★</span><span class="sr-only">4 stars</span></label>
+                <label><input type="radio" name="reviewRating" value="5" checked><span aria-hidden="true">★</span><span class="sr-only">5 stars</span></label>
+                </div>
+                <output class="review-rating-value" id="reviewRatingDisplay" aria-live="polite">5.0</output>
+              </div>
+            </fieldset>
+            <fieldset class="review-endorsements">
+              <legend>Endorsements</legend>
+              <div class="review-endorsement-options">
+                <label class="review-endorsement-chip">
+                  <input type="checkbox" name="reviewEndorsements" value="Attentive and caring">
+                  <span>Attentive and caring</span>
+                  <span class="review-endorsement-check" aria-hidden="true">✓</span>
+                </label>
+                <label class="review-endorsement-chip">
+                  <input type="checkbox" name="reviewEndorsements" value="Prioritises safety">
+                  <span>Prioritises safety</span>
+                  <span class="review-endorsement-check" aria-hidden="true">✓</span>
+                </label>
+              </div>
+            </fieldset>
+            <div class="input-group">
+              <label for="reviewText">Your review</label>
+              <textarea id="reviewText" class="input-field review-textarea" rows="5" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit review</button>
+          </form>
         </div>
       </div>
     </section>
@@ -967,7 +1067,7 @@
               <!-- Privacy Consent (Sign Up only) -->
               <div class="checkbox-group" id="groupPrivacy">
                 <label class="privacy-label">
-                  <input type="checkbox" id="authPrivacy" checked>
+                  <input type="checkbox" id="authPrivacy">
                   <span>I agree to the Ease Terms of Service and Privacy Policy.</span>
                 </label>
                 <span class="input-error-msg" id="errorAuthPrivacy" style="display: none;">
@@ -994,7 +1094,7 @@
               <span class="verify-mail-icon">✉️</span>
             </div>
             <h1 class="section-heading">Verify your email</h1>
-            <p class="section-subtext">We sent a verification link to <strong id="verifyEmailDisplay">jessica@example.com</strong>. Please check your inbox and tap the link.</p>
+            <p class="section-subtext">We sent a link to your email: <strong id="verifyEmailDisplay">jessica@example.com</strong>. Please check your inbox and tap the link.</p>
 
             <div class="verify-actions">
               <button class="btn btn-primary full-width btn-large" id="btnEmailVerifiedDemo">I verified my email</button>
@@ -1233,7 +1333,7 @@
                   <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
               </div>
-              <h1 class="section-heading">Booking Declined</h1>
+              <h1 class="section-heading">Booking cancelled.</h1>
               <p class="section-subtext">The caregiver is unavailable for this timeslot. You can easily find another qualified sitter.</p>
               <button class="btn btn-secondary full-width btn-large" id="btnFindAnotherSitter">Find another babysitter</button>
             </div>
@@ -1307,7 +1407,7 @@
             <!-- Escrow Note -->
             <div class="note-box note-box-yellow">
               <span class="note-icon">🔒</span>
-              <p><strong>Payment Protection:</strong> Payment is held safely by Ease until the session is complete.</p>
+              <p><strong>Payment Protection:</strong> Payment is held until the session is complete.</p>
             </div>
 
             <!-- Error message on first attempt -->
@@ -1338,12 +1438,12 @@
             </div>
 
             <h1 class="section-heading">Booking Confirmed</h1>
-            <p class="section-subtext">Your babysitter is locked in. We've notified Sarah Lim.</p>
+            <p class="section-subtext" id="confirmedMessage">Your babysitter is locked in. We've notified Sarah Lim.</p>
 
             <div class="confirmed-receipt card">
               <div class="receipt-row">
                 <span class="receipt-label">Booking ID</span>
-                <strong class="receipt-val">BK001</strong>
+                <strong class="receipt-val" id="confirmedBookingId">BK001</strong>
               </div>
               <div class="receipt-row">
                 <span class="receipt-label">Babysitter</span>
@@ -1351,15 +1451,15 @@
               </div>
               <div class="receipt-row">
                 <span class="receipt-label">Date</span>
-                <span class="receipt-val">20 Nov 2026</span>
+                <span class="receipt-val" id="confirmedDate">20 Nov 2026</span>
               </div>
               <div class="receipt-row">
                 <span class="receipt-label">Time</span>
-                <span class="receipt-val">2:00 PM – 6:00 PM (4 hours)</span>
+                <span class="receipt-val" id="confirmedTime">2:00 PM – 6:00 PM (4 hours)</span>
               </div>
               <div class="receipt-row">
                 <span class="receipt-label">Child</span>
-                <span class="receipt-val">Liam</span>
+                <span class="receipt-val" id="confirmedChild">Liam</span>
               </div>
               <div class="receipt-row">
                 <span class="receipt-label">Status</span>
@@ -1391,15 +1491,15 @@
           <!-- Next Booking Card -->
           <div class="card next-booking-card">
             <div class="next-booking-header">
-              <span class="badge badge-ease-trained">Next Booking • 20 Nov 2026</span>
+              <span class="badge badge-ease-trained" id="homeBookingDate">Next Booking • 20 Nov 2026</span>
               <span class="booking-status-tag">Confirmed</span>
             </div>
             <div class="next-booking-body">
               <div class="sitter-mini-avatar">👩‍🏫</div>
               <div class="next-booking-info">
-                <h3 class="card-title">Sarah Lim</h3>
-                <span class="next-booking-time">2:00 PM – 6:00 PM • 4 hours • Liam</span>
-                <span class="next-booking-location">📍 50450 Kuala Lumpur</span>
+                <h3 class="card-title" id="homeBookingSitter">Sarah Lim</h3>
+                <span class="next-booking-time" id="homeBookingTime">2:00 PM – 6:00 PM • 4 hours • Liam</span>
+                <span class="next-booking-location" id="homeBookingLocation">📍 50450 Kuala Lumpur</span>
               </div>
             </div>
             <div class="next-booking-actions">
@@ -1424,7 +1524,7 @@
                 <div class="sitter-mini-avatar">👩‍🏫</div>
                 <div class="recent-msg-info">
                   <div class="recent-msg-top">
-                    <strong>Sarah Lim</strong>
+                    <strong id="homeRecentMsgName">Sarah Lim</strong>
                     <span class="recent-msg-time">10:20 AM</span>
                   </div>
                   <p class="recent-msg-snippet">"Yes, absolutely! I specialize in toddlers and newborn routines..."</p>
@@ -1468,10 +1568,10 @@
                 <span class="child-avatar">🧒</span>
                 <div>
                   <strong class="child-name" id="homeChildName">Liam</strong>
-                  <span class="child-age">2 years old • Boy</span>
+                  <span class="child-age" id="homeChildDetails">2 years old • Boy</span>
                 </div>
               </div>
-              <p class="child-meta-text">Allergies: None • Routine: Nap at 1:30 PM • Emergency Contact: Mark Roberts (Father)</p>
+              <p class="child-meta-text" id="homeChildSummary">Allergies: None • Routine: Nap at 1:30 PM • Emergency Contact: Mark Roberts (Father)</p>
             </div>
           </div>
 
@@ -1482,7 +1582,7 @@
               <div class="book-again-left">
                 <span class="sitter-mini-avatar">👩‍🏫</span>
                 <div>
-                  <strong>Sarah Lim</strong>
+                  <strong id="homeBookAgainName">Sarah Lim</strong>
                   <span class="sitter-meta">⭐ 4.9 • RM 25/hr</span>
                 </div>
               </div>
@@ -1497,52 +1597,47 @@
          SCREEN 15: PRIVATE CHAT
          ==================================================================== -->
     <section class="app-screen" id="screenChat" style="display: none;">
-      <div class="chat-container">
+      <div class="chat-container member-screen-card">
         <!-- Chat Header -->
         <div class="chat-header">
           <div class="chat-header-left">
-            <button class="nav-back-btn" id="btnChatBack" aria-label="Back">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2.5" stroke-linecap="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-            </button>
-            <div class="chat-sitter-avatar">👩‍🏫</div>
-            <div>
+            <div class="chat-sitter-avatar" id="chatSitterAvatar" role="img" aria-label="Photo placeholder">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </div>
+            <div class="chat-header-info">
               <strong class="chat-sitter-name" id="chatSitterName">Sarah Lim</strong>
-              <span class="chat-sitter-status">Active now • 98% match</span>
+              <span class="badge badge-ease-trained chat-trained-badge">
+                <svg class="badge-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+                Ease Trained
+              </span>
             </div>
           </div>
           <button class="btn btn-primary" id="btnChatBook">Book</button>
         </div>
 
         <!-- Chat Message List -->
-        <div class="chat-messages-area" id="chatMessagesArea">
-          <div class="chat-message chat-msg-sitter">
-            <p>Hi! Thanks for connecting. I'd love to help care for your child on the 20th.</p>
+        <div class="chat-messages-area" id="chatMessagesArea" role="log" aria-live="polite" aria-relevant="additions">
+          <div class="chat-message chat-msg-parent">
+            <p>Hello! Is Saturday free?</p>
             <span class="chat-time">10:15 AM</span>
           </div>
-          <div class="chat-message chat-msg-parent">
-            <p>Hi Sarah! Liam is 2 years old and loves reading. Are you comfortable with toddler nap routines?</p>
+          <div class="chat-message chat-msg-sitter">
+            <p>Yes, I am free all day.</p>
             <span class="chat-time">10:18 AM</span>
           </div>
-          <div class="chat-message chat-msg-sitter">
-            <p>Yes, absolutely! I specialize in toddlers and newborn routines, and I am CPR certified.</p>
+          <div class="chat-message chat-msg-parent">
+            <p>Great, can you do 9 am to 3 pm?</p>
             <span class="chat-time">10:20 AM</span>
           </div>
         </div>
 
         <!-- Chat Input Bar -->
         <form id="chatForm" class="chat-input-bar">
-          <button type="button" class="btn-chat-attach" id="btnChatAttach" aria-label="Attach file">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6E5A66" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
-            </svg>
-          </button>
-          <input type="text" id="chatInputText" class="input-field chat-input" placeholder="Type a message..." required>
-          <button type="submit" class="btn btn-primary btn-chat-send" aria-label="Send">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3B2A35" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="22" y1="2" x2="11" y2="13"></line>
-              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-            </svg>
-          </button>
+          <div class="chat-message-input-group">
+            <label for="chatInputText">Message</label>
+            <input type="text" id="chatInputText" class="input-field chat-input" placeholder="Type a message..." required>
+          </div>
+          <button type="submit" class="btn btn-primary btn-chat-send">Send</button>
         </form>
       </div>
     </section>
@@ -1583,6 +1678,6 @@
     <span class="toast-message" id="toastMessage">Notification</span>
   </div>
 
-  <script src="main.js"></script>
+  <script type="module" src="main.js"></script>
 </body>
 </html>
