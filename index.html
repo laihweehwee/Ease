@@ -37,6 +37,12 @@
 
       <div class="topbar-right" id="topbarRight">
         <button class="btn btn-secondary" id="loginBtn">Log in</button>
+        <button type="button" class="topbar-profile-btn" id="profileBtn" aria-label="Profile" hidden>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </button>
       </div>
     </div>
   </header>
@@ -54,6 +60,35 @@
       </button>
     </div>
     <nav class="drawer-nav" id="drawerMenu" aria-label="Menu">
+      <a href="#/find" class="drawer-item" data-drawer-route="find">
+        <span class="drawer-item-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><line x1="15.5" y1="15.5" x2="21" y2="21"></line></svg></span>
+        <span class="drawer-item-copy"><strong>Find babysitters</strong><small>Search trusted babysitters near you</small></span>
+      </a>
+      <div class="drawer-member-links" id="drawerMemberLinks" hidden>
+        <span class="drawer-section-label" id="drawerMyEaseLabel">My Ease</span>
+        <a href="#/bookings" class="drawer-app-item" id="drawerBookingsItem" data-drawer-route="bookings">
+          <span class="drawer-app-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </span>
+          <span class="drawer-app-title">Bookings</span>
+          <span class="drawer-count" id="drawerBookingsCount" hidden></span>
+        </a>
+        <a href="#/chat" class="drawer-app-item" id="drawerMessagesItem" data-drawer-route="chat">
+          <span class="drawer-app-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+          </span>
+          <span class="drawer-app-title">Messages</span>
+        </a>
+      </div>
+      <div class="drawer-menu-divider" id="drawerMenuDivider" hidden></div>
+      <span class="drawer-section-label" id="drawerAboutLabel" hidden>About Ease</span>
       <button type="button" class="drawer-item" data-drawer-panel="how-it-works">
         <span class="drawer-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="3"></circle><path d="m14.1 9.9 5.2-5.2"></path><path d="m19.3 4.7.7 3"></path><path d="m19.3 4.7-3-.7"></path></svg></span>
         <span class="drawer-item-copy"><strong>How it works</strong><small>Find care in a few simple steps</small></span>
@@ -74,10 +109,6 @@
         <span class="drawer-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8z"></path></svg></span>
         <span class="drawer-item-copy"><strong>Help &amp; contact</strong><small>We are here if you need help</small></span>
       </button>
-      <a href="#/find" class="drawer-item" data-drawer-route="find">
-        <span class="drawer-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="8" r="3.5"></circle><path d="M3.5 19a7 7 0 0 1 14 0"></path><circle cx="18" cy="11" r="2.5"></circle><path d="m20 13 2 2"></path></svg></span>
-        <span class="drawer-item-copy"><strong>Find babysitters</strong><small>Browse babysitter profiles</small></span>
-      </a>
     </nav>
     <div class="drawer-panels" id="drawerPanels" hidden>
       <section class="drawer-panel" data-panel="how-it-works" aria-labelledby="drawerHowTitle" tabindex="-1" hidden>
@@ -121,6 +152,7 @@
         <p>Questions about a booking or an account? Contact details will be added here.</p>
       </section>
     </div>
+    <button type="button" class="btn btn-secondary drawer-logout" id="drawerLogoutBtn" hidden>Log out</button>
   </aside>
 
   <!-- Main App View Container -->
@@ -196,6 +228,33 @@
               </div>
             </div>
           </div>
+
+          <form class="home-search-card" id="homeSearchForm" novalidate>
+            <h2 class="home-search-title">Find a babysitter near you</h2>
+            <div class="home-search-row">
+              <div class="home-search-input-group">
+                <label for="homeSearchPostcode">Postcode</label>
+                <input
+                  type="text"
+                  id="homeSearchPostcode"
+                  class="input-field"
+                  inputmode="numeric"
+                  maxlength="5"
+                  placeholder="e.g. 50450"
+                  aria-describedby="homeSearchError homeSearchNote"
+                >
+              </div>
+              <p class="home-search-error" id="homeSearchError" aria-live="polite" hidden></p>
+              <button type="submit" class="btn btn-primary home-search-submit">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="11" cy="11" r="7"></circle>
+                  <line x1="16" y1="16" x2="21" y2="21"></line>
+                </svg>
+                <span>Search</span>
+              </button>
+            </div>
+            <p class="home-search-note" id="homeSearchNote">No account needed to search.</p>
+          </form>
 
           <div class="login-prompt">
             <a href="#/auth" class="inline-link" id="welcomeLoginLink">Already have an account? Log in</a>
@@ -1006,7 +1065,12 @@
             <aside class="profile-sticky-card card">
               <div class="sticky-price"><span id="stickyProfilePrice">RM 20</span><small>/ hour</small></div>
               <button class="btn btn-primary full-width" id="btnProfileStickyBook">Book Sarah</button>
-              <button class="btn btn-secondary full-width" id="btnProfileStickyMessage">Message</button>
+              <button class="btn btn-secondary full-width profile-message-button" id="btnProfileStickyMessage" aria-label="Message Sarah">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8z"></path>
+                </svg>
+                <span>Message</span>
+              </button>
               <button class="btn btn-secondary full-width" id="btnProfileCompare">Compare</button>
               <p class="profile-booking-note">You will not be charged until <span id="profileBookingName">Sarah</span> accepts.</p>
             </aside>
@@ -1015,6 +1079,12 @@
       </div>
       <div class="mobile-profile-bar">
         <div><strong id="mobileProfilePrice">RM 20</strong><span>/ hour</span></div>
+        <button class="btn btn-secondary profile-message-button" id="btnProfileMobileMessage" aria-label="Message Sarah">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8z"></path>
+          </svg>
+          <span>Message</span>
+        </button>
         <button class="btn btn-primary" id="btnProfileMobileBook">Book Sarah</button>
       </div>
     </section>
@@ -1106,6 +1176,7 @@
       <div class="content-section">
         <div class="container auth-container">
           <div class="card auth-card">
+            <p class="section-subtext auth-intent-message" id="authIntentMessage" hidden></p>
             <h1 class="section-heading" id="authHeadline">Create an account to book</h1>
             <p class="section-subtext">Join Ease to confirm your caregiver and manage safe sessions.</p>
 
@@ -1305,7 +1376,7 @@
                 </div>
                 <div class="input-group">
                   <label for="bookingDateInput">Date</label>
-                  <input type="date" id="bookingDateInput" class="input-field" value="2026-11-20" required>
+                  <input type="date" id="bookingDateInput" class="input-field" required>
                 </div>
               </div>
 
@@ -1390,7 +1461,7 @@
             <div id="statusStateWaiting" class="status-state-panel">
               <div class="status-icon-wrap status-icon-waiting">⏳</div>
               <h1 class="section-heading">Request Sent</h1>
-              <p class="section-subtext">Waiting for <strong id="statusSitterNameWaiting">Sarah Lim</strong> to accept your booking for 20 Nov 2026.</p>
+              <p class="section-subtext">Waiting for <strong id="statusSitterNameWaiting">Sarah Lim</strong> to accept your booking.</p>
               
               <div class="status-timer-box">
                 <span class="timer-label">Response window:</span>
@@ -1431,7 +1502,7 @@
             </div>
 
             <!-- Demo Switcher Buttons for Testing States -->
-            <div class="demo-controls-box">
+            <div class="demo-controls-box" hidden>
               <span class="demo-label">Demo Controls (Test States):</span>
               <div class="demo-btn-group">
                 <button type="button" class="btn btn-secondary" id="btnDemoWaiting">Waiting</button>
@@ -1530,32 +1601,32 @@
             </div>
 
             <h1 class="section-heading">Booking Confirmed</h1>
-            <p class="section-subtext" id="confirmedMessage">Your babysitter is locked in. We've notified Sarah Lim.</p>
+            <p class="section-subtext" id="confirmedMessage"></p>
 
             <div class="confirmed-receipt card">
               <div class="receipt-row">
                 <span class="receipt-label">Booking ID</span>
-                <strong class="receipt-val" id="confirmedBookingId">BK001</strong>
+                <strong class="receipt-val" id="confirmedBookingId"></strong>
               </div>
               <div class="receipt-row">
                 <span class="receipt-label">Babysitter</span>
-                <strong class="receipt-val" id="confirmedSitterName">Sarah Lim</strong>
+                <strong class="receipt-val" id="confirmedSitterName"></strong>
               </div>
               <div class="receipt-row">
                 <span class="receipt-label">Date</span>
-                <span class="receipt-val" id="confirmedDate">20 Nov 2026</span>
+                <span class="receipt-val" id="confirmedDate"></span>
               </div>
               <div class="receipt-row">
                 <span class="receipt-label">Time</span>
-                <span class="receipt-val" id="confirmedTime">2:00 PM – 6:00 PM (4 hours)</span>
+                <span class="receipt-val" id="confirmedTime"></span>
               </div>
               <div class="receipt-row">
                 <span class="receipt-label">Child</span>
-                <span class="receipt-val" id="confirmedChild">Liam</span>
+                <span class="receipt-val" id="confirmedChild"></span>
               </div>
               <div class="receipt-row">
                 <span class="receipt-label">Status</span>
-                <span class="badge badge-verified">Paid (Held in Escrow)</span>
+                <span class="badge badge-verified" id="confirmedStatus"></span>
               </div>
             </div>
 
@@ -1569,7 +1640,26 @@
     </section>
 
     <!-- ====================================================================
-         SCREEN 14: PARENT HOME (Logged in, with bottom nav)
+         SCREEN: BOOKINGS
+         ==================================================================== -->
+    <section class="app-screen" id="screenBookings" style="display: none;">
+      <div class="content-section">
+        <div class="container bookings-container">
+          <div class="bookings-page-header">
+            <h1 class="page-title">Bookings</h1>
+            <div id="bookingDemoActions"></div>
+          </div>
+          <div class="booking-tabs" role="tablist" aria-label="Booking status">
+            <button type="button" class="booking-tab active" id="btnUpcomingBookings" role="tab" aria-selected="true">Upcoming</button>
+            <button type="button" class="booking-tab" id="btnPastBookings" role="tab" aria-selected="false">Past</button>
+          </div>
+          <div id="bookingsList" class="bookings-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SCREEN 14: PARENT HOME (Logged in)
          ==================================================================== -->
     <section class="app-screen" id="screenParentHome" style="display: none;">
       <div class="content-section parent-home-section">
@@ -1581,23 +1671,28 @@
           </div>
 
           <!-- Next Booking Card -->
-          <div class="card next-booking-card">
+          <div class="card next-booking-card" id="homeNextBookingCard" hidden>
             <div class="next-booking-header">
-              <span class="badge badge-ease-trained" id="homeBookingDate">Next Booking • 20 Nov 2026</span>
-              <span class="booking-status-tag">Confirmed</span>
+              <span class="badge badge-ease-trained" id="homeBookingDate"></span>
+              <span class="booking-status-tag" id="homeBookingStatus"></span>
             </div>
             <div class="next-booking-body">
               <div class="sitter-mini-avatar">👩‍🏫</div>
               <div class="next-booking-info">
-                <h3 class="card-title" id="homeBookingSitter">Sarah Lim</h3>
-                <span class="next-booking-time" id="homeBookingTime">2:00 PM – 6:00 PM • 4 hours • Liam</span>
-                <span class="next-booking-location" id="homeBookingLocation">📍 50450 Kuala Lumpur</span>
+                <h3 class="card-title" id="homeBookingSitter"></h3>
+                <span class="next-booking-time" id="homeBookingTime"></span>
+                <span class="next-booking-location" id="homeBookingLocation"></span>
               </div>
             </div>
             <div class="next-booking-actions">
-              <button class="btn btn-secondary" id="btnHomeViewDetails">View Booking</button>
-              <button class="btn btn-primary" id="btnHomeMessageSarah">Message Sarah</button>
+              <button class="btn btn-secondary" id="btnHomeViewDetails">View booking</button>
+              <button class="btn btn-primary" id="btnHomeMessageSarah">Message</button>
             </div>
+          </div>
+
+          <div class="card home-no-booking" id="homeNoBooking" hidden>
+            <p>No booking yet</p>
+            <button type="button" class="btn btn-primary" id="btnHomeNoBookingFindSitter">Find a babysitter</button>
           </div>
 
           <!-- Quick Action: Find a babysitter -->
@@ -1685,6 +1780,18 @@
       </div>
     </section>
 
+    <section class="app-screen" id="screenParentProfile" style="display: none;">
+      <div class="content-section">
+        <div class="container bookings-container">
+          <h1 class="page-title">My Profile</h1>
+          <section class="card parent-profile-history">
+            <h2 class="section-heading">Booking History</h2>
+            <div id="parentProfileBookingHistory" class="bookings-list"></div>
+          </section>
+        </div>
+      </div>
+    </section>
+
     <!-- ====================================================================
          SCREEN 15: PRIVATE CHAT
          ==================================================================== -->
@@ -1736,29 +1843,7 @@
 
   </main>
 
-  <!-- Bottom Navigation Bar (Phone/Mobile, active after login) -->
-  <nav class="bottom-nav" id="bottomNav" style="display: none;">
-    <button class="bottom-nav-item active" data-nav="home">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-      <span>Home</span>
-    </button>
-    <button class="bottom-nav-item" data-nav="find">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-      <span>Find</span>
-    </button>
-    <button class="bottom-nav-item" data-nav="bookings">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-      <span>Bookings</span>
-    </button>
-    <button class="bottom-nav-item" data-nav="messages">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-      <span>Messages</span>
-    </button>
-    <button class="bottom-nav-item" data-nav="profile">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-      <span>Profile</span>
-    </button>
-  </nav>
+  <button type="button" class="demo-mode-badge" id="demoModeBadge" aria-label="Turn demo mode off" hidden>Demo mode</button>
 
   <!-- Toast Notification -->
   <div class="toast-card" id="toastNotification" role="status" aria-live="polite">
