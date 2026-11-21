@@ -1,5 +1,5 @@
 // Ease Babysitter - Comprehensive Application Logic (Phase 1 & Phase 2)
-import { babysittersData as sittersData } from './data/babysitters.js';
+import { babysittersData as sittersData, postcodeLocations } from './data/babysitters.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   // --------------------------------------------------------------------------
@@ -14,6 +14,14 @@ document.addEventListener('DOMContentLoaded', () => {
     whoNeedsCare: ['Toddler 1 to 3'],
     budget: 25,
     extras: ['CPR certified', 'Speaks Mandarin', 'Newborn experience'],
+    answeredPreferences: {
+      availability: false,
+      distance: false,
+      careType: false,
+      childAge: false,
+      budget: false,
+      extras: false,
+    },
     comparedSitters: new Set(),
 
     // User & Auth state
@@ -69,10 +77,34 @@ document.addEventListener('DOMContentLoaded', () => {
       const parsed = JSON.parse(saved);
       Object.assign(state, parsed);
       state.comparedSitters = new Set(parsed.comparedSitters || []);
+      if (!parsed.answeredPreferences) {
+        state.answeredPreferences = {
+          availability: Boolean(parsed.customDate) || (Boolean(parsed.when) && parsed.when !== 'Today'),
+          distance: Boolean(parsed.postcode) && parsed.postcode !== '50450',
+          careType: Boolean(parsed.careType) && parsed.careType !== 'Half day',
+          childAge: Array.isArray(parsed.whoNeedsCare) &&
+            JSON.stringify(parsed.whoNeedsCare) !== JSON.stringify(['Toddler 1 to 3']),
+          budget: parsed.budget !== undefined && Number(parsed.budget) !== 25,
+          extras: Array.isArray(parsed.extras) &&
+            JSON.stringify(parsed.extras) !== JSON.stringify(['CPR certified', 'Speaks Mandarin', 'Newborn experience']),
+        };
+      }
     }
   } catch (e) {
     console.warn('Could not load localStorage state', e);
   }
+  state.answeredPreferences = {
+    availability: false,
+    distance: false,
+    careType: false,
+    childAge: false,
+    budget: false,
+    extras: false,
+    ...(state.answeredPreferences || {}),
+  };
+  Object.keys(state.answeredPreferences).forEach(key => {
+    state.answeredPreferences[key] = Boolean(state.answeredPreferences[key]);
+  });
   try {
     const storedLoginState = localStorage.getItem('easeLoggedIn');
     if (storedLoginState !== null) {
@@ -87,6 +119,243 @@ document.addEventListener('DOMContentLoaded', () => {
     ? state.children
     : (state.hasAddedChild && state.child ? [state.child] : []);
   if (state.children.length) state.child = state.children[0];
+
+  function calculateDistanceKm(parentPostcode, sitterPostcode) {
+    const origin = postcodeLocations[parentPostcode];
+    const destination = postcodeLocations[sitterPostcode];
+    if (!origin || !destination) return null;
+
+    const toRadians = degrees => degrees * Math.PI / 180;
+    const latitudeDelta = toRadians(destination.latitude - origin.latitude);
+    const longitudeDelta = toRadians(destination.longitude - origin.longitude);
+    const originLatitude = toRadians(origin.latitude);
+    const destinationLatitude = toRadians(destination.latitude);
+    const haversine = Math.sin(latitudeDelta / 2) ** 2 +
+      Math.cos(originLatitude) * Math.cos(destinationLatitude) *
+      Math.sin(longitudeDelta / 2) ** 2;
+    const normalizedHaversine = Math.min(1, Math.max(0, haversine));
+    return 6371 * 2 * Math.atan2(Math.sqrt(normalizedHaversine), Math.sqrt(1 - normalizedHaversine));
+  }
+
+  const preferenceTooltipText = 'This counts how many of your preferences this babysitter fits. It is not a rating.';
+
+  function formatPreferenceTime(time) {
+    const [hourText, minuteText] = String(time).split(':');
+    const hour = Number(hourText);
+    const minute = Number(minuteText);
+    if (!Number.isInteger(hour) || !Number.isInteger(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) return '';
+    const suffix = hour >= 12 ? 'pm' : 'am';
+    const hour12 = hour % 12 || 12;
+    return `${hour12}${minute ? `:${String(minute).padStart(2, '0')}` : ''}${suffix}`;
+  }
+
+  function dateMatchesAvailabilityDay(date, day) {
+    const weekday = date.getDay();
+    const dayName = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(date);
+    if (day === dayName) return true;
+    if (day === 'Weekdays') return weekday >= 1 && weekday <= 5;
+    if (day === 'Weekends') return weekday === 0 || weekday === 6;
+    return false;
+  }
+
+  function getAvailabilityPreference(sitter) {
+    if (!state.answeredPreferences.availability) return null;
+    const requestedTime = state.bookingData && state.bookingData.time;
+    if (!/^\d{2}:\d{2}$/.test(requestedTime || '')) return null;
+    const [requestedHour, requestedMinute] = requestedTime.split(':').map(Number);
+    if (requestedHour > 23 || requestedMinute > 59) return null;
+    const requestedMinutes = requestedHour * 60 + requestedMinute;
+    let requestedDates = [];
+
+    if (state.when === 'Today') {
+      requestedDates = [new Date()];
+    } else if (state.when === 'This week') {
+      const start = new Date();
+      start.setHours(0, 0, 0, 0);
+      requestedDates = Array.from({ length: 7 }, (_, offset) => {
+        const date = new Date(start);
+        date.setDate(date.getDate() + offset);
+        return date;
+      });
+    } else if ((state.when === 'Pick a date' || state.when === 'Custom date') && state.customDate) {
+      const date = new Date(`${state.customDate}T00:00:00`);
+      if (!Number.isNaN(date.getTime())) requestedDates = [date];
+    }
+
+    if (!requestedDates.length) return null;
+    for (const date of requestedDates) {
+      const slot = (sitter.availability || []).find(candidate => {
+        if (!dateMatchesAvailabilityDay(date, candidate.day)) return false;
+        const [startHour, startMinute] = (candidate.startTime || '').split(':').map(Number);
+        const [endHour, endMinute] = (candidate.endTime || '').split(':').map(Number);
+        if (![startHour, startMinute, endHour, endMinute].every(Number.isFinite)) return false;
+        const startMinutes = startHour * 60 + startMinute;
+        const endMinutes = endHour * 60 + endMinute;
+        return requestedMinutes >= startMinutes && requestedMinutes < endMinutes;
+      });
+
+      if (slot) {
+        const dayName = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(date);
+        return {
+          met: true,
+          text: `Available ${dayName} ${formatPreferenceTime(slot.startTime)} to ${formatPreferenceTime(slot.endTime)}`,
+        };
+      }
+    }
+
+    const timeLabel = formatPreferenceTime(requestedTime);
+    if (state.when === 'This week') {
+      return { met: false, text: `Not available this week at ${timeLabel}` };
+    }
+    const date = requestedDates[0];
+    const dayName = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(date);
+    return { met: false, text: `Not available ${dayName} at ${timeLabel}` };
+  }
+
+  function getAgePreference(ageValue) {
+    const value = String(ageValue).toLowerCase();
+    if (value.includes('baby') || value.includes('newborn')) return { key: 'newborn', label: 'newborns' };
+    if (value.includes('toddler')) return { key: 'toddler', label: 'toddlers' };
+    if (value.includes('preschool')) return { key: 'preschool', label: 'preschool-age children' };
+    if (value.includes('school')) return { key: 'school-age', label: 'school-age children' };
+    return { key: value, label: String(ageValue) };
+  }
+
+  function getExtraPreference(sitter, extra) {
+    const languageList = String(sitter.languages || '').toLowerCase();
+    const definitions = {
+      'cpr certified': [Boolean(sitter.cpr), 'CPR certified', 'Does not have CPR certification'],
+      'first aid certified': [Boolean(sitter.firstAid), 'First aid certified', 'Does not have first aid certification'],
+      'newborn experience': [Boolean(sitter.newborn), 'Newborn experience', 'No newborn experience'],
+      'special needs experience': [Boolean(sitter.specialNeeds), 'Special needs experience', 'No special needs experience'],
+      'verified id and background check': [Boolean(sitter.verifiedIdAndBackground), 'Verified ID and background check', 'ID and background check are not verified'],
+      'speaks mandarin': [languageList.includes('mandarin'), 'Speaks Mandarin', 'Does not speak Mandarin'],
+    };
+    const definition = definitions[String(extra).toLowerCase()];
+    if (!definition) return { met: false, text: `Could not verify ${extra}` };
+    return { met: definition[0], text: definition[0] ? definition[1] : definition[2] };
+  }
+
+  function getPreferencesForSitter(sitter) {
+    const preferences = [];
+    const answered = state.answeredPreferences;
+    const postcode = String(state.postcode || '').trim();
+
+    if (answered.availability) {
+      const availability = getAvailabilityPreference(sitter);
+      if (availability) preferences.push({ key: 'availability', ...availability });
+    }
+    if (answered.distance && postcode) {
+      const distanceKm = calculateDistanceKm(postcode, sitter.postcode);
+      if (distanceKm !== null) {
+        const met = distanceKm <= sitter.travelKm;
+        preferences.push({
+          key: 'distance',
+          met,
+          text: met
+            ? `Within ${distanceKm.toFixed(1)} km of ${postcode}`
+            : `Outside the ${sitter.travelKm} km travel range: ${distanceKm.toFixed(1)} km from ${postcode}`,
+        });
+      }
+    }
+    if (answered.careType && state.careType) {
+      const careType = String(state.careType);
+      const met = (sitter.careTypes || []).includes(careType);
+      preferences.push({
+        key: 'careType',
+        met,
+        text: met ? `Offers ${careType.toLowerCase()} care` : `Does not offer ${careType.toLowerCase()} care`,
+      });
+    }
+    if (answered.childAge && Array.isArray(state.whoNeedsCare)) {
+      state.whoNeedsCare.forEach(ageValue => {
+        const age = getAgePreference(ageValue);
+        const met = (sitter.ageGroups || []).includes(age.key);
+        preferences.push({
+          key: `childAge-${age.key}`,
+          met,
+          text: met ? `Experience with ${age.label}` : `No experience with ${age.label}`,
+        });
+      });
+    }
+    if (answered.budget && state.budget !== '' && state.budget !== null && state.budget !== undefined) {
+      const budget = Number(state.budget);
+      if (Number.isFinite(budget)) {
+        const overBudget = Math.max(0, sitter.price - budget);
+        preferences.push({
+          key: 'budget',
+          met: overBudget === 0,
+          text: overBudget === 0 ? `Within your budget (RM ${budget} / hr)` : `RM ${overBudget} over your budget`,
+        });
+      }
+    }
+    if (answered.extras && Array.isArray(state.extras)) {
+      state.extras.forEach(extra => {
+        preferences.push({ key: `extra-${extra}`, ...getExtraPreference(sitter, extra) });
+      });
+    }
+    return preferences;
+  }
+
+  function renderPreferenceSummary(sitter, preferences = getPreferencesForSitter(sitter)) {
+    if (!preferences.length) return '';
+    const metCount = preferences.filter(preference => preference.met).length;
+    const allMet = metCount === preferences.length;
+    const label = preferences.length === 1 && allMet
+      ? '1 preference met'
+      : allMet
+        ? `All ${preferences.length} preferences met`
+        : `${metCount} of ${preferences.length} preferences met`;
+    return `
+      <span class="preference-summary-chip${allMet ? ' all-met' : ''}">
+        <svg class="preference-summary-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <span>${escapeHtml(label)}</span>
+      </span>
+      <span class="preference-info" title="${preferenceTooltipText}" aria-label="${preferenceTooltipText}" tabindex="0">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><line x1="12" y1="11" x2="12" y2="16"></line><line x1="12" y1="7" x2="12.01" y2="7"></line></svg>
+      </span>`;
+  }
+
+  function renderPreferenceItems(preferences, className = 'preferences-full-list') {
+    if (!preferences.length) return '';
+    return `<ul class="${className}">${preferences.map(preference => `
+      <li class="${preference.met ? 'is-met' : 'is-unmet'}">
+        <span class="preference-item-icon" aria-hidden="true">${preference.met ? '✓' : '—'}</span>
+        <span>${escapeHtml(preference.text)}</span>
+      </li>
+    `).join('')}</ul>`;
+  }
+
+  function renderPreferenceCardList(preferences) {
+    if (!preferences.length) return '';
+    const preview = preferences.filter(preference => preference.met).slice(0, 3);
+    const hasMore = preferences.length > preview.length;
+    return `
+      <div class="preference-card-list">
+        ${renderPreferenceItems(preview, 'preferences-preview-list')}
+        ${hasMore ? `
+          <div class="preferences-expanded-list" hidden>${renderPreferenceItems(preferences)}</div>
+          <button type="button" class="preferences-expand-link" aria-expanded="false">See all ${preferences.length} ${preferences.length === 1 ? 'preference' : 'preferences'}</button>
+        ` : ''}
+      </div>`;
+  }
+
+  document.addEventListener('click', event => {
+    const button = event.target.closest('.preferences-expand-link');
+    if (!button) return;
+    const list = button.closest('.preference-card-list');
+    if (!list) return;
+    const expanded = button.getAttribute('aria-expanded') === 'true';
+    const preview = list.querySelector('.preferences-preview-list');
+    const full = list.querySelector('.preferences-expanded-list');
+    if (preview) preview.hidden = !expanded;
+    if (full) full.hidden = expanded;
+    button.setAttribute('aria-expanded', String(!expanded));
+    const preferenceCount = full ? full.querySelectorAll('li').length : 0;
+    button.textContent = expanded
+      ? `See all ${preferenceCount} ${preferenceCount === 1 ? 'preference' : 'preferences'}`
+      : 'Show fewer preferences';
+  });
 
   function saveState() {
     try {
@@ -151,6 +420,15 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentScreen = 'welcome';
   let waitingCountdownInterval = null;
 
+  function syncQuestionOptions(screenSelector, selectedValues) {
+    const values = new Set(Array.isArray(selectedValues) ? selectedValues : [selectedValues]);
+    document.querySelectorAll(`${screenSelector} .option-card`).forEach(card => {
+      const selected = values.has(card.getAttribute('data-value'));
+      card.classList.toggle('selected', selected);
+      card.setAttribute('aria-checked', String(selected));
+    });
+  }
+
   function showScreen(screenId, pushHistory = true) {
     if (!screens[screenId]) return;
     const loggedInOnlyScreens = ['addChild', 'bookingDetails', 'bookingStatus', 'payment', 'bookingConfirmed', 'parentHome', 'chat', 'review'];
@@ -204,6 +482,17 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (screenId === 'q1') {
       const inputPostcode = document.getElementById('inputPostcode');
       if (inputPostcode) inputPostcode.value = state.postcode;
+    } else if (screenId === 'q2') {
+      syncQuestionOptions('#screenQ2', state.when);
+      const datePicker = document.getElementById('customDatePicker');
+      const dateWrap = document.getElementById('customDateWrap');
+      const customDateSelected = state.when === 'Pick a date' || state.when === 'Custom date';
+      if (datePicker) datePicker.value = state.customDate || '';
+      if (dateWrap) dateWrap.style.display = customDateSelected ? 'block' : 'none';
+    } else if (screenId === 'q3') {
+      syncQuestionOptions('#screenQ3', state.careType);
+    } else if (screenId === 'q4') {
+      syncQuestionOptions('#screenQ4', state.whoNeedsCare);
     } else if (screenId === 'q5') {
       const slider = document.getElementById('budgetSlider');
       const display = document.getElementById('budgetDisplayVal');
@@ -211,8 +500,14 @@ document.addEventListener('DOMContentLoaded', () => {
         slider.value = state.budget;
         display.textContent = `RM ${state.budget}`;
       }
+    } else if (screenId === 'q6') {
+      syncQuestionOptions('#screenQ6', state.extras);
     } else if (screenId === 'find') {
+      activeFindPostcode = state.postcode || '50450';
+      if (findPostcode) findPostcode.value = activeFindPostcode;
       renderFindSitters();
+    } else if (screenId === 'matches') {
+      renderTopMatches();
     } else if (screenId === 'profile') {
       populateProfile(state.selectedSitterId);
     } else if (screenId === 'compare') {
@@ -406,6 +701,7 @@ document.addEventListener('DOMContentLoaded', () => {
       inputPostcode.classList.remove('input-error');
       errorPostcode.style.display = 'none';
       state.postcode = val;
+      state.answeredPreferences.distance = true;
       saveState();
       return true;
     }
@@ -455,6 +751,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         customDateWrap.style.display = 'none';
       }
+      state.answeredPreferences.availability = val !== 'Pick a date' && val !== 'Custom date';
       saveState();
     });
   });
@@ -462,9 +759,13 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnNextQ2) {
     btnNextQ2.addEventListener('click', () => {
       const datePicker = document.getElementById('customDatePicker') || document.getElementById('customDateInput');
-      if ((state.when === 'Pick a date' || state.when === 'Custom date') && datePicker && datePicker.value) {
-        state.customDate = datePicker.value;
+      if (state.when === 'Pick a date' || state.when === 'Custom date') {
+        state.customDate = datePicker && datePicker.value ? datePicker.value : '';
+        state.answeredPreferences.availability = Boolean(state.customDate);
+      } else {
+        state.answeredPreferences.availability = true;
       }
+      saveState();
       showScreen('q3');
     });
   }
@@ -482,12 +783,15 @@ document.addEventListener('DOMContentLoaded', () => {
       card.classList.add('selected');
       card.setAttribute('aria-checked', 'true');
       state.careType = card.getAttribute('data-value');
+      state.answeredPreferences.careType = true;
       saveState();
     });
   });
 
   if (btnNextQ3) {
     btnNextQ3.addEventListener('click', () => {
+      state.answeredPreferences.careType = true;
+      saveState();
       showScreen('q4');
     });
   }
@@ -513,12 +817,15 @@ document.addEventListener('DOMContentLoaded', () => {
         card.setAttribute('aria-checked', 'true');
         state.whoNeedsCare.push(val);
       }
+      state.answeredPreferences.childAge = true;
       saveState();
     });
   });
 
   if (btnNextQ4) {
     btnNextQ4.addEventListener('click', () => {
+      state.answeredPreferences.childAge = true;
+      saveState();
       showScreen('q5');
     });
   }
@@ -532,6 +839,7 @@ document.addEventListener('DOMContentLoaded', () => {
     budgetSlider.addEventListener('input', () => {
       const val = budgetSlider.value;
       state.budget = Number(val);
+      state.answeredPreferences.budget = true;
       budgetDisplayVal.textContent = `RM ${val}`;
       saveState();
     });
@@ -539,6 +847,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (btnNextQ5) {
     btnNextQ5.addEventListener('click', () => {
+      state.answeredPreferences.budget = true;
+      saveState();
       showScreen('q6');
     });
   }
@@ -560,12 +870,15 @@ document.addEventListener('DOMContentLoaded', () => {
         card.setAttribute('aria-checked', 'true');
         state.extras.push(val);
       }
+      state.answeredPreferences.extras = true;
       saveState();
     });
   });
 
   if (btnNextQ6) {
     btnNextQ6.addEventListener('click', () => {
+      state.answeredPreferences.extras = true;
+      saveState();
       showScreen('summary');
     });
   }
@@ -621,6 +934,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnSkipQ6) {
     btnSkipQ6.addEventListener('click', () => {
       state.extras = [];
+      state.answeredPreferences.extras = false;
       saveState();
       showScreen('summary');
     });
@@ -629,61 +943,120 @@ document.addEventListener('DOMContentLoaded', () => {
   // --------------------------------------------------------------------------
   // 8. Screen 4: Top Matches (Filters, Sort, Compare Bar)
   // --------------------------------------------------------------------------
-  const filterChips = document.querySelectorAll('.filter-chip');
-  const sitterCards = document.querySelectorAll('.sitter-match-card');
+  const filterChips = document.querySelectorAll('#screenMatches [data-sitter-filter]');
+  const sitterCards = document.querySelectorAll('#screenMatches .sitter-match-card');
   const findSitterList = document.getElementById('findSitterList');
   const findForm = document.getElementById('findForm');
   const findPostcode = document.getElementById('findPostcode');
   const findActiveFilters = document.getElementById('findActiveFilters');
   const findResultsCount = document.getElementById('findResultsCount');
   const findEmptyState = document.getElementById('findEmptyState');
+  const matchesPostcodeError = document.getElementById('matchesPostcodeError');
+  const matchesNearbyState = document.getElementById('matchesNearbyState');
   const findFilters = ['filterRating', 'filterPrice', 'filterDistance', 'filterAvailability']
     .map(id => document.getElementById(id));
-  let activeFindPostcode = '50450';
+  let activeFindPostcode = state.postcode || '50450';
+  if (findPostcode) findPostcode.value = activeFindPostcode;
+  let activeSitterFilter = 'all';
 
   filterChips.forEach(chip => {
     chip.addEventListener('click', () => {
       filterChips.forEach(c => c.classList.remove('active'));
       chip.classList.add('active');
-      // Support both data-filter and data-match-filter attribute names
-      const filter = chip.getAttribute('data-filter') || chip.getAttribute('data-match-filter');
-
-      sitterCards.forEach(card => {
-        if (filter === 'all') {
-          card.style.display = 'flex';
-        } else if (filter === 'cpr') {
-          card.style.display = card.getAttribute('data-cpr') === 'true' ? 'flex' : 'none';
-        } else if (filter === 'newborn') {
-          card.style.display = card.getAttribute('data-newborn') === 'true' ? 'flex' : 'none';
-        } else if (filter === 'mandarin') {
-          card.style.display = card.getAttribute('data-mandarin') === 'true' ? 'flex' : 'none';
-        }
-      });
+      activeSitterFilter = chip.dataset.sitterFilter;
+      renderTopMatches();
     });
   });
 
   const sortSelect = document.getElementById('sortSittersSelect');
   const sittersListContainer = document.getElementById('sittersMatchList');
 
-  if (sortSelect && sittersListContainer) {
-    sortSelect.addEventListener('change', () => {
-      const mode = sortSelect.value;
-      const cardsArr = Array.from(sittersListContainer.children);
+  function sortTopMatches() {
+    if (!sortSelect || !sittersListContainer) return;
+    const mode = sortSelect.value;
+    const cards = Array.from(sittersListContainer.querySelectorAll('.sitter-match-card'));
+    cards.sort((a, b) => {
+      if (mode === 'preferences') {
+        return Number(b.dataset.preferenceCount) - Number(a.dataset.preferenceCount) ||
+          Number(a.dataset.distanceKm) - Number(b.dataset.distanceKm);
+      }
+      if (mode === 'rating') return Number(b.dataset.rating) - Number(a.dataset.rating);
+      if (mode === 'price-asc') return Number(a.dataset.price) - Number(b.dataset.price);
+      if (mode === 'price-desc') return Number(b.dataset.price) - Number(a.dataset.price);
+      return Number(a.dataset.distanceKm) - Number(b.dataset.distanceKm);
+    });
+    cards.forEach(card => sittersListContainer.appendChild(card));
+  }
 
-      cardsArr.sort((a, b) => {
-        if (mode === 'match') {
-          return Number(b.getAttribute('data-match')) - Number(a.getAttribute('data-match'));
-        } else if (mode === 'rating') {
-          return Number(b.getAttribute('data-rating')) - Number(a.getAttribute('data-rating'));
-        } else if (mode === 'price-asc') {
-          return Number(a.getAttribute('data-price')) - Number(b.getAttribute('data-price'));
-        } else if (mode === 'price-desc') {
-          return Number(b.getAttribute('data-price')) - Number(a.getAttribute('data-price'));
-        }
-        return 0;
+  function passesSitterFilter(card) {
+    if (activeSitterFilter === 'cpr') return card.dataset.cpr === 'true';
+    if (activeSitterFilter === 'newborn') return card.dataset.newborn === 'true';
+    if (activeSitterFilter === 'mandarin') return card.dataset.mandarin === 'true';
+    return true;
+  }
+
+  function renderTopMatches() {
+    if (!sittersListContainer) return;
+    const parentLocation = postcodeLocations[state.postcode];
+    if (!parentLocation) {
+      sitterCards.forEach(card => { card.style.display = 'none'; });
+      if (matchesNearbyState) matchesNearbyState.style.display = 'none';
+      if (matchesPostcodeError) matchesPostcodeError.style.display = 'block';
+      return;
+    }
+
+    if (matchesPostcodeError) matchesPostcodeError.style.display = 'none';
+    let sittersInRange = 0;
+    sitterCards.forEach(card => {
+      const sitter = sittersData[card.dataset.sitterId];
+      const distanceKm = calculateDistanceKm(state.postcode, sitter.postcode);
+      if (distanceKm === null) {
+        throw new Error(`Missing postcode coordinates for ${sitter.id}`);
+      }
+
+      const distanceText = `${sitter.area} · ${distanceKm.toFixed(1)} km away`;
+      const preferences = getPreferencesForSitter(sitter);
+      const preferenceSummary = card.querySelector('[data-preference-summary]');
+      const preferenceList = card.querySelector('[data-preference-list]');
+      if (preferenceSummary) preferenceSummary.innerHTML = renderPreferenceSummary(sitter, preferences);
+      if (preferenceList) preferenceList.innerHTML = renderPreferenceCardList(preferences);
+
+      const meta = card.querySelector('.sitter-meta');
+      if (meta) {
+        const baseText = meta.dataset.baseText || meta.textContent.trim();
+        meta.dataset.baseText = baseText;
+        meta.textContent = `${baseText} • ${distanceText}`;
+      }
+
+      card.dataset.distanceKm = String(distanceKm);
+      card.dataset.preferenceCount = String(preferences.filter(preference => preference.met).length);
+      const withinTravelRange = distanceKm <= sitter.travelKm;
+      const availabilityPreference = preferences.find(preference => preference.key === 'availability');
+      const availableForRequest = !state.answeredPreferences.availability ||
+        !availabilityPreference || availabilityPreference.met;
+      if (withinTravelRange && availableForRequest) sittersInRange += 1;
+      card.style.display = withinTravelRange && availableForRequest && passesSitterFilter(card) ? 'flex' : 'none';
+    });
+    if (matchesNearbyState) {
+      matchesNearbyState.style.display = sittersInRange ? 'none' : 'block';
+    }
+    sortTopMatches();
+  }
+
+  if (sortSelect) {
+    sortSelect.addEventListener('change', sortTopMatches);
+  }
+
+  if (matchesNearbyState) {
+    matchesNearbyState.addEventListener('click', event => {
+      if (!event.target.closest('#resetSitterFilters')) return;
+      activeSitterFilter = 'all';
+      filterChips.forEach(chip => {
+        const isAll = chip.dataset.sitterFilter === 'all';
+        chip.classList.toggle('active', isAll);
       });
-
-      cardsArr.forEach(card => sittersListContainer.appendChild(card));
+      if (sortSelect) sortSelect.value = 'preferences';
+      renderTopMatches();
     });
   }
 
@@ -746,64 +1119,124 @@ document.addEventListener('DOMContentLoaded', () => {
     const maxPrice = Number(document.getElementById('filterPrice').value);
     const maxDistance = Number(document.getElementById('filterDistance').value);
     const availability = document.getElementById('filterAvailability').value;
-    const sitters = Object.values(sittersData).filter(sitter => {
-      const servesPostcode = sitter.servicePostcodes.includes(activeFindPostcode);
+    if (!postcodeLocations[activeFindPostcode]) {
+      findSitterList.innerHTML = '';
+      findSitterList.style.display = 'none';
+      findResultsCount.textContent = '';
+      findEmptyState.innerHTML = '<p role="alert">We could not find that postcode. Try 50450, 59000 or 50480.</p>';
+      findEmptyState.style.display = 'block';
+      renderActiveFindFilters();
+      return;
+    }
+
+    const sitters = Object.values(sittersData).map(sitter => {
+      const distanceKm = calculateDistanceKm(activeFindPostcode, sitter.postcode);
+      if (distanceKm === null) {
+        throw new Error(`Missing postcode coordinates for ${sitter.id}`);
+      }
+      return { ...sitter, distanceKm, preferences: getPreferencesForSitter(sitter) };
+    });
+    const withinTravelAndDistance = sitters.filter(sitter =>
+      sitter.distanceKm <= sitter.travelKm && (!maxDistance || sitter.distanceKm <= maxDistance)
+    );
+    const filteredSitters = withinTravelAndDistance.filter(sitter => {
+      const availabilityPreference = sitter.preferences.find(preference => preference.key === 'availability');
       const meetsAvailability = availability === 'all' || sitter.availability.some(slot =>
         slot.day.toLowerCase().includes(availability.toLowerCase()) ||
         (availability === 'Saturday' && slot.day === 'Weekends')
       );
-      return servesPostcode &&
-        sitter.ratingValue >= minRating &&
+      const availableForRequest = !state.answeredPreferences.availability ||
+        !availabilityPreference || availabilityPreference.met;
+      return sitter.ratingValue >= minRating &&
         (!maxPrice || sitter.price <= maxPrice) &&
-        (!maxDistance || sitter.distanceKm <= maxDistance) &&
-        meetsAvailability;
-    });
+        meetsAvailability &&
+        availableForRequest;
+    }).sort((a, b) =>
+      b.preferences.filter(preference => preference.met).length -
+        a.preferences.filter(preference => preference.met).length ||
+      a.distanceKm - b.distanceKm
+    );
 
-    findSitterList.innerHTML = sitters.map(sitter => {
+    findSitterList.style.display = '';
+    findSitterList.innerHTML = filteredSitters.map(sitter => {
       const certificateChips = sitter.certs.slice(0, 2).map(cert =>
         `<span class="chip"><span class="check-icon" aria-hidden="true">✓</span>${escapeHtml(cert.name)}</span>`
       ).join('');
       const stars = Array.from({ length: 5 }, () => '<span class="star-filled" aria-hidden="true">★</span>').join('');
+      const initials = sitter.name.split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase();
       return `
         <article class="card find-sitter-card" data-sitter-id="${sitter.id}" tabindex="0" role="group" aria-label="View ${escapeHtml(sitter.name)}'s profile">
           <div class="photo-placeholder find-sitter-photo" role="img" aria-label="Photo placeholder for ${escapeHtml(sitter.name)}">
             <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <span class="find-sitter-initials" aria-hidden="true">${escapeHtml(initials)}</span>
             <span class="photo-placeholder-caption">${escapeHtml(sitter.name)}</span>
           </div>
-          <div class="find-sitter-details">
-            <div class="find-sitter-heading">
-              <h2 class="card-title">${escapeHtml(sitter.name)}</h2>
-              <span class="badge badge-ease-trained">
-                <svg class="badge-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
-                Ease Trained
-              </span>
+          <div class="find-sitter-content">
+            <div class="find-sitter-details">
+              <div class="find-sitter-heading">
+                <h2 class="card-title">${escapeHtml(sitter.name)}</h2>
+                <span class="badge badge-ease-trained">
+                  <svg class="badge-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+                  Ease Trained
+                </span>
+              </div>
+              <span class="preference-summary-slot">${renderPreferenceSummary(sitter, sitter.preferences)}</span>
+              <p class="sitter-meta">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>${sitter.age} years old ·
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="14" rx="2"></rect><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>${escapeHtml(sitter.exp)} experience ·
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>${escapeHtml(sitter.area)} · ${sitter.distanceKm.toFixed(1)} km away
+              </p>
+              <div class="stars-row" aria-label="Rating: ${sitter.ratingValue} out of 5 stars">
+                <span class="find-stars">${stars}</span>
+                <strong class="find-rating-value">${sitter.ratingValue.toFixed(1)}</strong>
+                <span class="find-review-count">(${sitter.reviewsCount} reviews)</span>
+              </div>
+              <p class="sitter-languages"><strong>Languages:</strong> ${escapeHtml(sitter.languages)}</p>
+              <div class="chips-row">${certificateChips}</div>
+              ${renderPreferenceCardList(sitter.preferences)}
             </div>
-            <span class="match-badge find-match-badge">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8z"></path></svg>
-              ${sitter.match}% match
-            </span>
-            <p class="sitter-meta">${sitter.age} years old · ${escapeHtml(sitter.exp)} experience · ${sitter.distanceKm} km away</p>
-            <div class="stars-row" aria-label="Rating: ${sitter.ratingValue} out of 5 stars">
-              <span class="find-stars">${stars}</span>
-              <strong class="find-rating-value">${sitter.ratingValue.toFixed(1)}</strong>
-              <span class="find-review-count">(${sitter.reviewsCount} reviews)</span>
-            </div>
-            <p class="sitter-languages"><strong>Languages:</strong> ${escapeHtml(sitter.languages)}</p>
-            <div class="chips-row">${certificateChips}</div>
             <div class="find-sitter-footer">
               <p class="find-price-tag"><strong>${escapeHtml(sitter.rateText)}</strong><span>/ hr</span></p>
               <button type="button" class="btn btn-primary find-view-button" data-view-profile="${sitter.id}">
                 View profile
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3B2A35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
               </button>
+              <label class="compare-label find-compare-label" for="find-compare-${sitter.id}">
+                <input type="checkbox" class="find-compare-input" id="find-compare-${sitter.id}" data-sitter-id="${sitter.id}"${state.comparedSitters.has(sitter.id) ? ' checked' : ''}>
+                <span>Compare</span>
+              </label>
             </div>
           </div>
         </article>`;
     }).join('');
 
-    findResultsCount.textContent = `${sitters.length} ${sitters.length === 1 ? 'babysitter' : 'babysitters'} found`;
-    findEmptyState.style.display = sitters.length ? 'none' : 'block';
+    findResultsCount.textContent = `${filteredSitters.length} ${filteredSitters.length === 1 ? 'babysitter' : 'babysitters'} found`;
+    if (!filteredSitters.length && !withinTravelAndDistance.length) {
+      findEmptyState.innerHTML = `
+        <p>No babysitters nearby yet. Try a bigger distance.</p>
+        <button type="button" class="btn btn-secondary reset-find-filters">Reset filters</button>
+      `;
+      findEmptyState.style.display = 'block';
+    } else if (!filteredSitters.length) {
+      findEmptyState.innerHTML = `
+        <h2 class="card-title">No babysitters found</h2>
+        <p>Try changing your postcode or filters.</p>
+      `;
+      findEmptyState.style.display = 'block';
+    } else {
+      findEmptyState.style.display = 'none';
+    }
     renderActiveFindFilters();
+  }
+
+  if (findEmptyState) {
+    findEmptyState.addEventListener('click', event => {
+      if (!event.target.closest('.reset-find-filters')) return;
+      findFilters.forEach(filter => {
+        filter.value = filter.id === 'filterAvailability' ? 'all' : '0';
+      });
+      renderFindSitters();
+    });
   }
 
   if (findForm && findPostcode) {
@@ -817,6 +1250,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       findPostcode.setCustomValidity('');
       activeFindPostcode = postcode;
+      state.postcode = postcode;
+      state.answeredPreferences.distance = true;
+      saveState();
       renderFindSitters();
     });
     findPostcode.addEventListener('input', () => findPostcode.setCustomValidity(''));
@@ -825,10 +1261,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (findSitterList) {
     findSitterList.addEventListener('click', event => {
+      if (event.target.closest('.preferences-expand-link, .preference-info')) return;
+      if (event.target.closest('.find-compare-label')) return;
       const card = event.target.closest('.find-sitter-card');
       if (!card) return;
       state.selectedSitterId = card.dataset.sitterId;
       showScreen('profile');
+    });
+    findSitterList.addEventListener('change', event => {
+      const input = event.target.closest('.find-compare-input');
+      if (!input) return;
+      const sitterId = input.dataset.sitterId;
+      if (input.checked) state.comparedSitters.add(sitterId);
+      else state.comparedSitters.delete(sitterId);
+      saveState();
     });
     findSitterList.addEventListener('keydown', event => {
       if ((event.key === 'Enter' || event.key === ' ') && event.target.matches('.find-sitter-card')) {
@@ -845,7 +1291,9 @@ document.addEventListener('DOMContentLoaded', () => {
           filter.value = filter.id === 'filterAvailability' ? 'all' : '0';
         });
         activeFindPostcode = '50450';
+        state.postcode = activeFindPostcode;
         findPostcode.value = activeFindPostcode;
+        saveState();
         renderFindSitters();
       });
     }
@@ -875,20 +1323,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const sitter = sittersData[sitterId] || sittersData['sarah-lim'];
 
     const profileName = document.getElementById('profileName');
+    const profileLocation = document.getElementById('profileLocation');
     const profilePhoto = document.getElementById('profilePhoto');
     const profileRatingText = document.getElementById('profileRatingText');
-    const profilePrice = document.getElementById('profilePrice');
-    const btnProfileBook = document.getElementById('btnProfileBook');
     const profileAge = document.getElementById('profileAge');
     const profileExp = document.getElementById('profileExp');
     const profileExpDetail = document.getElementById('profileExpDetail');
+    const profileCertCount = document.getElementById('profileCertCount');
     const profileLanguages = document.getElementById('profileLanguages');
     const profileBio = document.getElementById('profileBio');
     const profileEduDegree = document.getElementById('profileEduDegree');
     const profileEduSchool = document.getElementById('profileEduSchool');
     const profileCertList = document.getElementById('profileCertList');
+    const profileBookingName = document.getElementById('profileBookingName');
     const profileReviews = document.getElementById('profileReviews');
     const profileAvailability = document.getElementById('profileAvailability');
+    const profilePreferencesSection = document.getElementById('profilePreferencesSection');
+    const profilePreferencesHeading = document.getElementById('profilePreferencesHeading');
+    const profilePreferencesList = document.getElementById('profilePreferencesList');
 
     if (profilePhoto) {
       profilePhoto.setAttribute('aria-label', `Photo placeholder for ${sitter.name}`);
@@ -896,17 +1348,22 @@ document.addEventListener('DOMContentLoaded', () => {
       if (caption) caption.textContent = sitter.name;
     }
     if (profileName) profileName.textContent = sitter.name;
+    if (profileLocation) {
+      const distanceKm = calculateDistanceKm(state.postcode, sitter.postcode);
+      profileLocation.textContent = distanceKm === null
+        ? 'We could not find that postcode. Try 50450, 59000 or 50480.'
+        : `${sitter.area} · ${distanceKm.toFixed(1)} km away`;
+    }
     const isSarah = sitter.id === 'sarah-lim';
     if (profileRatingText) profileRatingText.textContent = isSarah ? '4.9 (87 reviews)' : sitter.rating;
     const profileRate = isSarah ? 'RM 20' : (sitter.rateText || 'RM 20');
-    if (profilePrice) profilePrice.textContent = profileRate;
     document.getElementById('stickyProfilePrice')?.replaceChildren(document.createTextNode(profileRate));
     document.getElementById('mobileProfilePrice')?.replaceChildren(document.createTextNode(profileRate));
-    if (btnProfileBook) btnProfileBook.textContent = `Book ${sitter.name.split(' ')[0]}`;
     ['btnProfileStickyBook', 'btnProfileMobileBook'].forEach(id => {
       const button = document.getElementById(id);
       if (button) button.textContent = `Book ${sitter.name.split(' ')[0]}`;
     });
+    if (profileBookingName) profileBookingName.textContent = sitter.name.split(' ')[0];
     if (profileAge) profileAge.textContent = `${sitter.age} years old`;
     const experience = isSarah ? '6 years' : sitter.exp;
     if (profileExp) profileExp.textContent = experience;
@@ -919,11 +1376,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const initialsElement = profilePhoto?.querySelector('.profile-initials');
     if (initialsElement) initialsElement.textContent = initials;
 
-    if (profileCertList && sitter.certs) {
-      const certificates = isSarah ? [
-        { name: 'Pediatric First Aid & CPR', expiry: 'Malaysian Red Crescent · Expires 2027' },
-        { name: 'Infant Care Specialist', expiry: 'Childcare Academy · Expires 2027' },
-      ] : sitter.certs.map(c => ({ name: c.name, expiry: c.expiry }));
+    const certificates = isSarah ? [
+      { name: 'Pediatric First Aid & CPR', expiry: 'Malaysian Red Crescent · Expires 2027' },
+      { name: 'Infant Care Specialist', expiry: 'Childcare Academy · Expires 2027' },
+    ] : (sitter.certs || []).map(c => ({ name: c.name, expiry: c.expiry }));
+    if (profileCertCount) profileCertCount.textContent = `${certificates.length} verified`;
+    if (profileCertList) {
       profileCertList.innerHTML = certificates.map(c => `
         <div class="cert-item">
           <span class="cert-check">✓</span>
@@ -962,6 +1420,12 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="time-label">Afternoon</div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell unavailable"></div>
         <div class="time-label">Evening</div><div class="avail-cell available">✓</div><div class="avail-cell unavailable"></div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell unavailable"></div>
         <div class="time-label">Overnight</div><div class="avail-cell unavailable"></div><div class="avail-cell unavailable"></div><div class="avail-cell unavailable"></div><div class="avail-cell unavailable"></div><div class="avail-cell unavailable"></div><div class="avail-cell available">✓</div><div class="avail-cell unavailable"></div>`;
+    }
+    const preferences = getPreferencesForSitter(sitter);
+    if (profilePreferencesSection && profilePreferencesHeading && profilePreferencesList) {
+      profilePreferencesSection.hidden = !preferences.length;
+      profilePreferencesHeading.textContent = `How ${sitter.name.split(' ')[0]} fits your preferences`;
+      profilePreferencesList.innerHTML = renderPreferenceItems(preferences);
     }
   }
 
@@ -1053,28 +1517,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  const btnProfileBook = document.getElementById('btnProfileBook');
-  const btnProfileMessage = document.getElementById('btnProfileMessage');
   const btnProfileCompare = document.getElementById('btnProfileCompare');
   const btnProfileStickyBook = document.getElementById('btnProfileStickyBook');
   const btnProfileStickyMessage = document.getElementById('btnProfileStickyMessage');
   const btnProfileMobileBook = document.getElementById('btnProfileMobileBook');
 
-  if (btnProfileBook) {
-    btnProfileBook.addEventListener('click', () => {
-      startProfileBookingFlow(state.selectedSitterId);
-    });
-  }
-
   [btnProfileStickyBook, btnProfileMobileBook].forEach(button => {
     if (button) button.addEventListener('click', () => startProfileBookingFlow(state.selectedSitterId));
   });
-
-  if (btnProfileMessage) {
-    btnProfileMessage.addEventListener('click', () => {
-      startMessageFlow(state.selectedSitterId);
-    });
-  }
 
   if (btnProfileStickyMessage) {
     btnProfileStickyMessage.addEventListener('click', () => {
@@ -1105,6 +1555,7 @@ document.addEventListener('DOMContentLoaded', () => {
     languages: '<path d="M4 5h12a3 3 0 0 1 3 3v5a3 3 0 0 1-3 3H9l-5 4V5z"></path><path d="M9 10h8M9 13h5"></path><path d="M16 3h4a2 2 0 0 1 2 2v7l-3-2"></path>',
     age: '<circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path>',
     availability: '<rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18M8 14h2M14 14h2M8 17h2"></path>',
+    preferences: '<path d="M9 6h11M9 12h11M9 18h11"></path><path d="m3 6 1.5 1.5L7 5M3 12l1.5 1.5L7 11M3 18l1.5 1.5L7 17"></path>',
   };
   const compareFeatureDefinitions = [
     { id: 'rating', title: 'Rating', score: sitter => sitter.ratingValue, value: sitter => sitter.ratingValue.toFixed(1), detail: sitter => `${sitter.reviewsCount} reviews` },
@@ -1172,9 +1623,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function populateCompareTable() {
     const selectedIds = Array.from(state.comparedSitters).filter(id => sittersData[id]).slice(0, 3);
+    const getSitterPreferenceCount = id => getPreferencesForSitter(sittersData[id]).filter(preference => preference.met).length;
+    const getSitterDistance = id => calculateDistanceKm(state.postcode, sittersData[id].postcode) ?? Number.POSITIVE_INFINITY;
     const preferredIds = [
       state.selectedSitterId,
-      ...Object.keys(sittersData).sort((a, b) => sittersData[b].match - sittersData[a].match),
+      ...Object.keys(sittersData).sort((a, b) =>
+        getSitterPreferenceCount(b) - getSitterPreferenceCount(a) ||
+        getSitterDistance(a) - getSitterDistance(b)
+      ),
     ].filter(id => sittersData[id]);
     const sitterIds = [...new Set([...selectedIds, ...preferredIds])].slice(0, Math.max(2, selectedIds.length));
     const sitterSlots = [...sitterIds.map(id => sittersData[id]), null, null].slice(0, 3);
@@ -1220,7 +1676,7 @@ document.addEventListener('DOMContentLoaded', () => {
               Ease Trained
             </span>
             <p class="compare-header-price">${escapeHtml(sitter.rateText)} / hr</p>
-            <p class="compare-header-match">${sitter.match}% match</p>
+            <div class="preference-summary-slot">${renderPreferenceSummary(sitter)}</div>
             <div class="compare-header-actions">
               <button type="button" class="btn btn-primary compare-book-button" data-sitter-id="${sitter.id}" aria-label="Book ${escapeHtml(sitter.name)}">Book</button>
               <button type="button" class="compare-view-profile" data-sitter-id="${sitter.id}">
@@ -1242,7 +1698,21 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>`
       : '<div class="compare-compact-cell compare-compact-add">+ Add</div>').join('');
 
-    compareFeatureSections.innerHTML = compareFeatureDefinitions.map(feature => {
+    const comparePreferences = sitterSlots.some(sitter => sitter && getPreferencesForSitter(sitter).length);
+    const activeCompareFeatures = comparePreferences
+      ? [...compareFeatureDefinitions, {
+        id: 'preferences',
+        title: 'Preferences',
+        render: sitter => {
+          const preferences = getPreferencesForSitter(sitter);
+          return `<div class="compare-preferences-block">
+            <h3>How ${escapeHtml(sitter.name.split(' ')[0])} fits your preferences</h3>
+            ${renderPreferenceItems(preferences)}
+          </div>`;
+        },
+      }]
+      : compareFeatureDefinitions;
+    compareFeatureSections.innerHTML = activeCompareFeatures.map(feature => {
       const scores = feature.score ? sitterSlots.filter(Boolean).map(feature.score) : [];
       const bestScore = scores.length ? Math.max(...scores) : null;
       const uniqueBest = feature.score && scores.filter(score => score === bestScore).length === 1;
@@ -1298,7 +1768,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (addButton) {
         const currentIds = Array.from(state.comparedSitters).filter(id => sittersData[id]);
         if (currentIds.length >= 3) return;
-        const nextId = ['aisyah', 'sarah-lim', 'nur-ain'].find(id => !currentIds.includes(id));
+        const nextId = Object.keys(sittersData).find(id => !currentIds.includes(id));
         if (!nextId) return;
         state.comparedSitters = new Set([...currentIds, nextId]);
         populateCompareTable();
@@ -1930,6 +2400,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const homeBookAgainName = document.getElementById('homeBookAgainName');
     const bookingSitter = sittersData[state.selectedSitterId] || sittersData['sarah-lim'];
     const booking = state.bookingData;
+
+    document.querySelectorAll('[data-preference-sitter]').forEach(slot => {
+      const sitter = sittersData[slot.dataset.preferenceSitter];
+      if (sitter) slot.innerHTML = renderPreferenceSummary(sitter);
+    });
 
     const firstName = (state.user.name || 'Jessica').split(' ')[0];
     if (greeting) greeting.textContent = `Welcome back, ${firstName}`;

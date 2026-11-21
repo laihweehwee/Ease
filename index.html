@@ -249,16 +249,17 @@
       </div>
       <div class="content-section">
         <div class="container question-container">
-          <h1 class="section-heading">Where do you need care?</h1>
+          <h1 class="section-heading">Where would you like care?</h1>
           <p class="section-subtext">Enter your postcode or neighbourhood to find sitters nearby.</p>
           <div class="question-body">
             <div class="input-group">
               <label for="inputPostcode">Postcode</label>
               <input type="text" id="inputPostcode" class="input-field" value="50450" placeholder="e.g. 50450">
+              <span class="input-error-msg" id="errorPostcode" style="display: none;" role="alert">Please enter a valid 5-digit postcode.</span>
             </div>
             <div class="note-box">
               <span class="note-icon">📍</span>
-              <p>We match you with verified caregivers living within 5 km of this area.</p>
+              <p>We show verified caregivers who travel within 5 km of this area.</p>
             </div>
           </div>
           <div class="question-actions">
@@ -278,8 +279,8 @@
       </div>
       <div class="content-section">
         <div class="container question-container">
-          <h1 class="section-heading">When do you need care?</h1>
-          <p class="section-subtext">Select when you need the babysitter to start.</p>
+          <h1 class="section-heading">When would you like care?</h1>
+          <p class="section-subtext">Select when the babysitter should start.</p>
           <div class="question-body">
             <div class="options-grid" data-question="when">
               <div class="card option-card selected" data-value="Today" tabindex="0" role="radio" aria-checked="true">
@@ -356,7 +357,7 @@
       </div>
       <div class="content-section">
         <div class="container question-container">
-          <h1 class="section-heading">Who needs care?</h1>
+          <h1 class="section-heading">What age groups should the babysitter care for?</h1>
           <p class="section-subtext">Select the age group of your children.</p>
           <div class="question-body">
             <div class="options-grid" data-question="whoNeedsCare">
@@ -427,7 +428,7 @@
       <div class="content-section">
         <div class="container question-container">
           <h1 class="section-heading">Any extras? (optional)</h1>
-          <p class="section-subtext">Select any special certifications or language skills you need.</p>
+          <p class="section-subtext">Select any special certifications or language skills you prefer.</p>
           <div class="question-body">
             <div class="options-grid" data-question="extras">
               <div class="card option-card selected" data-value="CPR certified" tabindex="0" role="checkbox" aria-checked="true">
@@ -440,6 +441,18 @@
               </div>
               <div class="card option-card selected" data-value="Newborn experience" tabindex="0" role="checkbox" aria-checked="true">
                 <div class="option-card-content"><div class="option-title">Newborn experience</div><div class="option-desc">Hands-on care for infants under 12 months</div></div>
+                <div class="option-check-icon">✓</div>
+              </div>
+              <div class="card option-card" data-value="First aid certified" tabindex="0" role="checkbox" aria-checked="false">
+                <div class="option-card-content"><div class="option-title">First aid certified</div><div class="option-desc">Current first aid certification</div></div>
+                <div class="option-check-icon">✓</div>
+              </div>
+              <div class="card option-card" data-value="Special needs experience" tabindex="0" role="checkbox" aria-checked="false">
+                <div class="option-card-content"><div class="option-title">Special needs experience</div><div class="option-desc">Experience supporting children with special needs</div></div>
+                <div class="option-check-icon">✓</div>
+              </div>
+              <div class="card option-card" data-value="Verified ID and background check" tabindex="0" role="checkbox" aria-checked="false">
+                <div class="option-card-content"><div class="option-title">Verified ID and background check</div><div class="option-desc">Verified identity and completed background check</div></div>
                 <div class="option-check-icon">✓</div>
               </div>
             </div>
@@ -469,7 +482,7 @@
               <button class="summary-edit-btn" data-target="q1">Edit</button>
             </div>
             <div class="card summary-card">
-              <div class="summary-card-left"><span class="summary-label">When do you need care?</span><span class="summary-value" id="summaryValWhen">Today</span></div>
+              <div class="summary-card-left"><span class="summary-label">When would you like care?</span><span class="summary-value" id="summaryValWhen">Today</span></div>
               <button class="summary-edit-btn" data-target="q2">Edit</button>
             </div>
             <div class="card summary-card">
@@ -477,7 +490,7 @@
               <button class="summary-edit-btn" data-target="q3">Edit</button>
             </div>
             <div class="card summary-card">
-              <div class="summary-card-left"><span class="summary-label">Who needs care?</span><span class="summary-value" id="summaryValWho">Toddler 1 to 3</span></div>
+              <div class="summary-card-left"><span class="summary-label">Child age groups</span><span class="summary-value" id="summaryValWho">Toddler 1 to 3</span></div>
               <button class="summary-edit-btn" data-target="q4">Edit</button>
             </div>
             <div class="card summary-card">
@@ -490,7 +503,7 @@
             </div>
           </div>
           <div class="summary-actions">
-            <button class="btn btn-primary full-width btn-large" id="btnShowMatches">Show my matches</button>
+            <button class="btn btn-primary full-width btn-large" id="btnShowMatches">Show babysitters</button>
           </div>
         </div>
       </div>
@@ -574,22 +587,23 @@
     <section class="app-screen" id="screenMatches" style="display: none;">
       <div class="gradient-banner">
         <div class="container banner-inner">
-          <h2 class="banner-title">Top matches</h2>
+          <h2 class="banner-title">Babysitters for your preferences</h2>
         </div>
       </div>
       <div class="content-section">
         <div class="container matches-container">
           <div class="filters-sort-row">
             <div class="filter-chips-wrap">
-              <button class="filter-chip active" data-match-filter="all">All</button>
-              <button class="filter-chip" data-match-filter="cpr">CPR Certified</button>
-              <button class="filter-chip" data-match-filter="newborn">Newborn</button>
-              <button class="filter-chip" data-match-filter="mandarin">Speaks Mandarin</button>
+              <button class="filter-chip active" data-sitter-filter="all">All</button>
+              <button class="filter-chip" data-sitter-filter="cpr">CPR Certified</button>
+              <button class="filter-chip" data-sitter-filter="newborn">Newborn</button>
+              <button class="filter-chip" data-sitter-filter="mandarin">Speaks Mandarin</button>
             </div>
             <div class="sort-select-wrap">
               <label for="sortSittersSelect" class="sort-label">Sort by:</label>
               <select id="sortSittersSelect" class="input-field sort-select">
-                <option value="match" selected>Match % (Highest)</option>
+                <option value="preferences" selected>Preferences met (Most first)</option>
+                <option value="distance">Distance (Nearest)</option>
                 <option value="rating">Rating (Highest)</option>
                 <option value="price-asc">Price (Low to High)</option>
                 <option value="price-desc">Price (High to Low)</option>
@@ -599,7 +613,7 @@
 
           <div class="sitters-match-list" id="sittersMatchList">
             <!-- Sitter 1: Sarah Lim -->
-            <article class="card sitter-match-card" data-sitter-id="sarah-lim" data-cpr="true" data-newborn="true" data-mandarin="true" data-price="25" data-rating="4.9" data-match="98">
+            <article class="card sitter-match-card" data-sitter-id="sarah-lim" data-cpr="true" data-newborn="true" data-mandarin="true" data-price="25" data-rating="4.9">
               <div class="compare-checkbox-wrap">
                 <label class="compare-label" for="compare-sarah-lim">
                   <input type="checkbox" id="compare-sarah-lim" class="compare-input" data-sitter-id="sarah-lim" data-sitter-name="Sarah Lim">
@@ -619,7 +633,7 @@
                 <div class="sitter-match-header">
                   <div class="name-match-row">
                     <h3 class="card-title">Sarah Lim</h3>
-                    <span class="match-badge">98% match</span>
+                    <span class="preference-summary-slot" data-preference-summary></span>
                   </div>
                   <span class="badge badge-ease-trained">
                     <svg class="badge-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
@@ -640,14 +654,7 @@
                   <span class="chip">CPR Certified</span>
                   <span class="chip">Newborn Experience</span>
                 </div>
-                <div class="why-recommended-box">
-                  <span class="why-rec-title">Why recommended:</span>
-                  <ul class="why-rec-list">
-                    <li><span class="check-icon">✓</span> CPR certified and newborn experience</li>
-                    <li><span class="check-icon">✓</span> Speaks fluent English and Mandarin</li>
-                    <li><span class="check-icon">✓</span> Available in your requested timeframe</li>
-                  </ul>
-                </div>
+                <div class="preference-list-slot" data-preference-list></div>
                 <div class="sitter-bottom">
                   <div class="sitter-price"><strong>RM 25</strong> / hr</div>
                   <button class="btn btn-primary view-sitter-profile-btn" data-sitter-id="sarah-lim">View profile</button>
@@ -656,7 +663,7 @@
             </article>
 
             <!-- Sitter 2: Nur Ain -->
-            <article class="card sitter-match-card" data-sitter-id="nur-ain" data-cpr="true" data-newborn="false" data-mandarin="false" data-price="22" data-rating="4.8" data-match="95">
+            <article class="card sitter-match-card" data-sitter-id="nur-ain" data-cpr="true" data-newborn="false" data-mandarin="false" data-price="22" data-rating="4.8">
               <div class="compare-checkbox-wrap">
                 <label class="compare-label" for="compare-nur-ain">
                   <input type="checkbox" id="compare-nur-ain" class="compare-input" data-sitter-id="nur-ain" data-sitter-name="Nur Ain">
@@ -676,7 +683,7 @@
                 <div class="sitter-match-header">
                   <div class="name-match-row">
                     <h3 class="card-title">Nur Ain</h3>
-                    <span class="match-badge">95% match</span>
+                    <span class="preference-summary-slot" data-preference-summary></span>
                   </div>
                   <span class="badge badge-ease-trained">
                     <svg class="badge-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
@@ -697,14 +704,7 @@
                   <span class="chip">CPR Certified</span>
                   <span class="chip">Early Childhood Diploma</span>
                 </div>
-                <div class="why-recommended-box">
-                  <span class="why-rec-title">Why recommended:</span>
-                  <ul class="why-rec-list">
-                    <li><span class="check-icon">✓</span> Early childhood diploma and toddler specialist</li>
-                    <li><span class="check-icon">✓</span> CPR and first aid safety certified</li>
-                    <li><span class="check-icon">✓</span> Affordable local rate of RM 22/hr</li>
-                  </ul>
-                </div>
+                <div class="preference-list-slot" data-preference-list></div>
                 <div class="sitter-bottom">
                   <div class="sitter-price"><strong>RM 22</strong> / hr</div>
                   <button class="btn btn-primary view-sitter-profile-btn" data-sitter-id="nur-ain">View profile</button>
@@ -713,7 +713,7 @@
             </article>
 
             <!-- Sitter 3: Aisyah -->
-            <article class="card sitter-match-card" data-sitter-id="aisyah" data-cpr="false" data-newborn="false" data-mandarin="false" data-price="20" data-rating="4.7" data-match="93">
+            <article class="card sitter-match-card" data-sitter-id="aisyah" data-cpr="false" data-newborn="false" data-mandarin="false" data-price="20" data-rating="4.7">
               <div class="compare-checkbox-wrap">
                 <label class="compare-label" for="compare-aisyah">
                   <input type="checkbox" id="compare-aisyah" class="compare-input" data-sitter-id="aisyah" data-sitter-name="Aisyah">
@@ -733,7 +733,7 @@
                 <div class="sitter-match-header">
                   <div class="name-match-row">
                     <h3 class="card-title">Aisyah</h3>
-                    <span class="match-badge">93% match</span>
+                    <span class="preference-summary-slot" data-preference-summary></span>
                   </div>
                   <span class="badge badge-ease-trained">
                     <svg class="badge-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
@@ -753,20 +753,119 @@
                 <div class="chips-row">
                   <span class="chip">First Aid</span>
                 </div>
-                <div class="why-recommended-box">
-                  <span class="why-rec-title">Why recommended:</span>
-                  <ul class="why-rec-list">
-                    <li><span class="check-icon">✓</span> Best budget option at RM 20/hr</li>
-                    <li><span class="check-icon">✓</span> First aid trained and active school-age play</li>
-                    <li><span class="check-icon">✓</span> 93% match for your postcode</li>
-                  </ul>
-                </div>
+                <div class="preference-list-slot" data-preference-list></div>
                 <div class="sitter-bottom">
                   <div class="sitter-price"><strong>RM 20</strong> / hr</div>
                   <button class="btn btn-primary view-sitter-profile-btn" data-sitter-id="aisyah">View profile</button>
                 </div>
               </div>
             </article>
+
+            <!-- Sitter 4: Mei Chen -->
+            <article class="card sitter-match-card" data-sitter-id="mei-chen" data-cpr="true" data-newborn="true" data-mandarin="true" data-price="24" data-rating="4.8">
+              <div class="compare-checkbox-wrap">
+                <label class="compare-label" for="compare-mei-chen">
+                  <input type="checkbox" id="compare-mei-chen" class="compare-input" data-sitter-id="mei-chen" data-sitter-name="Mei Chen">
+                  <span>Compare</span>
+                </label>
+              </div>
+              <div class="sitter-match-photo-wrap">
+                <div class="photo-placeholder sitter-match-photo">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                  <span class="photo-placeholder-caption">Mei Chen</span>
+                </div>
+              </div>
+              <div class="sitter-match-details">
+                <div class="sitter-match-header">
+                  <div class="name-match-row">
+                    <h3 class="card-title">Mei Chen</h3>
+                    <span class="preference-summary-slot" data-preference-summary></span>
+                  </div>
+                  <span class="badge badge-ease-trained">
+                    <svg class="badge-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+                    Ease Trained
+                  </span>
+                </div>
+                <p class="sitter-meta">29 years old • 3 yrs experience</p>
+                <div class="stars-row" aria-label="Rating: 4.8 stars">
+                  <span class="star-filled" aria-hidden="true">★</span>
+                  <span class="star-filled" aria-hidden="true">★</span>
+                  <span class="star-filled" aria-hidden="true">★</span>
+                  <span class="star-filled" aria-hidden="true">★</span>
+                  <span class="star-filled" aria-hidden="true">★</span>
+                  <span class="stars-num">4.8 (62 reviews)</span>
+                </div>
+                <p class="sitter-languages"><strong>Languages:</strong> English and Mandarin</p>
+                <div class="chips-row">
+                  <span class="chip">CPR Certified</span>
+                  <span class="chip">Infant Care</span>
+                </div>
+                <div class="preference-list-slot" data-preference-list></div>
+                <div class="sitter-bottom">
+                  <div class="sitter-price"><strong>RM 24</strong> / hr</div>
+                  <button class="btn btn-primary view-sitter-profile-btn" data-sitter-id="mei-chen">View profile</button>
+                </div>
+              </div>
+            </article>
+
+            <!-- Sitter 5: Kavitha Rao -->
+            <article class="card sitter-match-card" data-sitter-id="kavitha-rao" data-cpr="true" data-newborn="false" data-mandarin="false" data-price="21" data-rating="4.7">
+              <div class="compare-checkbox-wrap">
+                <label class="compare-label" for="compare-kavitha-rao">
+                  <input type="checkbox" id="compare-kavitha-rao" class="compare-input" data-sitter-id="kavitha-rao" data-sitter-name="Kavitha Rao">
+                  <span>Compare</span>
+                </label>
+              </div>
+              <div class="sitter-match-photo-wrap">
+                <div class="photo-placeholder sitter-match-photo">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                  <span class="photo-placeholder-caption">Kavitha Rao</span>
+                </div>
+              </div>
+              <div class="sitter-match-details">
+                <div class="sitter-match-header">
+                  <div class="name-match-row">
+                    <h3 class="card-title">Kavitha Rao</h3>
+                    <span class="preference-summary-slot" data-preference-summary></span>
+                  </div>
+                  <span class="badge badge-ease-trained">
+                    <svg class="badge-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+                    Ease Trained
+                  </span>
+                </div>
+                <p class="sitter-meta">32 years old • 6 yrs experience</p>
+                <div class="stars-row" aria-label="Rating: 4.7 stars">
+                  <span class="star-filled" aria-hidden="true">★</span>
+                  <span class="star-filled" aria-hidden="true">★</span>
+                  <span class="star-filled" aria-hidden="true">★</span>
+                  <span class="star-filled" aria-hidden="true">★</span>
+                  <span class="star-filled" aria-hidden="true">★</span>
+                  <span class="stars-num">4.7 (39 reviews)</span>
+                </div>
+                <p class="sitter-languages"><strong>Languages:</strong> English and Tamil</p>
+                <div class="chips-row">
+                  <span class="chip">First Aid</span>
+                </div>
+                <div class="preference-list-slot" data-preference-list></div>
+                <div class="sitter-bottom">
+                  <div class="sitter-price"><strong>RM 21</strong> / hr</div>
+                  <button class="btn btn-primary view-sitter-profile-btn" data-sitter-id="kavitha-rao">View profile</button>
+                </div>
+              </div>
+            </article>
+          </div>
+          <div class="card find-empty-state" id="matchesPostcodeError" style="display: none;" role="alert">
+            <p>We could not find that postcode. Try 50450, 59000 or 50480.</p>
+          </div>
+          <div class="card find-empty-state" id="matchesNearbyState" style="display: none;">
+            <p>No babysitters nearby yet. Try a bigger distance.</p>
+            <button type="button" class="btn btn-secondary" id="resetSitterFilters">Reset filters</button>
           </div>
         </div>
       </div>
@@ -794,62 +893,56 @@
       </div>
       <div class="content-section profile-content">
         <div class="container profile-container">
-          <!-- Profile Hero -->
-          <div class="profile-hero-card">
-            <div class="profile-photo-wrap">
-              <div class="profile-large-photo photo-placeholder" id="profilePhoto" role="img" aria-label="Photo placeholder for Sarah Lim">
-                <span class="profile-initials">SL</span>
-              </div>
-            </div>
-
-            <div class="profile-hero-info">
-              <div class="profile-hero-header">
-                <div>
-                  <h2 class="card-title profile-title" id="profileName">Sarah Lim</h2>
-                  <span class="badge badge-ease-trained">
-                    <svg class="badge-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
-                    Ease Trained
-                  </span>
-                </div>
-                <div class="profile-price-wrap">
-                  <span class="profile-price" id="profilePrice">RM 20</span>
-                  <span class="profile-price-unit">/ hour</span>
-                </div>
-              </div>
-
-              <div class="profile-verifications">
-                <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>ID verified</span>
-                <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>Background checked</span>
-                <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>References checked</span>
-              </div>
-
-              <div class="stars-row profile-stars" id="profileStars">
-                <span class="star-filled" aria-hidden="true">★</span>
-                <span class="star-filled" aria-hidden="true">★</span>
-                <span class="star-filled" aria-hidden="true">★</span>
-                <span class="star-filled" aria-hidden="true">★</span>
-                <span class="star-filled" aria-hidden="true">★</span>
-                <span class="stars-num" id="profileRatingText">4.9 (87 reviews)</span>
-              </div>
-
-              <p class="profile-location">Bangsar, Kuala Lumpur · Replies within 1 hour</p>
-
-              <!-- Main Action Buttons -->
-              <div class="profile-actions-row">
-                <button class="btn btn-primary btn-large" id="btnProfileBook">Book Sarah</button>
-                <button class="btn btn-secondary btn-large" id="btnProfileMessage">Message</button>
-                <button class="btn btn-secondary" id="btnProfileCompare">Compare</button>
-              </div>
-            </div>
-          </div>
-
           <div class="profile-layout">
             <div class="profile-main-column">
+              <!-- Profile Hero -->
+              <div class="profile-hero-card">
+                <div class="profile-photo-wrap">
+                  <div class="profile-large-photo photo-placeholder" id="profilePhoto" role="img" aria-label="Photo placeholder for Sarah Lim">
+                    <span class="profile-initials">SL</span>
+                  </div>
+                </div>
+
+                <div class="profile-hero-info">
+                  <div class="profile-hero-header">
+                    <div>
+                      <h2 class="card-title profile-title" id="profileName">Sarah Lim</h2>
+                      <span class="badge badge-ease-trained">
+                        <svg class="badge-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+                        Ease Trained
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="stars-row profile-stars" id="profileStars">
+                    <span class="star-filled" aria-hidden="true">★</span>
+                    <span class="star-filled" aria-hidden="true">★</span>
+                    <span class="star-filled" aria-hidden="true">★</span>
+                    <span class="star-filled" aria-hidden="true">★</span>
+                    <span class="star-filled" aria-hidden="true">★</span>
+                    <span class="stars-num" id="profileRatingText">4.9 (87 reviews)</span>
+                  </div>
+
+                  <p class="profile-location" id="profileLocation">Bangsar</p>
+
+                  <div class="profile-verifications">
+                    <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>ID verified</span>
+                    <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>Background checked</span>
+                    <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>References checked</span>
+                  </div>
+                </div>
+              </div>
+
+              <section class="card profile-section-card profile-preferences-section" id="profilePreferencesSection" hidden>
+                <h2 class="section-heading" id="profilePreferencesHeading">How Sarah fits your preferences</h2>
+                <div id="profilePreferencesList"></div>
+              </section>
+
               <div class="quick-facts-row">
-                <div class="quick-fact quick-fact-yellow"><span class="quick-fact-icon">6</span><strong id="profileExp">6 years</strong><span>experience</span></div>
-                <div class="quick-fact quick-fact-pink"><span class="quick-fact-icon">42</span><strong>42</strong><span>children cared for</span></div>
-                <div class="quick-fact quick-fact-yellow"><span class="quick-fact-icon">18</span><strong>18</strong><span>parents booked again</span></div>
-                <div class="quick-fact quick-fact-pink"><span class="quick-fact-icon">1h</span><strong>1 hour</strong><span>Replies in 1 hour</span></div>
+                <div class="quick-fact quick-fact-yellow"><svg class="quick-fact-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="14" rx="2"></rect><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18M10 12v2h4v-2"></path></svg><strong id="profileExp">6 years</strong><span>experience</span></div>
+                <div class="quick-fact quick-fact-pink"><svg class="quick-fact-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="10" cy="7" r="4"></circle><path d="M20 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"></path></svg><strong>42</strong><span>children cared for</span></div>
+                <div class="quick-fact quick-fact-yellow"><svg class="quick-fact-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m17 2 4 4-4 4"></path><path d="M3 11V9a3 3 0 0 1 3-3h15"></path><path d="m7 22-4-4 4-4"></path><path d="M21 13v2a3 3 0 0 1-3 3H3"></path></svg><strong>18</strong><span>parents booked again</span></div>
+                <div class="quick-fact quick-fact-pink"><svg class="quick-fact-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg><strong id="profileCertCount"></strong><span>certificates</span></div>
               </div>
 
               <div class="card profile-section-card">
@@ -914,9 +1007,8 @@
               <div class="sticky-price"><span id="stickyProfilePrice">RM 20</span><small>/ hour</small></div>
               <button class="btn btn-primary full-width" id="btnProfileStickyBook">Book Sarah</button>
               <button class="btn btn-secondary full-width" id="btnProfileStickyMessage">Message</button>
-              <div class="profile-verifications sticky-verifications">
-                <span>✓ ID verified</span><span>✓ Background checked</span><span>✓ References checked</span>
-              </div>
+              <button class="btn btn-secondary full-width" id="btnProfileCompare">Compare</button>
+              <p class="profile-booking-note">You will not be charged until <span id="profileBookingName">Sarah</span> accepts.</p>
             </aside>
           </div>
         </div>
@@ -1113,7 +1205,7 @@
         <div class="container add-child-container">
           <div class="card add-child-card">
             <h1 class="section-heading">Add Your Child</h1>
-            <p class="section-subtext">Share your child's routine and needs so your babysitter can prepare.</p>
+            <p class="section-subtext">Share your child's routine and care preferences so your babysitter can prepare.</p>
 
             <form id="addChildForm" class="add-child-form">
               <div class="form-row">
@@ -1535,12 +1627,12 @@
 
           <!-- Top Matches for You -->
           <div class="home-section-block">
-            <h2 class="section-heading">Top matches for you</h2>
+            <h2 class="section-heading">Babysitters for your preferences</h2>
             <div class="home-matches-grid">
               <div class="card home-sitter-card">
                 <div class="home-sitter-header">
                   <strong>Nur Ain</strong>
-                  <span class="match-badge">95%</span>
+                  <span class="preference-summary-slot" data-preference-sitter="nur-ain"></span>
                 </div>
                 <span class="home-sitter-meta">⭐ 4.8 • RM 22/hr</span>
                 <button class="btn btn-secondary full-width btn-sm" id="btnHomeViewNur">View profile</button>
@@ -1549,7 +1641,7 @@
               <div class="card home-sitter-card">
                 <div class="home-sitter-header">
                   <strong>Aisyah</strong>
-                  <span class="match-badge">93%</span>
+                  <span class="preference-summary-slot" data-preference-sitter="aisyah"></span>
                 </div>
                 <span class="home-sitter-meta">⭐ 4.7 • RM 20/hr</span>
                 <button class="btn btn-secondary full-width btn-sm" id="btnHomeViewAisyah">View profile</button>
