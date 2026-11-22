@@ -7,6 +7,8 @@ export const postcodeLocations = {
   '47301': { area: 'Petaling Jaya', latitude: 3.107, longitude: 101.607 },
 };
 
+export const careTypeLabels = ['Full day', 'Half day', 'Live-in'];
+
 export const babysittersData = {
   'sarah-lim': {
     id: 'sarah-lim',
@@ -27,7 +29,7 @@ export const babysittersData = {
     newborn: true,
     specialNeeds: false,
     verifiedIdAndBackground: true,
-    careTypes: ['Half day', 'Full day', 'Overnight', 'Recurring'],
+    careTypes: ['Full day', 'Half day', 'Live-in'],
     ageGroups: ['newborn', 'toddler', 'preschool', 'school-age'],
     degree: 'Diploma in Early Childhood Education',
     school: 'Sunway College',
@@ -64,7 +66,7 @@ export const babysittersData = {
     newborn: false,
     specialNeeds: true,
     verifiedIdAndBackground: true,
-    careTypes: ['Half day', 'Full day', 'Recurring'],
+    careTypes: ['Full day', 'Half day'],
     ageGroups: ['toddler', 'preschool', 'school-age'],
     degree: 'Diploma in Child Development',
     school: "Taylor's College",
@@ -96,7 +98,7 @@ export const babysittersData = {
     newborn: false,
     specialNeeds: false,
     verifiedIdAndBackground: true,
-    careTypes: ['Half day', 'Overnight', 'Recurring'],
+    careTypes: ['Half day'],
     ageGroups: ['toddler', 'preschool', 'school-age'],
     degree: 'Certificate in Childcare',
     school: 'KDU College',
@@ -128,7 +130,7 @@ export const babysittersData = {
     newborn: true,
     specialNeeds: false,
     verifiedIdAndBackground: true,
-    careTypes: ['Half day', 'Full day', 'Overnight', 'Recurring'],
+    careTypes: ['Full day', 'Live-in'],
     ageGroups: ['newborn', 'toddler', 'preschool'],
     degree: 'Diploma in Early Childhood Education',
     school: 'Tunku Abdul Rahman University of Management and Technology',
@@ -162,7 +164,7 @@ export const babysittersData = {
     newborn: false,
     specialNeeds: false,
     verifiedIdAndBackground: true,
-    careTypes: ['Half day', 'Full day', 'Recurring'],
+    careTypes: ['Half day', 'Full day'],
     ageGroups: ['toddler', 'preschool', 'school-age'],
     degree: 'Certificate in Early Childhood Care',
     school: 'SEGi College',

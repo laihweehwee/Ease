@@ -15,15 +15,7 @@
   <header class="topbar" id="appTopbar">
     <div class="topbar-inner">
       <div class="topbar-left">
-        <!-- Back arrow button (visible on inner pages) -->
-        <button class="nav-back-btn" id="navBackBtn" aria-label="Go back" style="display: none;">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="19" y1="12" x2="5" y2="12"></line>
-            <polyline points="12 19 5 12 12 5"></polyline>
-          </svg>
-        </button>
-
-        <!-- Hamburger button (visible on welcome screen) -->
+        <!-- Hamburger button -->
         <button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2.5" stroke-linecap="round">
             <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -613,12 +605,9 @@
                 </select>
               </div>
               <div class="input-group">
-                <label for="filterAvailability">Availability</label>
-                <select id="filterAvailability" class="input-field">
-                  <option value="all">Any availability</option>
-                  <option value="Weekdays">Weekdays</option>
-                  <option value="Weekends">Weekends</option>
-                  <option value="Saturday">Saturday</option>
+                <label for="filterCareType">Care type</label>
+                <select id="filterCareType" class="input-field">
+                  <option value="">Any care type</option>
                 </select>
               </div>
             </div>
@@ -710,6 +699,7 @@
                   <span class="stars-num">4.9 (126 reviews)</span>
                 </div>
                 <p class="sitter-languages"><strong>Languages:</strong> English and Mandarin</p>
+                <div class="care-type-chips" data-care-types></div>
                 <div class="chips-row">
                   <span class="chip">CPR Certified</span>
                   <span class="chip">Newborn Experience</span>
@@ -760,6 +750,7 @@
                   <span class="stars-num">4.8 (84 reviews)</span>
                 </div>
                 <p class="sitter-languages"><strong>Languages:</strong> Malay and English</p>
+                <div class="care-type-chips" data-care-types></div>
                 <div class="chips-row">
                   <span class="chip">CPR Certified</span>
                   <span class="chip">Early Childhood Diploma</span>
@@ -810,6 +801,7 @@
                   <span class="stars-num">4.7 (51 reviews)</span>
                 </div>
                 <p class="sitter-languages"><strong>Languages:</strong> Malay and English</p>
+                <div class="care-type-chips" data-care-types></div>
                 <div class="chips-row">
                   <span class="chip">First Aid</span>
                 </div>
@@ -859,6 +851,7 @@
                   <span class="stars-num">4.8 (62 reviews)</span>
                 </div>
                 <p class="sitter-languages"><strong>Languages:</strong> English and Mandarin</p>
+                <div class="care-type-chips" data-care-types></div>
                 <div class="chips-row">
                   <span class="chip">CPR Certified</span>
                   <span class="chip">Infant Care</span>
@@ -909,6 +902,7 @@
                   <span class="stars-num">4.7 (39 reviews)</span>
                 </div>
                 <p class="sitter-languages"><strong>Languages:</strong> English and Tamil</p>
+                <div class="care-type-chips" data-care-types></div>
                 <div class="chips-row">
                   <span class="chip">First Aid</span>
                 </div>
@@ -948,7 +942,7 @@
     <section class="app-screen" id="screenProfile" style="display: none;">
       <div class="gradient-banner">
         <div class="container banner-inner">
-          <h1 class="banner-title member-banner-title">Babysitter Profile</h1>
+          <h1 class="banner-title member-banner-title"><a class="profile-heading-link" href="#/find">Babysitter Profile</a></h1>
         </div>
       </div>
       <div class="content-section profile-content">
@@ -983,6 +977,7 @@
                     <span class="stars-num" id="profileRatingText">4.9 (87 reviews)</span>
                   </div>
 
+                  <div class="care-type-chips" id="profileCareTypeChips" aria-label="Care types offered"></div>
                   <p class="profile-location" id="profileLocation">Bangsar</p>
 
                   <div class="profile-verifications">
@@ -1015,6 +1010,10 @@
                 </div>
                 <div class="profile-chips"><span>English</span><span>Mandarin</span><span>6 months–12 years</span></div>
                 <p class="profile-bio-text" id="profileBio">Warm, patient, and creative caregiver dedicated to nurturing young children. Experienced in newborn care routines, developmental toddler play, and engaging educational activities.</p>
+                <div class="profile-care-types" id="profileCareTypes">
+                  <strong class="profile-care-types-label">Care offered</strong>
+                  <div class="profile-care-types-list"></div>
+                </div>
                 <div class="care-offered"><span><b>✓</b> Newborn care</span><span><b>✓</b> Homework help</span><span><b>✓</b> Meal preparation</span><span><b>✓</b> Light housekeeping</span><span><b>×</b> Pet care</span></div>
               </div>
 
@@ -1065,7 +1064,6 @@
 
             <aside class="profile-sticky-card card">
               <div class="sticky-price"><span id="stickyProfilePrice">RM 20</span><small>/ hour</small></div>
-              <button class="btn btn-primary full-width" id="btnProfileStickyBook">Book Sarah</button>
               <button class="btn btn-secondary full-width profile-message-button" id="btnProfileStickyMessage" aria-label="Message Sarah">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                   <path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8z"></path>
@@ -1073,6 +1071,7 @@
                 <span>Message</span>
               </button>
               <button class="btn btn-secondary full-width" id="btnProfileCompare">Compare</button>
+              <button class="btn btn-primary full-width" id="btnProfileStickyBook">Book Sarah</button>
               <p class="profile-booking-note">You will not be charged until <span id="profileBookingName">Sarah</span> accepts.</p>
             </aside>
           </div>
@@ -1086,6 +1085,7 @@
           </svg>
           <span>Message</span>
         </button>
+        <button class="btn btn-secondary" id="btnProfileMobileCompare">Compare</button>
         <button class="btn btn-primary" id="btnProfileMobileBook">Book Sarah</button>
       </div>
     </section>
@@ -1772,21 +1772,25 @@
           <div class="home-section-block">
             <h2 class="section-heading">Babysitters for your preferences</h2>
             <div class="home-matches-grid">
-              <div class="card home-sitter-card">
+              <div class="card home-sitter-card" data-sitter-id="nur-ain">
                 <div class="home-sitter-header">
                   <strong>Nur Ain</strong>
                   <span class="preference-summary-slot" data-preference-sitter="nur-ain"></span>
                 </div>
                 <span class="home-sitter-meta">⭐ 4.8 • RM 22/hr</span>
+                <p class="sitter-languages home-sitter-languages" data-sitter-languages></p>
+                <div class="care-type-chips" data-care-types></div>
                 <button class="btn btn-secondary full-width btn-sm" id="btnHomeViewNur">View profile</button>
               </div>
 
-              <div class="card home-sitter-card">
+              <div class="card home-sitter-card" data-sitter-id="aisyah">
                 <div class="home-sitter-header">
                   <strong>Aisyah</strong>
                   <span class="preference-summary-slot" data-preference-sitter="aisyah"></span>
                 </div>
                 <span class="home-sitter-meta">⭐ 4.7 • RM 20/hr</span>
+                <p class="sitter-languages home-sitter-languages" data-sitter-languages></p>
+                <div class="care-type-chips" data-care-types></div>
                 <button class="btn btn-secondary full-width btn-sm" id="btnHomeViewAisyah">View profile</button>
               </div>
             </div>
