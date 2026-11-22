@@ -36,7 +36,8 @@
       </div>
 
       <div class="topbar-right" id="topbarRight">
-        <button class="btn btn-secondary" id="loginBtn">Log in</button>
+        <button class="topbar-login-link" id="loginBtn">Log in</button>
+        <button class="btn btn-primary topbar-get-started-btn" id="getStartedBtn">Get Started</button>
         <button type="button" class="topbar-profile-btn" id="profileBtn" aria-label="Profile" hidden>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -163,16 +164,17 @@
          ==================================================================== -->
     <section class="app-screen" id="screenWelcome">
       <div class="hero-fullbleed">
-        <img src="https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=1600&q=80" 
-             alt="Babysitter caring for young children playing at home" 
+        <img src="images/hero-drawing.jpg"
+             alt="A babysitter and a child drawing together at a table"
              class="hero-fullbleed-bg"
              loading="eager"
              onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
         <div class="hero-fullbleed-fallback" style="display: none;"></div>
-        
+
         <div class="hero-fullbleed-overlay" aria-hidden="true"></div>
 
         <div class="container hero-fullbleed-content">
+          <p class="hero-verification"><span aria-hidden="true">✓</span> Find verified babysitters</p>
           <h1 class="page-title">Care you can trust, close to home.</h1>
           <p class="hero-body">
             Certified, background-checked babysitters in your neighborhood.
@@ -186,8 +188,8 @@
             <!-- Role Card 1: I need a babysitter (goes to Parent Q1) -->
             <div class="card role-card" id="roleNeedSitterCard" tabindex="0" role="button" aria-label="I need a babysitter">
               <div class="role-photo-wrap">
-                <img src="https://images.unsplash.com/photo-1491438590914-bc09fcaaf77a?auto=format&fit=crop&w=800&h=480&q=80" 
-                     alt="A parent with a babysitter and a happy child playing together" 
+                <img src="images/card-need-sitter.jpg" 
+                     alt="A parent holding a HELP sign surrounded by young children at home" 
                      class="role-photo"
                      loading="lazy"
                      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
@@ -209,8 +211,8 @@
             <!-- Role Card 2: I am a babysitter (Phase 3 placeholder) -->
             <div class="card role-card" id="roleAmSitterCard" tabindex="0" role="button" aria-label="I am a babysitter">
               <div class="role-photo-wrap">
-                <img src="https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=800&h=480&q=80" 
-                     alt="A smiling caregiver with a child" 
+                <img src="images/card-am-sitter.jpg" 
+                     alt="A smiling babysitter playing with a young girl on the living room floor" 
                      class="role-photo"
                      loading="lazy"
                      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
@@ -230,6 +232,9 @@
           </div>
 
           <form class="home-search-card" id="homeSearchForm" novalidate>
+            <div class="search-card-badge">
+              <span>📍 Quick Search</span>
+            </div>
             <h2 class="home-search-title">Find a babysitter near you</h2>
             <div class="home-search-row">
               <div class="home-search-input-group">
@@ -255,10 +260,6 @@
             </div>
             <p class="home-search-note" id="homeSearchNote">No account needed to search.</p>
           </form>
-
-          <div class="login-prompt">
-            <a href="#/auth" class="inline-link" id="welcomeLoginLink">Already have an account? Log in</a>
-          </div>
 
           <div class="trust-points-row">
             <div class="trust-point">
@@ -1177,8 +1178,8 @@
         <div class="container auth-container">
           <div class="card auth-card">
             <p class="section-subtext auth-intent-message" id="authIntentMessage" hidden></p>
-            <h1 class="section-heading" id="authHeadline">Create an account to book</h1>
-            <p class="section-subtext">Join Ease to confirm your caregiver and manage safe sessions.</p>
+            <h1 class="section-heading" id="authHeadline">Create your Ease account</h1>
+            <p class="section-subtext" id="authSubtext">Join Ease to confirm your caregiver and manage safe sessions.</p>
 
             <!-- Mode Toggle Tabs -->
             <div class="auth-tabs">
@@ -1186,61 +1187,108 @@
               <button class="auth-tab" id="tabLogIn">Log In</button>
             </div>
 
-            <form id="authForm" class="auth-form" novalidate>
-              <!-- Name (Sign Up only) -->
-              <div class="input-group" id="groupName">
-                <label for="authName">Full Name</label>
-                <input type="text" id="authName" class="input-field" placeholder="Jessica Roberts">
-                <span class="input-error-msg" id="errorAuthName" style="display: none;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                  Please enter your full name.
-                </span>
+            <!-- Role Selection (Sign Up only) -->
+            <div class="auth-role-group" id="authRoleGroup">
+              <div class="auth-role-cards" role="group" aria-label="Account type">
+                <button type="button" class="auth-role-card" id="roleSelectParent" aria-pressed="false" aria-controls="authDetails">
+                  <div class="auth-role-text">
+                    <strong><svg class="auth-role-symbol" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="7" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M2 20v-2a6 6 0 0 1 12 0v2m1 0v-1a4 4 0 0 1 8 0v1"/></svg> Sign up as a Parent</strong>
+                    <small>Find &amp; book trusted babysitters</small>
+                  </div>
+                  <span class="auth-role-check" aria-hidden="true">✓</span>
+                </button>
+                <button type="button" class="auth-role-card" id="roleSelectSitter" aria-pressed="false" aria-controls="authDetails">
+                  <div class="auth-role-text">
+                    <strong><svg class="auth-role-symbol" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-8-4.7-8-10a4.4 4.4 0 0 1 8-2.5A4.4 4.4 0 0 1 20 10c0 5.3-8 10-8 10Z"/></svg> Sign up as a Babysitter</strong>
+                    <small>Offer childcare &amp; find jobs</small>
+                  </div>
+                  <span class="auth-role-check" aria-hidden="true">✓</span>
+                </button>
               </div>
+            </div>
 
-              <!-- Email -->
-              <div class="input-group">
-                <label for="authEmail">Email Address</label>
-                <input type="email" id="authEmail" class="input-field" placeholder="jessica@example.com">
-                <span class="input-error-msg" id="errorAuthEmail" style="display: none;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                  Please enter a valid email address.
-                </span>
-              </div>
+            <p id="authRoleHint" class="auth-role-hint">Select a role to continue.</p>
 
-              <!-- Phone (Sign Up only) -->
-              <div class="input-group" id="groupPhone">
-                <label for="authPhone">Phone Number</label>
-                <input type="tel" id="authPhone" class="input-field" placeholder="012-3456789">
-                <span class="input-error-msg" id="errorAuthPhone" style="display: none;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                  Please enter a valid phone number.
-                </span>
-              </div>
+            <div id="authDetails" class="auth-details" hidden>
+              <aside class="auth-details-sidebar" id="authDetailsSidebar">
+                <h2 id="authRegistrationTitle">Create your account</h2>
+                <ol>
+                  <li aria-current="step">Account details</li>
+                  <li>Email verification</li>
+                </ol>
+              </aside>
+              <form id="authForm" class="auth-form" novalidate>
+                <!-- Name (Sign Up only) -->
+                <div class="input-group" id="groupName">
+                  <label for="authName">Full Name</label>
+                  <input type="text" id="authName" class="input-field" placeholder="Jessica Roberts">
+                  <span class="input-error-msg" id="errorAuthName" style="display: none;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                    Please enter your full name.
+                  </span>
+                </div>
 
-              <!-- Password -->
-              <div class="input-group">
-                <label for="authPassword">Password</label>
-                <input type="password" id="authPassword" class="input-field" placeholder="Minimum 6 characters">
-                <span class="input-error-msg" id="errorAuthPassword" style="display: none;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                  Password must be at least 6 characters.
-                </span>
-              </div>
+                <div class="input-group" id="groupAuthDob">
+                  <label for="authDob">Date of Birth</label>
+                  <input type="date" id="authDob" class="input-field" autocomplete="bday" aria-describedby="errorAuthDob">
+                  <span class="input-error-msg" id="errorAuthDob" style="display: none;">Please enter a date of birth in the past.</span>
+                </div>
 
-              <!-- Privacy Consent (Sign Up only) -->
-              <div class="checkbox-group" id="groupPrivacy">
-                <label class="privacy-label">
-                  <input type="checkbox" id="authPrivacy">
-                  <span>I agree to the Ease Terms of Service and Privacy Policy.</span>
-                </label>
-                <span class="input-error-msg" id="errorAuthPrivacy" style="display: none;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                  You must agree to continue.
-                </span>
-              </div>
+                <!-- Phone (Sign Up only) -->
+                <div class="input-group" id="groupPhone">
+                  <label for="authPhone">Phone Number</label>
+                  <input type="tel" id="authPhone" class="input-field" placeholder="012-3456789">
+                  <span class="input-error-msg" id="errorAuthPhone" style="display: none;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                    Please enter a valid phone number.
+                  </span>
+                </div>
 
-              <button type="submit" class="btn btn-primary full-width btn-large" id="btnAuthSubmit">Continue</button>
-            </form>
+                <!-- Email -->
+                <div class="input-group" id="groupEmail">
+                  <label for="authEmail">Email Address</label>
+                  <input type="email" id="authEmail" class="input-field" placeholder="jessica@example.com">
+                  <span class="input-error-msg" id="errorAuthEmail" style="display: none;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                    Please enter a valid email address.
+                  </span>
+                </div>
+
+                <!-- Parent-specific: Number of Children -->
+                <div class="input-group" id="groupParentChildren">
+                  <label for="authParentChildren">Number of Children</label>
+                  <input type="number" id="authParentChildren" class="input-field" min="1" max="10" step="1" placeholder="e.g. 2">
+                  <span class="input-error-msg" id="errorAuthParentChildren" style="display: none;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                    Enter a whole number from 1 to 10.
+                  </span>
+                </div>
+
+                <!-- Password -->
+                <div class="input-group" id="groupPassword">
+                  <label for="authPassword">Password</label>
+                  <input type="password" id="authPassword" class="input-field" placeholder="Minimum 6 characters">
+                  <span class="input-error-msg" id="errorAuthPassword" style="display: none;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                    Password must be at least 6 characters.
+                  </span>
+                </div>
+
+                <!-- Privacy Consent (Sign Up only) -->
+                <div class="checkbox-group" id="groupPrivacy">
+                  <label class="privacy-label">
+                    <input type="checkbox" id="authPrivacy">
+                    <span>I agree to the Ease Terms of Service and Privacy Policy.</span>
+                  </label>
+                  <span class="input-error-msg" id="errorAuthPrivacy" style="display: none;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                    You must agree to continue.
+                  </span>
+                </div>
+
+                <button type="submit" class="btn btn-primary full-width btn-large" id="btnAuthSubmit">Continue</button>
+              </form>
+            </div>
           </div>
         </div>
       </div>
@@ -1780,18 +1828,6 @@
       </div>
     </section>
 
-    <section class="app-screen" id="screenParentProfile" style="display: none;">
-      <div class="content-section">
-        <div class="container bookings-container">
-          <h1 class="page-title">My Profile</h1>
-          <section class="card parent-profile-history">
-            <h2 class="section-heading">Booking History</h2>
-            <div id="parentProfileBookingHistory" class="bookings-list"></div>
-          </section>
-        </div>
-      </div>
-    </section>
-
     <!-- ====================================================================
          SCREEN 15: PRIVATE CHAT
          ==================================================================== -->
@@ -1838,6 +1874,147 @@
           </div>
           <button type="submit" class="btn btn-primary btn-chat-send">Send</button>
         </form>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SCREEN 16: PARENT PROFILE
+         ==================================================================== -->
+    <section class="app-screen" id="screenParentProfile" style="display: none;">
+      <div class="content-section parent-profile-section">
+        <div class="container parent-profile-container">
+
+          <!-- Page Heading -->
+          <div class="parent-profile-header-group">
+            <h1 class="page-title parent-profile-title">Parent Profile</h1>
+            <p class="section-subtext">View and manage your personal details and account settings.</p>
+          </div>
+
+          <!-- Profile Overview / Avatar Card -->
+          <div class="card parent-profile-overview-card">
+            <div class="parent-profile-overview-left">
+              <div class="parent-profile-avatar" id="parentProfileAvatar" aria-label="Parent profile photo placeholder">
+                <span id="parentProfileAvatarInitials">JR</span>
+              </div>
+              <div class="parent-profile-overview-info">
+                <h2 class="parent-profile-display-name" id="parentProfileDisplayName">Jessica Roberts</h2>
+                <div class="parent-profile-badges">
+                  <span class="badge badge-ease-trained">
+                    <svg class="badge-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+                    Verified Parent
+                  </span>
+                  <span class="parent-profile-meta-pill" id="parentProfileEmailDisplay">jessica@example.com</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Profile Edit Form Card -->
+          <div class="card parent-profile-form-card">
+            <div class="parent-profile-card-header">
+              <h2 class="section-heading">Personal Information</h2>
+              <p class="section-subtext">Update your personal details below. Click "Save Changes" to apply.</p>
+            </div>
+
+            <!-- Inline Success Alert -->
+            <div class="parent-profile-alert parent-profile-alert-success" id="parentProfileSuccessAlert" style="display: none;" role="status">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2E8B6E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20 6L9 17l-5-5"></path>
+              </svg>
+              <span id="parentProfileSuccessMsg">Profile details updated successfully!</span>
+            </div>
+
+            <!-- Inline Error Alert -->
+            <div class="parent-profile-alert parent-profile-alert-error" id="parentProfileErrorAlert" style="display: none;" role="alert">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              <span id="parentProfileErrorMsg">Please fix the highlighted errors before saving.</span>
+            </div>
+
+            <form id="parentProfileForm" class="parent-profile-form" novalidate>
+              <!-- Full Name -->
+              <div class="input-group">
+                <label for="parentProfileName">Full Name</label>
+                <input type="text" id="parentProfileName" class="input-field" placeholder="Enter your full name" required>
+                <span class="input-error-msg" id="errorParentProfileName" style="display: none;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                  Please enter your full name.
+                </span>
+              </div>
+
+              <!-- Date of Birth -->
+              <div class="input-group">
+                <label for="parentProfileDob">Date of Birth</label>
+                <input type="date" id="parentProfileDob" class="input-field" required>
+                <span class="input-error-msg" id="errorParentProfileDob" style="display: none;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                  Please enter a valid date of birth.
+                </span>
+              </div>
+
+              <!-- Phone Number -->
+              <div class="input-group">
+                <label for="parentProfilePhone">Phone Number</label>
+                <input type="tel" id="parentProfilePhone" class="input-field" placeholder="012-3456789" required>
+                <span class="input-error-msg" id="errorParentProfilePhone" style="display: none;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                  Please enter a valid phone number (e.g. 012-3456789).
+                </span>
+              </div>
+
+              <!-- Email Address -->
+              <div class="input-group">
+                <label for="parentProfileEmail">Email Address</label>
+                <input type="email" id="parentProfileEmail" class="input-field" placeholder="jessica@example.com" required>
+                <span class="input-error-msg" id="errorParentProfileEmail" style="display: none;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                  Please enter a valid email address.
+                </span>
+              </div>
+
+              <!-- Number of Children -->
+              <div class="input-group">
+                <label for="parentProfileNumChildren">Number of Children</label>
+                <input type="number" id="parentProfileNumChildren" class="input-field" min="1" max="15" placeholder="1" required>
+                <span class="input-error-msg" id="errorParentProfileNumChildren" style="display: none;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                  Please enter the number of children (at least 1).
+                </span>
+              </div>
+
+              <!-- Save Changes Button -->
+              <div class="parent-profile-form-actions">
+                <button type="submit" class="btn btn-primary full-width btn-large" id="btnSaveParentProfile">Save Changes</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Booking History Card -->
+          <div class="card parent-profile-history">
+            <h2 class="section-heading">Booking History</h2>
+            <div id="parentProfileBookingHistory" class="bookings-list"></div>
+          </div>
+
+          <!-- Account Settings / Log Out Card -->
+          <div class="card parent-profile-danger-card">
+            <div class="parent-profile-danger-header">
+              <h3 class="card-title">Session &amp; Security</h3>
+              <p class="section-subtext">Log out of your current Ease session on this device.</p>
+            </div>
+            <button type="button" class="btn btn-logout full-width btn-large" id="btnParentLogout">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+              <span>Log Out</span>
+            </button>
+          </div>
+
+        </div>
       </div>
     </section>
 

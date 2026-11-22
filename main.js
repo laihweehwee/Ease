@@ -40,6 +40,12 @@ document.addEventListener('DOMContentLoaded', () => {
       name: 'Jessica Roberts',
       email: 'jessica@example.com',
       phone: '012-3456789',
+      dob: '1992-08-14',
+      numChildren: 1,
+      role: 'parent',         // 'parent' | 'babysitter'
+      hourlyRate: 25,         // babysitter only
+      experience: '3-5',      // babysitter only
+      specialties: [],        // babysitter only
     },
     hasAddedChild: false,
     children: [],
@@ -555,6 +561,17 @@ document.addEventListener('DOMContentLoaded', () => {
       : 'Show fewer preferences';
   });
 
+  state.user = state.user || {};
+  state.user.name = state.user.name || 'Jessica Roberts';
+  state.user.email = state.user.email || 'jessica@example.com';
+  state.user.phone = state.user.phone || '012-3456789';
+  state.user.dob = state.user.dob || '1992-08-14';
+  state.user.numChildren = state.user.numChildren !== undefined ? state.user.numChildren : (state.children.length || 1);
+  state.user.role = state.user.role || 'parent';
+  state.user.hourlyRate = state.user.hourlyRate || 25;
+  state.user.experience = state.user.experience || '3-5';
+  state.user.specialties = state.user.specialties || [];
+
   function saveState() {
     try {
       const serialized = {
@@ -603,6 +620,7 @@ document.addEventListener('DOMContentLoaded', () => {
     payment: document.getElementById('screenPayment'),
     bookingConfirmed: document.getElementById('screenBookingConfirmed'),
     parentHome: document.getElementById('screenParentHome'),
+    parentProfile: document.getElementById('screenParentProfile'),
     chat: document.getElementById('screenChat'),
   };
 
@@ -786,6 +804,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     hamburgerBtn.style.display = 'flex';
     if (topbarLoginBtn) topbarLoginBtn.style.display = state.isLoggedIn ? 'none' : '';
+    if (topbarGetStartedBtn) topbarGetStartedBtn.style.display = state.isLoggedIn ? 'none' : '';
     if (profileBtn) profileBtn.hidden = !state.isLoggedIn;
     updateDrawerNavigation(screenId);
 
@@ -848,6 +867,8 @@ document.addEventListener('DOMContentLoaded', () => {
       setupBookingConfirmed();
     } else if (screenId === 'parentHome') {
       setupParentHome();
+    } else if (screenId === 'parentProfile') {
+      setupParentProfile();
     } else if (screenId === 'chat') {
       setupChatScreen();
     } else if (screenId === 'verify') {
@@ -973,8 +994,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // --------------------------------------------------------------------------
   const roleNeedSitterCard = document.getElementById('roleNeedSitterCard');
   const roleAmSitterCard = document.getElementById('roleAmSitterCard');
-  const welcomeLoginLink = document.getElementById('welcomeLoginLink');
   const topbarLoginBtn = document.getElementById('loginBtn');
+  const topbarGetStartedBtn = document.getElementById('getStartedBtn');
   const profileBtn = document.getElementById('profileBtn');
 
   function activateRoleCard(card) {
@@ -983,7 +1004,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (card.id === 'roleNeedSitterCard') {
         showScreen('q1');
       } else {
-        showToast('Babysitter application is opening soon!');
+        // "I am a Babysitter" → open signup with Babysitter role preselected
+        state.bookingIntent = false;
+        state.authReturnScreen = 'parentHome';
+        setAuthMode('signup');
+        setSignupRole('babysitter');
+        showScreen('auth');
       }
     });
     card.addEventListener('keydown', (e) => {
@@ -997,20 +1023,19 @@ document.addEventListener('DOMContentLoaded', () => {
   activateRoleCard(roleNeedSitterCard);
   activateRoleCard(roleAmSitterCard);
 
-  if (welcomeLoginLink) {
-    welcomeLoginLink.addEventListener('click', (e) => {
-      e.preventDefault();
+  if (topbarLoginBtn) {
+    topbarLoginBtn.addEventListener('click', () => {
       state.bookingIntent = false;
       state.authReturnScreen = 'parentHome';
       setAuthMode('login');
       showScreen('auth');
     });
   }
-  if (topbarLoginBtn) {
-    topbarLoginBtn.addEventListener('click', () => {
+  if (topbarGetStartedBtn) {
+    topbarGetStartedBtn.addEventListener('click', () => {
       state.bookingIntent = false;
       state.authReturnScreen = 'parentHome';
-      setAuthMode('login');
+      setAuthMode('signup', null);
       showScreen('auth');
     });
   }
@@ -2233,6 +2258,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const tabSignUp = document.getElementById('tabSignUp');
   const tabLogIn = document.getElementById('tabLogIn');
   const authHeadline = document.getElementById('authHeadline');
+  const authSubtext = document.getElementById('authSubtext');
   const authIntentMessage = document.getElementById('authIntentMessage');
   const groupName = document.getElementById('groupName');
   const groupPhone = document.getElementById('groupPhone');
@@ -2240,7 +2266,49 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnAuthSubmit = document.getElementById('btnAuthSubmit');
   const authForm = document.getElementById('authForm');
 
-  let authMode = 'signup'; // 'signup' | 'login'
+  const authRoleGroup = document.getElementById('authRoleGroup');
+  const authRoleHint = document.getElementById('authRoleHint');
+  const authDetails = document.getElementById('authDetails');
+  const authDetailsSidebar = document.getElementById('authDetailsSidebar');
+  const authRegistrationTitle = document.getElementById('authRegistrationTitle');
+  const roleSelectParent = document.getElementById('roleSelectParent');
+  const roleSelectSitter = document.getElementById('roleSelectSitter');
+  const groupParentChildren = document.getElementById('groupParentChildren');
+  const groupAuthDob = document.getElementById('groupAuthDob');
+  const authDob = document.getElementById('authDob');
+
+  let authMode = 'signup';
+  let signupRole = null;
+
+  function setSignupRole(role) {
+    signupRole = role;
+    const isParent = role === 'parent';
+    const isSitter = role === 'babysitter';
+    const roleLabel = isParent ? 'parent' : 'babysitter';
+
+    authDetails.hidden = !role;
+    authRoleHint.hidden = Boolean(role);
+    roleSelectParent.classList.toggle('active', isParent);
+    roleSelectSitter.classList.toggle('active', isSitter);
+    roleSelectParent.setAttribute('aria-pressed', String(isParent));
+    roleSelectSitter.setAttribute('aria-pressed', String(isSitter));
+    groupParentChildren.style.display = isParent ? 'flex' : 'none';
+    authForm.classList.toggle('sitter-mode', isSitter);
+
+    authHeadline.textContent = role
+      ? `Create your ${roleLabel} account`
+      : 'Create your Ease account';
+    authSubtext.hidden = !role;
+    authSubtext.textContent = role ? 'Enter your details below.' : '';
+    authRegistrationTitle.textContent = role
+      ? `${isParent ? 'Parent' : 'Babysitter'} registration`
+      : 'Create your account';
+    btnAuthSubmit.textContent = 'Continue to Verification';
+    clearAuthErrors();
+  }
+
+  roleSelectParent.addEventListener('click', () => setSignupRole('parent'));
+  roleSelectSitter.addEventListener('click', () => setSignupRole('babysitter'));
 
   function updateAuthIntentMessage() {
     if (!authIntentMessage) return;
@@ -2252,25 +2320,41 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function setAuthMode(mode) {
+  function setAuthMode(mode, role = state.authReturnScreen === 'parentHome' ? null : 'parent') {
     authMode = mode;
+    const isSignup = mode === 'signup';
+    authDetailsSidebar.hidden = !isSignup;
+    authDetails.classList.toggle('auth-details-login', !isSignup);
+    groupAuthDob.style.display = isSignup ? 'flex' : 'none';
     updateAuthIntentMessage();
+    if (authForm) {
+      authForm.classList.toggle('login-mode', mode === 'login');
+      authForm.classList.toggle('sitter-mode', mode === 'signup' && signupRole === 'babysitter');
+    }
     if (mode === 'signup') {
       tabSignUp.classList.add('active');
       tabLogIn.classList.remove('active');
-      authHeadline.textContent = 'Create an account to book';
       groupName.style.display = 'flex';
       groupPhone.style.display = 'flex';
       groupPrivacy.style.display = 'block';
-      btnAuthSubmit.textContent = 'Continue';
+      // Show role selection and apply current role
+      if (authRoleGroup) authRoleGroup.style.display = 'block';
+      setSignupRole(role);
     } else {
+      authDetails.hidden = false;
+      authRoleHint.hidden = true;
       tabLogIn.classList.add('active');
       tabSignUp.classList.remove('active');
       authHeadline.textContent = 'Log in to your account';
+      authSubtext.hidden = false;
+      authSubtext.textContent = 'Welcome back! Log in to manage your sessions.';
       groupName.style.display = 'none';
       groupPhone.style.display = 'none';
       groupPrivacy.style.display = 'none';
       btnAuthSubmit.textContent = 'Log In';
+      // Hide all role-specific UI
+      if (authRoleGroup) authRoleGroup.style.display = 'none';
+      if (groupParentChildren) groupParentChildren.style.display = 'none';
     }
     clearAuthErrors();
   }
@@ -2279,18 +2363,19 @@ document.addEventListener('DOMContentLoaded', () => {
   if (tabLogIn) tabLogIn.addEventListener('click', () => setAuthMode('login'));
 
   function clearAuthErrors() {
-    ['authName', 'authEmail', 'authPhone', 'authPassword'].forEach(id => {
+    ['authName', 'authEmail', 'authPhone', 'authDob', 'authPassword', 'authParentChildren'].forEach(id => {
       const input = document.getElementById(id);
       if (input) input.classList.remove('input-error');
     });
-    ['errorAuthName', 'errorAuthEmail', 'errorAuthPhone', 'errorAuthPassword', 'errorAuthPrivacy'].forEach(id => {
+    ['errorAuthName', 'errorAuthEmail', 'errorAuthPhone', 'errorAuthPassword', 'errorAuthPrivacy',
+     'errorAuthParentChildren', 'errorAuthDob'].forEach(id => {
       const err = document.getElementById(id);
       if (err) err.style.display = 'none';
     });
   }
 
   // Clear single error on typing
-  ['authName', 'authEmail', 'authPhone', 'authPassword'].forEach(id => {
+  ['authName', 'authEmail', 'authPhone', 'authDob', 'authPassword', 'authParentChildren'].forEach(id => {
     const el = document.getElementById(id);
     if (el) {
       el.addEventListener('input', () => {
@@ -2305,6 +2390,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (authForm) {
     authForm.addEventListener('submit', (e) => {
       e.preventDefault();
+      if (authMode === 'signup' && !signupRole) return;
       clearAuthErrors();
 
       const nameVal = document.getElementById('authName').value.trim();
@@ -2316,6 +2402,11 @@ document.addEventListener('DOMContentLoaded', () => {
       let hasError = false;
 
       if (authMode === 'signup') {
+        if (!authDob.value || authDob.value >= getTodayDateValue()) {
+          authDob.classList.add('input-error');
+          document.getElementById('errorAuthDob').style.display = 'flex';
+          hasError = true;
+        }
         if (!nameVal) {
           document.getElementById('authName').classList.add('input-error');
           document.getElementById('errorAuthName').style.display = 'flex';
@@ -2330,6 +2421,17 @@ document.addEventListener('DOMContentLoaded', () => {
           document.getElementById('errorAuthPrivacy').style.display = 'flex';
           hasError = true;
         }
+
+        // Role-specific validation: Parent only needs number of children
+        if (signupRole === 'parent') {
+          const childrenVal = document.getElementById('authParentChildren').valueAsNumber;
+          if (!Number.isInteger(childrenVal) || childrenVal < 1 || childrenVal > 10) {
+            document.getElementById('authParentChildren').classList.add('input-error');
+            document.getElementById('errorAuthParentChildren').style.display = 'flex';
+            hasError = true;
+          }
+        }
+        // Babysitter: no extra fields at signup — additional details collected on Babysitter Profile page
       }
 
       // Common validations
@@ -2353,6 +2455,16 @@ document.addEventListener('DOMContentLoaded', () => {
         state.user.name = nameVal;
         state.user.email = emailVal;
         state.user.phone = phoneVal;
+        state.user.dob = authDob.value;
+        state.user.role = signupRole;
+
+        // Save role-specific data
+        if (signupRole === 'parent') {
+          state.user.numChildren = document.getElementById('authParentChildren').valueAsNumber;
+        }
+        // Babysitter extra details (rate, experience, specialties) are collected
+        // on the Babysitter Profile page — handled by the responsible team member.
+
         saveState();
         showScreen('verify');
       } else {
@@ -2376,6 +2488,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  setAuthMode('signup', null);
+
   // --------------------------------------------------------------------------
   // 12. Screen 8: Email Verification
   // --------------------------------------------------------------------------
@@ -2392,7 +2506,13 @@ document.addEventListener('DOMContentLoaded', () => {
     btnEmailVerifiedDemo.addEventListener('click', () => {
       setLoggedIn(true);
       saveState();
-      showToast('Email verified successfully!');
+
+      const firstName = (state.user.name || 'there').split(' ')[0];
+      if (state.user.role === 'babysitter') {
+        showToast(`Welcome to Ease Caregivers, ${firstName}! Your application is under review.`);
+      } else {
+        showToast(`Email verified! Welcome to Ease, ${firstName}!`);
+      }
 
       if (completeSavedMessageIntent()) {
         return;
@@ -2920,14 +3040,6 @@ document.addEventListener('DOMContentLoaded', () => {
     );
   }
 
-  function setupParentProfile() {
-    renderBookingList(
-      document.getElementById('parentProfileBookingHistory'),
-      bookings.slice().reverse(),
-      'No past bookings yet.'
-    );
-  }
-
   function openBookingById(bookingId, targetScreen) {
     const booking = bookings.find(item => item.id === bookingId);
     if (!booking) return;
@@ -3217,6 +3329,221 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (bookingsList) bookingsList.addEventListener('click', handleBookingListClick);
   if (parentProfileBookingHistory) parentProfileBookingHistory.addEventListener('click', handleBookingListClick);
+
+  // --------------------------------------------------------------------------
+  // 20B. Screen 16: Parent Profile
+  // --------------------------------------------------------------------------
+  function getInitials(name) {
+    if (!name) return 'P';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return parts[0].slice(0, 2).toUpperCase();
+  }
+
+  function clearParentProfileErrors() {
+    ['parentProfileName', 'parentProfileDob', 'parentProfilePhone', 'parentProfileEmail', 'parentProfileNumChildren'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('input-error');
+    });
+    ['errorParentProfileName', 'errorParentProfileDob', 'errorParentProfilePhone', 'errorParentProfileEmail', 'errorParentProfileNumChildren'].forEach(id => {
+      const err = document.getElementById(id);
+      if (err) err.style.display = 'none';
+    });
+    const errorAlert = document.getElementById('parentProfileErrorAlert');
+    if (errorAlert) errorAlert.style.display = 'none';
+  }
+
+  function setupParentProfile() {
+    const nameInput = document.getElementById('parentProfileName');
+    const dobInput = document.getElementById('parentProfileDob');
+    const phoneInput = document.getElementById('parentProfilePhone');
+    const emailInput = document.getElementById('parentProfileEmail');
+    const numChildrenInput = document.getElementById('parentProfileNumChildren');
+    const displayName = document.getElementById('parentProfileDisplayName');
+    const avatarInitials = document.getElementById('parentProfileAvatarInitials');
+    const emailDisplay = document.getElementById('parentProfileEmailDisplay');
+    const successAlert = document.getElementById('parentProfileSuccessAlert');
+    const errorAlert = document.getElementById('parentProfileErrorAlert');
+
+    state.user.name = state.user.name || 'Jessica Roberts';
+    state.user.email = state.user.email || 'jessica@example.com';
+    state.user.phone = state.user.phone || '012-3456789';
+    state.user.dob = state.user.dob || '1992-08-14';
+    state.user.numChildren = state.user.numChildren !== undefined ? state.user.numChildren : (state.children.length || 1);
+
+    if (displayName) displayName.textContent = state.user.name;
+    if (avatarInitials) avatarInitials.textContent = getInitials(state.user.name);
+    if (emailDisplay) emailDisplay.textContent = state.user.email;
+
+    if (nameInput) nameInput.value = state.user.name;
+    if (dobInput) dobInput.value = state.user.dob;
+    if (phoneInput) phoneInput.value = state.user.phone;
+    if (emailInput) emailInput.value = state.user.email;
+    if (numChildrenInput) numChildrenInput.value = state.user.numChildren;
+
+    if (successAlert) successAlert.style.display = 'none';
+    if (errorAlert) errorAlert.style.display = 'none';
+    clearParentProfileErrors();
+
+    const historyEl = document.getElementById('parentProfileBookingHistory');
+    if (historyEl && typeof renderBookingList === 'function' && Array.isArray(bookings)) {
+      renderBookingList(historyEl, bookings.slice().reverse(), 'No past bookings yet.');
+    }
+  }
+
+  // Clear validation error on typing
+  ['parentProfileName', 'parentProfileDob', 'parentProfilePhone', 'parentProfileEmail', 'parentProfileNumChildren'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      const clearFieldError = () => {
+        el.classList.remove('input-error');
+        const errId = `error${id.charAt(0).toUpperCase() + id.slice(1)}`;
+        const err = document.getElementById(errId);
+        if (err) err.style.display = 'none';
+        const errorAlert = document.getElementById('parentProfileErrorAlert');
+        if (errorAlert) errorAlert.style.display = 'none';
+      };
+      el.addEventListener('input', clearFieldError);
+      el.addEventListener('change', clearFieldError);
+    }
+  });
+
+  const parentProfileForm = document.getElementById('parentProfileForm');
+  if (parentProfileForm) {
+    parentProfileForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      clearParentProfileErrors();
+
+      const nameInput = document.getElementById('parentProfileName');
+      const dobInput = document.getElementById('parentProfileDob');
+      const phoneInput = document.getElementById('parentProfilePhone');
+      const emailInput = document.getElementById('parentProfileEmail');
+      const numChildrenInput = document.getElementById('parentProfileNumChildren');
+
+      const nameVal = nameInput ? nameInput.value.trim() : '';
+      const dobVal = dobInput ? dobInput.value : '';
+      const phoneVal = phoneInput ? phoneInput.value.trim() : '';
+      const emailVal = emailInput ? emailInput.value.trim() : '';
+      const numChildrenVal = numChildrenInput ? parseInt(numChildrenInput.value, 10) : NaN;
+
+      let hasError = false;
+
+      // Validate Full Name
+      if (!nameVal || nameVal.length < 2) {
+        if (nameInput) nameInput.classList.add('input-error');
+        const err = document.getElementById('errorParentProfileName');
+        if (err) err.style.display = 'flex';
+        hasError = true;
+      }
+
+      // Validate Date of Birth
+      if (!dobVal) {
+        if (dobInput) dobInput.classList.add('input-error');
+        const err = document.getElementById('errorParentProfileDob');
+        if (err) {
+          err.querySelector('span') ? null : null;
+          err.style.display = 'flex';
+        }
+        hasError = true;
+      } else {
+        const birthDate = new Date(dobVal);
+        const today = new Date();
+        if (isNaN(birthDate.getTime()) || birthDate >= today) {
+          if (dobInput) dobInput.classList.add('input-error');
+          const err = document.getElementById('errorParentProfileDob');
+          if (err) err.style.display = 'flex';
+          hasError = true;
+        }
+      }
+
+      // Validate Phone Number
+      const phoneRegex = /^(?:\+?60|0)[0-9\s-]{8,12}$/;
+      if (!phoneVal || !phoneRegex.test(phoneVal)) {
+        if (phoneInput) phoneInput.classList.add('input-error');
+        const err = document.getElementById('errorParentProfilePhone');
+        if (err) err.style.display = 'flex';
+        hasError = true;
+      }
+
+      // Validate Email Address
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailVal || !emailRegex.test(emailVal)) {
+        if (emailInput) emailInput.classList.add('input-error');
+        const err = document.getElementById('errorParentProfileEmail');
+        if (err) err.style.display = 'flex';
+        hasError = true;
+      }
+
+      // Validate Number of Children
+      if (isNaN(numChildrenVal) || numChildrenVal < 1 || numChildrenVal > 20) {
+        if (numChildrenInput) numChildrenInput.classList.add('input-error');
+        const err = document.getElementById('errorParentProfileNumChildren');
+        if (err) err.style.display = 'flex';
+        hasError = true;
+      }
+
+      if (hasError) {
+        const errorAlert = document.getElementById('parentProfileErrorAlert');
+        if (errorAlert) errorAlert.style.display = 'flex';
+        const successAlert = document.getElementById('parentProfileSuccessAlert');
+        if (successAlert) successAlert.style.display = 'none';
+        return;
+      }
+
+      // Save changes to state
+      state.user.name = nameVal;
+      state.user.dob = dobVal;
+      state.user.phone = phoneVal;
+      state.user.email = emailVal;
+      state.user.numChildren = numChildrenVal;
+      saveState();
+
+      // Update Parent Profile Header
+      const displayName = document.getElementById('parentProfileDisplayName');
+      const avatarInitials = document.getElementById('parentProfileAvatarInitials');
+      const emailDisplay = document.getElementById('parentProfileEmailDisplay');
+      if (displayName) displayName.textContent = nameVal;
+      if (avatarInitials) avatarInitials.textContent = getInitials(nameVal);
+      if (emailDisplay) emailDisplay.textContent = emailVal;
+
+      // Update Parent Home Greeting if it exists
+      const homeGreeting = document.getElementById('homeGreetingTitle');
+      if (homeGreeting) {
+        const firstName = nameVal.split(' ')[0];
+        homeGreeting.textContent = `Welcome back, ${firstName}`;
+      }
+
+      // Show success alert and toast
+      const successAlert = document.getElementById('parentProfileSuccessAlert');
+      if (successAlert) successAlert.style.display = 'flex';
+      const errorAlert = document.getElementById('parentProfileErrorAlert');
+      if (errorAlert) errorAlert.style.display = 'none';
+
+      showToast('Profile updated successfully!');
+    });
+  }
+
+  // Log Out Button
+  const btnParentLogout = document.getElementById('btnParentLogout');
+  if (btnParentLogout) {
+    btnParentLogout.addEventListener('click', () => {
+      setLoggedIn(false);
+      state.authReturnScreen = 'welcome';
+      state.bookingIntent = false;
+      saveState();
+
+      if (topbarLoginBtn) topbarLoginBtn.style.display = '';
+      if (topbarGetStartedBtn) topbarGetStartedBtn.style.display = '';
+
+      navBackBtn.style.display = 'none';
+      hamburgerBtn.style.display = 'flex';
+
+      showScreen('welcome');
+      showToast('Logged out successfully');
+    });
+  }
 
   // --------------------------------------------------------------------------
   // 21. Toast Helper
