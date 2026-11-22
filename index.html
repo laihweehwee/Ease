@@ -555,7 +555,7 @@
             </div>
           </div>
           <div class="summary-actions">
-            <button class="btn btn-primary full-width btn-large" id="btnShowMatches">Show babysitters</button>
+            <button class="btn btn-primary full-width btn-large" id="btnShowMatches">Show my matches</button>
           </div>
         </div>
       </div>
@@ -641,6 +641,7 @@
       </div>
       <div class="content-section">
         <div class="container matches-container">
+          <p class="section-subtext matches-access-note">No account needed to view your matches.</p>
           <div class="filters-sort-row">
             <div class="filter-chips-wrap">
               <button class="filter-chip active" data-sitter-filter="all">All</button>
@@ -651,7 +652,8 @@
             <div class="sort-select-wrap">
               <label for="sortSittersSelect" class="sort-label">Sort by:</label>
               <select id="sortSittersSelect" class="input-field sort-select">
-                <option value="preferences" selected>Preferences met (Most first)</option>
+                <option value="match" selected>Match (Highest)</option>
+                <option value="preferences">Preferences met (Most first)</option>
                 <option value="distance">Distance (Nearest)</option>
                 <option value="rating">Rating (Highest)</option>
                 <option value="price-asc">Price (Low to High)</option>
@@ -682,6 +684,7 @@
                 <div class="sitter-match-header">
                   <div class="name-match-row">
                     <h3 class="card-title">Sarah Lim</h3>
+                    <span class="match-score-badge" data-match-score></span>
                     <span class="preference-summary-slot" data-preference-summary></span>
                   </div>
                   <span class="badge badge-ease-trained">
@@ -705,6 +708,10 @@
                   <span class="chip">Newborn Experience</span>
                 </div>
                 <div class="preference-list-slot" data-preference-list></div>
+                <div class="why-recommended-box">
+                  <strong class="why-rec-title">Why recommended</strong>
+                  <ul class="why-rec-list" data-why-recommended></ul>
+                </div>
                 <div class="sitter-bottom">
                   <div class="sitter-price"><strong>RM 25</strong> / hr</div>
                   <button class="btn btn-primary view-sitter-profile-btn" data-sitter-id="sarah-lim">View profile</button>
@@ -733,6 +740,7 @@
                 <div class="sitter-match-header">
                   <div class="name-match-row">
                     <h3 class="card-title">Nur Ain</h3>
+                    <span class="match-score-badge" data-match-score></span>
                     <span class="preference-summary-slot" data-preference-summary></span>
                   </div>
                   <span class="badge badge-ease-trained">
@@ -756,6 +764,10 @@
                   <span class="chip">Early Childhood Diploma</span>
                 </div>
                 <div class="preference-list-slot" data-preference-list></div>
+                <div class="why-recommended-box">
+                  <strong class="why-rec-title">Why recommended</strong>
+                  <ul class="why-rec-list" data-why-recommended></ul>
+                </div>
                 <div class="sitter-bottom">
                   <div class="sitter-price"><strong>RM 22</strong> / hr</div>
                   <button class="btn btn-primary view-sitter-profile-btn" data-sitter-id="nur-ain">View profile</button>
@@ -784,6 +796,7 @@
                 <div class="sitter-match-header">
                   <div class="name-match-row">
                     <h3 class="card-title">Aisyah</h3>
+                    <span class="match-score-badge" data-match-score></span>
                     <span class="preference-summary-slot" data-preference-summary></span>
                   </div>
                   <span class="badge badge-ease-trained">
@@ -806,6 +819,10 @@
                   <span class="chip">First Aid</span>
                 </div>
                 <div class="preference-list-slot" data-preference-list></div>
+                <div class="why-recommended-box">
+                  <strong class="why-rec-title">Why recommended</strong>
+                  <ul class="why-rec-list" data-why-recommended></ul>
+                </div>
                 <div class="sitter-bottom">
                   <div class="sitter-price"><strong>RM 20</strong> / hr</div>
                   <button class="btn btn-primary view-sitter-profile-btn" data-sitter-id="aisyah">View profile</button>
@@ -1702,6 +1719,93 @@
             <button type="button" class="booking-tab" id="btnPastBookings" role="tab" aria-selected="false">Past</button>
           </div>
           <div id="bookingsList" class="bookings-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SCREEN: BABYSITTER HOME (Public prototype)
+         ==================================================================== -->
+    <section class="app-screen" id="screenBabysitterHome" style="display: none;">
+      <div class="gradient-banner">
+        <div class="container banner-inner">
+          <h1 class="banner-title">Babysitter Home</h1>
+        </div>
+      </div>
+      <div class="content-section">
+        <div class="container sitter-home-container">
+          <div class="sitter-home-greeting">
+            <p class="eyebrow">Your Ease dashboard</p>
+            <h2 class="section-heading">Find your next childcare opportunity.</h2>
+            <p class="section-subtext">Review requests from nearby families and choose the ones that fit your schedule.</p>
+          </div>
+          <div class="card sitter-home-jobs-card">
+            <div>
+              <span class="sitter-home-job-count" id="availableJobCount">2</span>
+              <h3 class="card-title">Available booking requests</h3>
+              <p class="section-subtext">New requests from families near you.</p>
+            </div>
+            <button type="button" class="btn btn-primary" id="btnOpenAvailableJobs">View available jobs</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SCREEN: AVAILABLE JOBS (Babysitter)
+         ==================================================================== -->
+    <section class="app-screen" id="screenAvailableJobs" style="display: none;">
+      <div class="gradient-banner">
+        <div class="container banner-inner">
+          <h1 class="banner-title">Available Jobs</h1>
+        </div>
+      </div>
+      <div class="content-section">
+        <div class="container available-jobs-container">
+          <button type="button" class="text-back-link" id="btnBackToBabysitterHome">← Babysitter Home</button>
+          <p class="section-subtext">Booking requests from parents looking for care.</p>
+          <div class="available-jobs-list" id="availableJobsList"></div>
+          <div class="card jobs-empty-state" id="availableJobsEmpty" hidden>
+            <h2 class="card-title">You’re all caught up</h2>
+            <p class="section-subtext">There are no new booking requests right now.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SCREEN: REQUEST DETAIL (Babysitter)
+         ==================================================================== -->
+    <section class="app-screen" id="screenRequestDetail" style="display: none;">
+      <div class="gradient-banner">
+        <div class="container banner-inner">
+          <h1 class="banner-title">Request Details</h1>
+        </div>
+      </div>
+      <div class="content-section">
+        <div class="container request-detail-container">
+          <button type="button" class="text-back-link" id="btnBackToAvailableJobs">← Back to Available Jobs</button>
+          <div class="card request-detail-card">
+            <div class="request-detail-header">
+              <div>
+                <p class="eyebrow">Booking request</p>
+                <h2 class="section-heading" id="requestParentName">Parent request</h2>
+                <p class="section-subtext" id="requestParentArea"></p>
+              </div>
+              <span class="badge badge-ease-trained" id="requestPay"></span>
+            </div>
+            <dl class="request-detail-grid">
+              <div><dt>Child age(s)</dt><dd id="requestChildAges"></dd></div>
+              <div><dt>Date and time</dt><dd id="requestDateTime"></dd></div>
+              <div><dt>Location</dt><dd id="requestLocation"></dd></div>
+              <div><dt>Tasks</dt><dd id="requestTasks"></dd></div>
+              <div class="request-detail-wide"><dt>Special needs</dt><dd id="requestSpecialNeeds"></dd></div>
+            </dl>
+            <div class="request-detail-actions">
+              <button type="button" class="btn btn-secondary" id="btnDeclineRequest">Decline</button>
+              <button type="button" class="btn btn-primary" id="btnAcceptRequest">Accept</button>
+            </div>
+          </div>
         </div>
       </div>
     </section>

@@ -7464,6 +7464,211 @@ body,
   }
 }
 
+/* Babysitter request flow and match details */
+.match-score-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: var(--radius);
+  background: var(--soft-yellow);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.why-rec-title {
+  display: block;
+}
+
+.reason-not-met {
+  color: var(--muted);
+}
+
+.sitter-home-container,
+.available-jobs-container,
+.request-detail-container {
+  max-width: 880px;
+}
+
+.sitter-home-greeting {
+  margin-bottom: 24px;
+}
+
+.sitter-home-greeting .section-heading {
+  margin-bottom: 8px;
+}
+
+.eyebrow {
+  margin-bottom: 6px;
+  color: var(--deep-rose);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.sitter-home-jobs-card,
+.available-job-card,
+.request-detail-card {
+  border: 1px solid var(--border);
+  box-shadow: var(--card-shadow);
+}
+
+.sitter-home-jobs-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.sitter-home-job-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 12px;
+  border-radius: 50%;
+  background: var(--soft-pink);
+  color: var(--deep-rose);
+  font-family: var(--font-heading);
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.text-back-link {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--deep-rose);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.text-back-link:hover {
+  text-decoration: underline;
+}
+
+.text-back-link:focus-visible {
+  outline: 3px solid var(--deep-rose);
+  outline-offset: 3px;
+}
+
+.available-jobs-list {
+  display: grid;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.available-job-card {
+  display: grid;
+  gap: 18px;
+}
+
+.available-job-header,
+.request-detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.available-job-header .eyebrow,
+.request-detail-header .eyebrow {
+  margin-top: 0;
+}
+
+.available-job-facts,
+.request-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0;
+}
+
+.available-job-facts > div,
+.request-detail-grid > div {
+  min-width: 0;
+}
+
+.available-job-facts dt,
+.request-detail-grid dt {
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.available-job-facts dd,
+.request-detail-grid dd {
+  margin: 0;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.job-status-tag {
+  padding: 6px 10px;
+  border-radius: var(--radius);
+  background: var(--soft-yellow);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.jobs-empty-state {
+  margin-top: 20px;
+}
+
+.request-detail-card {
+  display: grid;
+  gap: 24px;
+}
+
+.request-detail-header .section-heading {
+  margin-bottom: 4px;
+}
+
+.request-detail-wide {
+  grid-column: 1 / -1;
+}
+
+.request-detail-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+@media (max-width: 600px) {
+  .sitter-home-jobs-card,
+  .available-job-header,
+  .request-detail-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .available-job-facts,
+  .request-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .request-detail-wide {
+    grid-column: auto;
+  }
+
+  .request-detail-actions {
+    flex-direction: column-reverse;
+  }
+}
+
 .hero-verification {
   display: inline-flex;
   align-items: center;

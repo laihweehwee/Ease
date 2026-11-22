@@ -85,6 +85,38 @@ document.addEventListener('DOMContentLoaded', () => {
     selectedPaymentMethod: 'fpx',
   };
 
+  const sampleJobRequests = [
+    {
+      id: 'job-001',
+      parent: 'Jessica Roberts',
+      area: 'Bangsar, Kuala Lumpur',
+      childrenCount: '1 child',
+      childAges: '2 years old',
+      date: 'Tomorrow',
+      time: '9:00 AM – 1:00 PM',
+      location: 'Bangsar, Kuala Lumpur',
+      tasks: 'Prepare snacks, playtime, and follow the nap routine.',
+      specialNeeds: 'No special needs noted.',
+      pay: 25,
+      status: 'available',
+    },
+    {
+      id: 'job-002',
+      parent: 'Amir’s family',
+      area: 'Mont Kiara, Kuala Lumpur',
+      childrenCount: '2 children',
+      childAges: '3 and 6 years old',
+      date: 'Saturday',
+      time: '2:00 PM – 6:00 PM',
+      location: 'Mont Kiara, Kuala Lumpur',
+      tasks: 'Prepare a light meal, supervise play, and help with reading.',
+      specialNeeds: 'No special needs noted.',
+      pay: 28,
+      status: 'available',
+    },
+  ];
+  let selectedJobRequestId = null;
+
   // Load state from localStorage
   try {
     const saved = localStorage.getItem('ease_state');
@@ -653,6 +685,9 @@ document.addEventListener('DOMContentLoaded', () => {
     payment: document.getElementById('screenPayment'),
     bookingConfirmed: document.getElementById('screenBookingConfirmed'),
     parentHome: document.getElementById('screenParentHome'),
+    babysitterHome: document.getElementById('screenBabysitterHome'),
+    availableJobs: document.getElementById('screenAvailableJobs'),
+    requestDetail: document.getElementById('screenRequestDetail'),
     parentProfile: document.getElementById('screenParentProfile'),
     chat: document.getElementById('screenChat'),
   };
@@ -865,6 +900,8 @@ document.addEventListener('DOMContentLoaded', () => {
       renderFindSitters();
     } else if (screenId === 'matches') {
       renderTopMatches();
+    } else if (screenId === 'availableJobs') {
+      renderAvailableJobs();
     } else if (screenId === 'profile') {
       populateProfile(state.selectedSitterId);
     } else if (screenId === 'compare') {
@@ -1009,12 +1046,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (card.id === 'roleNeedSitterCard') {
         showScreen('q1');
       } else {
-        // "I am a Babysitter" → open signup with Babysitter role preselected
-        state.bookingIntent = false;
-        state.authReturnScreen = 'parentHome';
-        setAuthMode('signup');
-        setSignupRole('babysitter');
-        showScreen('auth');
+        showScreen('babysitterHome');
       }
     });
     card.addEventListener('keydown', (e) => {
@@ -1027,6 +1059,100 @@ document.addEventListener('DOMContentLoaded', () => {
 
   activateRoleCard(roleNeedSitterCard);
   activateRoleCard(roleAmSitterCard);
+
+  function renderAvailableJobs() {
+    const jobsList = document.getElementById('availableJobsList');
+    const emptyState = document.getElementById('availableJobsEmpty');
+    const availableCount = document.getElementById('availableJobCount');
+    if (!jobsList || !emptyState) return;
+
+    const availableJobs = sampleJobRequests.filter(request => request.status === 'available').length;
+    if (availableCount) availableCount.textContent = String(availableJobs);
+    emptyState.hidden = availableJobs > 0;
+    jobsList.innerHTML = sampleJobRequests.map(request => {
+      const status = request.status !== 'available'
+        ? `<span class="job-status-tag">${escapeHtml(request.status)}</span>`
+        : '';
+      const action = request.status === 'available'
+        ? `<button type="button" class="btn btn-primary" data-view-job="${escapeHtml(request.id)}">View details</button>`
+        : '';
+      return `
+        <article class="card available-job-card">
+          <div class="available-job-header">
+            <div>
+              <p class="eyebrow">${escapeHtml(request.area)}</p>
+              <h2 class="card-title">${escapeHtml(request.parent)}</h2>
+            </div>
+            ${status}
+          </div>
+          <dl class="available-job-facts">
+            <div><dt>Date</dt><dd>${escapeHtml(request.date)}</dd></div>
+            <div><dt>Time</dt><dd>${escapeHtml(request.time)}</dd></div>
+            <div><dt>Children</dt><dd>${escapeHtml(request.childrenCount)}</dd></div>
+            <div><dt>Pay</dt><dd>RM ${request.pay} / hr</dd></div>
+          </dl>
+          ${action}
+        </article>`;
+    }).join('');
+  }
+
+  function showJobRequest(requestId) {
+    const request = sampleJobRequests.find(item => item.id === requestId);
+    if (!request || request.status !== 'available') {
+      showToast('This request is no longer available.');
+      showScreen('availableJobs');
+      return;
+    }
+
+    selectedJobRequestId = request.id;
+    document.getElementById('requestParentName').textContent = request.parent;
+    document.getElementById('requestParentArea').textContent = request.area;
+    document.getElementById('requestPay').textContent = `RM ${request.pay} / hour`;
+    document.getElementById('requestChildAges').textContent = request.childAges;
+    document.getElementById('requestDateTime').textContent = `${request.date}, ${request.time}`;
+    document.getElementById('requestLocation').textContent = request.location;
+    document.getElementById('requestTasks').textContent = request.tasks;
+    document.getElementById('requestSpecialNeeds').textContent = request.specialNeeds;
+    showScreen('requestDetail');
+  }
+
+  const btnOpenAvailableJobs = document.getElementById('btnOpenAvailableJobs');
+  const btnBackToBabysitterHome = document.getElementById('btnBackToBabysitterHome');
+  const btnBackToAvailableJobs = document.getElementById('btnBackToAvailableJobs');
+  const availableJobsList = document.getElementById('availableJobsList');
+  const btnAcceptRequest = document.getElementById('btnAcceptRequest');
+  const btnDeclineRequest = document.getElementById('btnDeclineRequest');
+
+  if (btnOpenAvailableJobs) {
+    btnOpenAvailableJobs.addEventListener('click', () => showScreen('availableJobs'));
+  }
+  if (btnBackToBabysitterHome) {
+    btnBackToBabysitterHome.addEventListener('click', () => showScreen('babysitterHome'));
+  }
+  if (btnBackToAvailableJobs) {
+    btnBackToAvailableJobs.addEventListener('click', () => showScreen('availableJobs'));
+  }
+  if (availableJobsList) {
+    availableJobsList.addEventListener('click', event => {
+      const button = event.target.closest('[data-view-job]');
+      if (button) showJobRequest(button.dataset.viewJob);
+    });
+  }
+  [btnAcceptRequest, btnDeclineRequest].forEach(button => {
+    if (!button) return;
+    button.addEventListener('click', () => {
+      const request = sampleJobRequests.find(item => item.id === selectedJobRequestId);
+      if (!request || request.status !== 'available') {
+        showToast('This request is no longer available.');
+        showScreen('availableJobs');
+        return;
+      }
+      request.status = button.id === 'btnAcceptRequest' ? 'accepted' : 'declined';
+      renderAvailableJobs();
+      showScreen('availableJobs');
+      showToast(`Request ${request.status}.`);
+    });
+  });
 
   if (topbarLoginBtn) {
     topbarLoginBtn.addEventListener('click', () => {
@@ -1321,6 +1447,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // --------------------------------------------------------------------------
   const filterChips = document.querySelectorAll('#screenMatches [data-sitter-filter]');
   const sitterCards = document.querySelectorAll('#screenMatches .sitter-match-card');
+  const matchScores = {
+    'sarah-lim': 98,
+    'nur-ain': 95,
+    aisyah: 93,
+  };
   const findSitterList = document.getElementById('findSitterList');
   const findForm = document.getElementById('findForm');
   const findPostcode = document.getElementById('findPostcode');
@@ -1420,6 +1551,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const mode = sortSelect.value;
     const cards = Array.from(sittersListContainer.querySelectorAll('.sitter-match-card'));
     cards.sort((a, b) => {
+      if (mode === 'match') {
+        return (matchScores[b.dataset.sitterId] || 0) - (matchScores[a.dataset.sitterId] || 0) ||
+          Number(b.dataset.preferenceCount) - Number(a.dataset.preferenceCount) ||
+          Number(a.dataset.distanceKm) - Number(b.dataset.distanceKm);
+      }
       if (mode === 'preferences') {
         return Number(b.dataset.preferenceCount) - Number(a.dataset.preferenceCount) ||
           Number(a.dataset.distanceKm) - Number(b.dataset.distanceKm);
@@ -1463,9 +1599,45 @@ document.addEventListener('DOMContentLoaded', () => {
       const preferenceSummary = card.querySelector('[data-preference-summary]');
       const preferenceList = card.querySelector('[data-preference-list]');
       const careTypeChips = card.querySelector('[data-care-types]');
+      const matchScore = card.querySelector('[data-match-score]');
+      let whyRecommended = card.querySelector('[data-why-recommended]');
+      if (!whyRecommended) {
+        const recommendationBox = document.createElement('div');
+        recommendationBox.className = 'why-recommended-box';
+        const title = document.createElement('strong');
+        title.className = 'why-rec-title';
+        title.textContent = 'Why recommended';
+        whyRecommended = document.createElement('ul');
+        whyRecommended.className = 'why-rec-list';
+        whyRecommended.dataset.whyRecommended = '';
+        recommendationBox.append(title, whyRecommended);
+        card.querySelector('.sitter-bottom')?.before(recommendationBox);
+      }
       if (preferenceSummary) preferenceSummary.innerHTML = renderPreferenceSummary(sitter, preferences);
       if (preferenceList) preferenceList.innerHTML = renderPreferenceCardList(preferences);
       if (careTypeChips) careTypeChips.innerHTML = renderCareTypeChips(sitter);
+      if (matchScore) {
+        const score = matchScores[sitter.id];
+        matchScore.textContent = score ? `${score}% match` : '';
+        matchScore.style.display = score ? 'inline-flex' : 'none';
+      }
+      if (whyRecommended) {
+        const availability = (sitter.availability || []).map(item => item.day).join(', ');
+        const availabilityPreference = preferences.find(preference => preference.key === 'availability');
+        const reasons = [
+          { met: sitter.cpr, text: sitter.cpr ? 'CPR certified' : 'CPR certification not listed' },
+          {
+            met: availabilityPreference ? availabilityPreference.met : Boolean(availability),
+            text: availabilityPreference
+              ? (availabilityPreference.met ? 'Available for your requested schedule' : availabilityPreference.text)
+              : `Regular availability: ${availability || 'Contact for schedule'}`,
+          },
+          { met: sitter.newborn, text: sitter.newborn ? 'Newborn experience' : 'No newborn experience listed' },
+        ];
+        whyRecommended.innerHTML = reasons.map(reason => `
+          <li><span class="check-icon${reason.met ? '' : ' reason-not-met'}" aria-hidden="true">${reason.met ? '✓' : '–'}</span>${escapeHtml(reason.text)}</li>
+        `).join('');
+      }
 
       const meta = card.querySelector('.sitter-meta');
       if (meta) {
@@ -1477,11 +1649,9 @@ document.addEventListener('DOMContentLoaded', () => {
       card.dataset.distanceKm = String(distanceKm);
       card.dataset.preferenceCount = String(preferences.filter(preference => preference.met).length);
       const withinTravelRange = distanceKm <= sitter.travelKm;
-      const availabilityPreference = preferences.find(preference => preference.key === 'availability');
-      const availableForRequest = !state.answeredPreferences.availability ||
-        !availabilityPreference || availabilityPreference.met;
-      if (withinTravelRange && availableForRequest) sittersInRange += 1;
-      card.style.display = withinTravelRange && availableForRequest && passesSitterFilter(card) ? 'flex' : 'none';
+      const isFeaturedMatch = matchScores[sitter.id] !== undefined;
+      if (withinTravelRange || isFeaturedMatch) sittersInRange += 1;
+      card.style.display = (withinTravelRange || isFeaturedMatch) && passesSitterFilter(card) ? 'flex' : 'none';
     });
     if (matchesNearbyState) {
       matchesNearbyState.style.display = sittersInRange ? 'none' : 'block';
@@ -1501,7 +1671,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const isAll = chip.dataset.sitterFilter === 'all';
         chip.classList.toggle('active', isAll);
       });
-      if (sortSelect) sortSelect.value = 'preferences';
+      if (sortSelect) sortSelect.value = 'match';
       renderTopMatches();
     });
   }
