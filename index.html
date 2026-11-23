@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ease — Care you can trust, close to home</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700&family=Figtree:wght@400;500;600&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
 
   <!-- Top Bar (64px desktop, 56px mobile) -->
@@ -17,7 +21,8 @@
       <div class="topbar-left">
         <!-- Back arrow button (visible on inner pages) -->
         <button class="nav-back-btn" id="navBackBtn" aria-label="Go back" style="display: none;">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
             <line x1="19" y1="12" x2="5" y2="12"></line>
             <polyline points="12 19 5 12 12 5"></polyline>
           </svg>
@@ -25,7 +30,8 @@
 
         <!-- Hamburger button (visible on welcome screen) -->
         <button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2.5" stroke-linecap="round">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2.5"
+            stroke-linecap="round">
             <line x1="3" y1="6" x2="21" y2="6"></line>
             <line x1="3" y1="12" x2="21" y2="12"></line>
             <line x1="3" y1="18" x2="21" y2="18"></line>
@@ -47,7 +53,8 @@
     <div class="drawer-header">
       <span class="drawer-logo">Ease</span>
       <button class="drawer-close" id="drawerCloseBtn" aria-label="Close menu">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2.5" stroke-linecap="round">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2.5"
+          stroke-linecap="round">
           <line x1="18" y1="6" x2="6" y2="18"></line>
           <line x1="6" y1="6" x2="18" y2="18"></line>
         </svg>
@@ -59,7 +66,8 @@
       <a href="#/summary" class="drawer-link" data-route="summary">My Answers</a>
       <a href="#/matches" class="drawer-link" data-route="matches">Top Matches</a>
       <a href="#/compare" class="drawer-link" data-route="compare">Compare Sitters</a>
-      <a href="#/parent-home" class="drawer-link" data-route="parent-home" id="drawerParentHomeLink" style="display: none;">Parent Dashboard</a>
+      <a href="#/parent-home" class="drawer-link" data-route="parent-home" id="drawerParentHomeLink"
+        style="display: none;">Parent Dashboard</a>
     </nav>
     <div class="drawer-footer">
       <button class="btn btn-primary full-width" id="drawerStartBtn">Start Matching</button>
@@ -74,13 +82,11 @@
          ==================================================================== -->
     <section class="app-screen" id="screenWelcome">
       <div class="hero-fullbleed">
-        <img src="https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=1600&q=80" 
-             alt="Babysitter caring for young children playing at home" 
-             class="hero-fullbleed-bg"
-             loading="eager"
-             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+        <img src="https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=1600&q=80"
+          alt="Babysitter caring for young children playing at home" class="hero-fullbleed-bg" loading="eager"
+          onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
         <div class="hero-fullbleed-fallback" style="display: none;"></div>
-        
+
         <div class="hero-fullbleed-overlay" aria-hidden="true"></div>
 
         <div class="container hero-fullbleed-content">
@@ -95,15 +101,16 @@
         <div class="container">
           <div class="role-cards-grid">
             <!-- Role Card 1: I need a babysitter (goes to Parent Q1) -->
-            <div class="card role-card" id="roleNeedSitterCard" tabindex="0" role="button" aria-label="I need a babysitter">
+            <div class="card role-card" id="roleNeedSitterCard" tabindex="0" role="button"
+              aria-label="I need a babysitter">
               <div class="role-photo-wrap">
-                <img src="https://images.unsplash.com/photo-1491438590914-bc09fcaaf77a?auto=format&fit=crop&w=800&h=480&q=80" 
-                     alt="A parent with a babysitter and a happy child playing together" 
-                     class="role-photo"
-                     loading="lazy"
-                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <img
+                  src="https://images.unsplash.com/photo-1491438590914-bc09fcaaf77a?auto=format&fit=crop&w=800&h=480&q=80"
+                  alt="A parent with a babysitter and a happy child playing together" class="role-photo" loading="lazy"
+                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                 <div class="photo-placeholder role-photo-placeholder" style="display: none;">
-                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                     <circle cx="9" cy="7" r="4"></circle>
                     <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
@@ -120,13 +127,13 @@
             <!-- Role Card 2: I am a babysitter (Phase 3 placeholder) -->
             <div class="card role-card" id="roleAmSitterCard" tabindex="0" role="button" aria-label="I am a babysitter">
               <div class="role-photo-wrap">
-                <img src="https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=800&h=480&q=80" 
-                     alt="A smiling caregiver with a child" 
-                     class="role-photo"
-                     loading="lazy"
-                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <img
+                  src="https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=800&h=480&q=80"
+                  alt="A smiling caregiver with a child" class="role-photo" loading="lazy"
+                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                 <div class="photo-placeholder role-photo-placeholder" style="display: none;">
-                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="7" r="4"></circle>
                     <path d="M5.5 21v-2a6.5 6.5 0 0 1 13 0v2"></path>
                     <circle cx="18" cy="11" r="2.5"></circle>
@@ -147,7 +154,8 @@
           <div class="trust-points-row">
             <div class="trust-point">
               <span class="trust-icon" aria-hidden="true">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2E8B6E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2E8B6E" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                   <polyline points="9 12 11 14 15 10"></polyline>
                 </svg>
@@ -157,7 +165,8 @@
 
             <div class="trust-point">
               <span class="trust-icon" aria-hidden="true">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2E8B6E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2E8B6E" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="12" cy="8" r="6"></circle>
                   <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"></path>
                 </svg>
@@ -167,7 +176,8 @@
 
             <div class="trust-point">
               <span class="trust-icon" aria-hidden="true">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2E8B6E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2E8B6E" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
                   <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                   <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                 </svg>
@@ -187,7 +197,9 @@
       <div class="question-progress-bar-wrap">
         <div class="container">
           <div class="progress-info"><span class="progress-step-text">Step 1 of 6</span></div>
-          <div class="progress-track"><div class="progress-fill" style="width: 16.66%;"></div></div>
+          <div class="progress-track">
+            <div class="progress-fill" style="width: 16.66%;"></div>
+          </div>
         </div>
       </div>
       <div class="content-section">
@@ -216,7 +228,9 @@
       <div class="question-progress-bar-wrap">
         <div class="container">
           <div class="progress-info"><span class="progress-step-text">Step 2 of 6</span></div>
-          <div class="progress-track"><div class="progress-fill" style="width: 33.33%;"></div></div>
+          <div class="progress-track">
+            <div class="progress-fill" style="width: 33.33%;"></div>
+          </div>
         </div>
       </div>
       <div class="content-section">
@@ -226,15 +240,24 @@
           <div class="question-body">
             <div class="options-grid" data-question="when">
               <div class="card option-card selected" data-value="Today" tabindex="0" role="radio" aria-checked="true">
-                <div class="option-card-content"><div class="option-title">Today</div><div class="option-desc">Urgent or immediate same-day care</div></div>
+                <div class="option-card-content">
+                  <div class="option-title">Today</div>
+                  <div class="option-desc">Urgent or immediate same-day care</div>
+                </div>
                 <div class="option-check-icon">✓</div>
               </div>
               <div class="card option-card" data-value="This week" tabindex="0" role="radio" aria-checked="false">
-                <div class="option-card-content"><div class="option-title">This week</div><div class="option-desc">Scheduled help over the next few days</div></div>
+                <div class="option-card-content">
+                  <div class="option-title">This week</div>
+                  <div class="option-desc">Scheduled help over the next few days</div>
+                </div>
                 <div class="option-check-icon">✓</div>
               </div>
               <div class="card option-card" data-value="Pick a date" tabindex="0" role="radio" aria-checked="false">
-                <div class="option-card-content"><div class="option-title">Pick a date</div><div class="option-desc">Choose a specific upcoming date</div></div>
+                <div class="option-card-content">
+                  <div class="option-title">Pick a date</div>
+                  <div class="option-desc">Choose a specific upcoming date</div>
+                </div>
                 <div class="option-check-icon">✓</div>
               </div>
             </div>
@@ -255,7 +278,9 @@
       <div class="question-progress-bar-wrap">
         <div class="container">
           <div class="progress-info"><span class="progress-step-text">Step 3 of 6</span></div>
-          <div class="progress-track"><div class="progress-fill" style="width: 50%;"></div></div>
+          <div class="progress-track">
+            <div class="progress-fill" style="width: 50%;"></div>
+          </div>
         </div>
       </div>
       <div class="content-section">
@@ -264,20 +289,33 @@
           <p class="section-subtext">Pick the duration or arrangement that fits your family.</p>
           <div class="question-body">
             <div class="options-grid" data-question="careType">
-              <div class="card option-card selected" data-value="Half day" tabindex="0" role="radio" aria-checked="true">
-                <div class="option-card-content"><div class="option-title">Half day</div><div class="option-desc">Up to 4 hours of care</div></div>
+              <div class="card option-card selected" data-value="Half day" tabindex="0" role="radio"
+                aria-checked="true">
+                <div class="option-card-content">
+                  <div class="option-title">Half day</div>
+                  <div class="option-desc">Up to 4 hours of care</div>
+                </div>
                 <div class="option-check-icon">✓</div>
               </div>
               <div class="card option-card" data-value="Full day" tabindex="0" role="radio" aria-checked="false">
-                <div class="option-card-content"><div class="option-title">Full day</div><div class="option-desc">4 to 8 hours of care</div></div>
+                <div class="option-card-content">
+                  <div class="option-title">Full day</div>
+                  <div class="option-desc">4 to 8 hours of care</div>
+                </div>
                 <div class="option-check-icon">✓</div>
               </div>
               <div class="card option-card" data-value="Overnight" tabindex="0" role="radio" aria-checked="false">
-                <div class="option-card-content"><div class="option-title">Overnight</div><div class="option-desc">Evening bedtime through the morning</div></div>
+                <div class="option-card-content">
+                  <div class="option-title">Overnight</div>
+                  <div class="option-desc">Evening bedtime through the morning</div>
+                </div>
                 <div class="option-check-icon">✓</div>
               </div>
               <div class="card option-card" data-value="Recurring" tabindex="0" role="radio" aria-checked="false">
-                <div class="option-card-content"><div class="option-title">Recurring</div><div class="option-desc">Regular weekly or after-school schedule</div></div>
+                <div class="option-card-content">
+                  <div class="option-title">Recurring</div>
+                  <div class="option-desc">Regular weekly or after-school schedule</div>
+                </div>
                 <div class="option-check-icon">✓</div>
               </div>
             </div>
@@ -294,7 +332,9 @@
       <div class="question-progress-bar-wrap">
         <div class="container">
           <div class="progress-info"><span class="progress-step-text">Step 4 of 6</span></div>
-          <div class="progress-track"><div class="progress-fill" style="width: 66.66%;"></div></div>
+          <div class="progress-track">
+            <div class="progress-fill" style="width: 66.66%;"></div>
+          </div>
         </div>
       </div>
       <div class="content-section">
@@ -304,15 +344,26 @@
           <div class="question-body">
             <div class="options-grid" data-question="whoNeedsCare">
               <div class="card option-card" data-value="Baby 0 to 1" tabindex="0" role="checkbox" aria-checked="false">
-                <div class="option-card-content"><div class="option-title">Baby (0 to 1)</div><div class="option-desc">Infant care, feeds, soothing and naps</div></div>
+                <div class="option-card-content">
+                  <div class="option-title">Baby (0 to 1)</div>
+                  <div class="option-desc">Infant care, feeds, soothing and naps</div>
+                </div>
                 <div class="option-check-icon">✓</div>
               </div>
-              <div class="card option-card selected" data-value="Toddler 1 to 3" tabindex="0" role="checkbox" aria-checked="true">
-                <div class="option-card-content"><div class="option-title">Toddler (1 to 3)</div><div class="option-desc">Active play, meals, routines and discovery</div></div>
+              <div class="card option-card selected" data-value="Toddler 1 to 3" tabindex="0" role="checkbox"
+                aria-checked="true">
+                <div class="option-card-content">
+                  <div class="option-title">Toddler (1 to 3)</div>
+                  <div class="option-desc">Active play, meals, routines and discovery</div>
+                </div>
                 <div class="option-check-icon">✓</div>
               </div>
-              <div class="card option-card" data-value="School age 4+" tabindex="0" role="checkbox" aria-checked="false">
-                <div class="option-card-content"><div class="option-title">School age (4+)</div><div class="option-desc">Homework help, crafts, activities and pickup</div></div>
+              <div class="card option-card" data-value="School age 4+" tabindex="0" role="checkbox"
+                aria-checked="false">
+                <div class="option-card-content">
+                  <div class="option-title">School age (4+)</div>
+                  <div class="option-desc">Homework help, crafts, activities and pickup</div>
+                </div>
                 <div class="option-check-icon">✓</div>
               </div>
             </div>
@@ -329,7 +380,9 @@
       <div class="question-progress-bar-wrap">
         <div class="container">
           <div class="progress-info"><span class="progress-step-text">Step 5 of 6</span></div>
-          <div class="progress-track"><div class="progress-fill" style="width: 83.33%;"></div></div>
+          <div class="progress-track">
+            <div class="progress-fill" style="width: 83.33%;"></div>
+          </div>
         </div>
       </div>
       <div class="content-section">
@@ -343,7 +396,8 @@
                 <span class="budget-unit">/ hour</span>
               </div>
               <div class="slider-wrap">
-                <input type="range" id="budgetSlider" min="15" max="40" value="25" step="1" class="budget-slider" aria-label="Hourly budget slider">
+                <input type="range" id="budgetSlider" min="15" max="40" value="25" step="1" class="budget-slider"
+                  aria-label="Hourly budget slider">
                 <div class="slider-limits"><span>RM 15</span><span>RM 40</span></div>
               </div>
               <div class="note-box note-box-yellow">
@@ -364,7 +418,9 @@
       <div class="question-progress-bar-wrap">
         <div class="container">
           <div class="progress-info"><span class="progress-step-text">Step 6 of 6</span></div>
-          <div class="progress-track"><div class="progress-fill" style="width: 100%;"></div></div>
+          <div class="progress-track">
+            <div class="progress-fill" style="width: 100%;"></div>
+          </div>
         </div>
       </div>
       <div class="content-section">
@@ -373,16 +429,28 @@
           <p class="section-subtext">Select any special certifications or language skills you need.</p>
           <div class="question-body">
             <div class="options-grid" data-question="extras">
-              <div class="card option-card selected" data-value="CPR certified" tabindex="0" role="checkbox" aria-checked="true">
-                <div class="option-card-content"><div class="option-title">CPR certified</div><div class="option-desc">Verified infant and pediatric first aid</div></div>
+              <div class="card option-card selected" data-value="CPR certified" tabindex="0" role="checkbox"
+                aria-checked="true">
+                <div class="option-card-content">
+                  <div class="option-title">CPR certified</div>
+                  <div class="option-desc">Verified infant and pediatric first aid</div>
+                </div>
                 <div class="option-check-icon">✓</div>
               </div>
-              <div class="card option-card selected" data-value="Speaks Mandarin" tabindex="0" role="checkbox" aria-checked="true">
-                <div class="option-card-content"><div class="option-title">Speaks Mandarin</div><div class="option-desc">Able to converse in Mandarin with child</div></div>
+              <div class="card option-card selected" data-value="Speaks Mandarin" tabindex="0" role="checkbox"
+                aria-checked="true">
+                <div class="option-card-content">
+                  <div class="option-title">Speaks Mandarin</div>
+                  <div class="option-desc">Able to converse in Mandarin with child</div>
+                </div>
                 <div class="option-check-icon">✓</div>
               </div>
-              <div class="card option-card selected" data-value="Newborn experience" tabindex="0" role="checkbox" aria-checked="true">
-                <div class="option-card-content"><div class="option-title">Newborn experience</div><div class="option-desc">Hands-on care for infants under 12 months</div></div>
+              <div class="card option-card selected" data-value="Newborn experience" tabindex="0" role="checkbox"
+                aria-checked="true">
+                <div class="option-card-content">
+                  <div class="option-title">Newborn experience</div>
+                  <div class="option-desc">Hands-on care for infants under 12 months</div>
+                </div>
                 <div class="option-check-icon">✓</div>
               </div>
             </div>
@@ -408,27 +476,33 @@
         <div class="container summary-container">
           <div class="summary-cards-list">
             <div class="card summary-card">
-              <div class="summary-card-left"><span class="summary-label">Where do you need care?</span><span class="summary-value" id="summaryValPostcode">Postcode 50450</span></div>
+              <div class="summary-card-left"><span class="summary-label">Where do you need care?</span><span
+                  class="summary-value" id="summaryValPostcode">Postcode 50450</span></div>
               <button class="summary-edit-btn" data-target="q1">Edit</button>
             </div>
             <div class="card summary-card">
-              <div class="summary-card-left"><span class="summary-label">When do you need care?</span><span class="summary-value" id="summaryValWhen">Today</span></div>
+              <div class="summary-card-left"><span class="summary-label">When do you need care?</span><span
+                  class="summary-value" id="summaryValWhen">Today</span></div>
               <button class="summary-edit-btn" data-target="q2">Edit</button>
             </div>
             <div class="card summary-card">
-              <div class="summary-card-left"><span class="summary-label">What kind of care?</span><span class="summary-value" id="summaryValCareType">Half day</span></div>
+              <div class="summary-card-left"><span class="summary-label">What kind of care?</span><span
+                  class="summary-value" id="summaryValCareType">Half day</span></div>
               <button class="summary-edit-btn" data-target="q3">Edit</button>
             </div>
             <div class="card summary-card">
-              <div class="summary-card-left"><span class="summary-label">Who needs care?</span><span class="summary-value" id="summaryValWho">Toddler 1 to 3</span></div>
+              <div class="summary-card-left"><span class="summary-label">Who needs care?</span><span
+                  class="summary-value" id="summaryValWho">Toddler 1 to 3</span></div>
               <button class="summary-edit-btn" data-target="q4">Edit</button>
             </div>
             <div class="card summary-card">
-              <div class="summary-card-left"><span class="summary-label">What is your budget?</span><span class="summary-value" id="summaryValBudget">RM 25 / hr</span></div>
+              <div class="summary-card-left"><span class="summary-label">What is your budget?</span><span
+                  class="summary-value" id="summaryValBudget">RM 25 / hr</span></div>
               <button class="summary-edit-btn" data-target="q5">Edit</button>
             </div>
             <div class="card summary-card">
-              <div class="summary-card-left"><span class="summary-label">Any extras?</span><span class="summary-value" id="summaryValExtras">CPR certified, Speaks Mandarin, Newborn experience</span></div>
+              <div class="summary-card-left"><span class="summary-label">Any extras?</span><span class="summary-value"
+                  id="summaryValExtras">CPR certified, Speaks Mandarin, Newborn experience</span></div>
               <button class="summary-edit-btn" data-target="q6">Edit</button>
             </div>
           </div>
@@ -470,16 +544,19 @@
 
           <div class="sitters-match-list" id="sittersMatchList">
             <!-- Sitter 1: Sarah Lim -->
-            <article class="card sitter-match-card" data-sitter-id="sarah-lim" data-cpr="true" data-newborn="true" data-mandarin="true" data-price="25" data-rating="4.9" data-match="98">
+            <article class="card sitter-match-card" data-sitter-id="sarah-lim" data-cpr="true" data-newborn="true"
+              data-mandarin="true" data-price="25" data-rating="4.9" data-match="98">
               <div class="compare-checkbox-wrap">
                 <label class="compare-label" for="compare-sarah-lim">
-                  <input type="checkbox" id="compare-sarah-lim" class="compare-input" data-sitter-id="sarah-lim" data-sitter-name="Sarah Lim">
+                  <input type="checkbox" id="compare-sarah-lim" class="compare-input" data-sitter-id="sarah-lim"
+                    data-sitter-name="Sarah Lim">
                   <span>Compare</span>
                 </label>
               </div>
               <div class="sitter-match-photo-wrap">
                 <div class="photo-placeholder sitter-match-photo">
-                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                     <circle cx="12" cy="7" r="4"></circle>
                   </svg>
@@ -493,7 +570,11 @@
                     <span class="match-badge">98% match</span>
                   </div>
                   <span class="badge badge-ease-trained">
-                    <svg class="badge-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+                    <svg class="badge-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C2456B"
+                      stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                      <polyline points="9 12 11 14 15 10"></polyline>
+                    </svg>
                     Ease Trained
                   </span>
                 </div>
@@ -521,22 +602,26 @@
                 </div>
                 <div class="sitter-bottom">
                   <div class="sitter-price"><strong>RM 25</strong> / hr</div>
-                  <button class="btn btn-primary view-sitter-profile-btn" data-sitter-id="sarah-lim">View profile</button>
+                  <button class="btn btn-primary view-sitter-profile-btn" data-sitter-id="sarah-lim">View
+                    profile</button>
                 </div>
               </div>
             </article>
 
             <!-- Sitter 2: Nur Ain -->
-            <article class="card sitter-match-card" data-sitter-id="nur-ain" data-cpr="true" data-newborn="false" data-mandarin="false" data-price="22" data-rating="4.8" data-match="95">
+            <article class="card sitter-match-card" data-sitter-id="nur-ain" data-cpr="true" data-newborn="false"
+              data-mandarin="false" data-price="22" data-rating="4.8" data-match="95">
               <div class="compare-checkbox-wrap">
                 <label class="compare-label" for="compare-nur-ain">
-                  <input type="checkbox" id="compare-nur-ain" class="compare-input" data-sitter-id="nur-ain" data-sitter-name="Nur Ain">
+                  <input type="checkbox" id="compare-nur-ain" class="compare-input" data-sitter-id="nur-ain"
+                    data-sitter-name="Nur Ain">
                   <span>Compare</span>
                 </label>
               </div>
               <div class="sitter-match-photo-wrap">
                 <div class="photo-placeholder sitter-match-photo">
-                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                     <circle cx="12" cy="7" r="4"></circle>
                   </svg>
@@ -550,7 +635,11 @@
                     <span class="match-badge">95% match</span>
                   </div>
                   <span class="badge badge-ease-trained">
-                    <svg class="badge-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+                    <svg class="badge-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C2456B"
+                      stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                      <polyline points="9 12 11 14 15 10"></polyline>
+                    </svg>
                     Ease Trained
                   </span>
                 </div>
@@ -584,16 +673,19 @@
             </article>
 
             <!-- Sitter 3: Aisyah -->
-            <article class="card sitter-match-card" data-sitter-id="aisyah" data-cpr="false" data-newborn="false" data-mandarin="false" data-price="20" data-rating="4.7" data-match="93">
+            <article class="card sitter-match-card" data-sitter-id="aisyah" data-cpr="false" data-newborn="false"
+              data-mandarin="false" data-price="20" data-rating="4.7" data-match="93">
               <div class="compare-checkbox-wrap">
                 <label class="compare-label" for="compare-aisyah">
-                  <input type="checkbox" id="compare-aisyah" class="compare-input" data-sitter-id="aisyah" data-sitter-name="Aisyah">
+                  <input type="checkbox" id="compare-aisyah" class="compare-input" data-sitter-id="aisyah"
+                    data-sitter-name="Aisyah">
                   <span>Compare</span>
                 </label>
               </div>
               <div class="sitter-match-photo-wrap">
                 <div class="photo-placeholder sitter-match-photo">
-                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                     <circle cx="12" cy="7" r="4"></circle>
                   </svg>
@@ -607,7 +699,11 @@
                     <span class="match-badge">93% match</span>
                   </div>
                   <span class="badge badge-ease-trained">
-                    <svg class="badge-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+                    <svg class="badge-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C2456B"
+                      stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                      <polyline points="9 12 11 14 15 10"></polyline>
+                    </svg>
                     Ease Trained
                   </span>
                 </div>
@@ -664,7 +760,8 @@
           <div class="card profile-hero-card">
             <div class="profile-photo-wrap">
               <div class="photo-placeholder profile-large-photo">
-                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                   <circle cx="12" cy="7" r="4"></circle>
                 </svg>
@@ -676,7 +773,11 @@
               <div class="profile-hero-header">
                 <h1 class="page-title profile-title" id="profileName">Sarah Lim</h1>
                 <span class="badge badge-ease-trained">
-                  <svg class="badge-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+                  <svg class="badge-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C2456B"
+                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    <polyline points="9 12 11 14 15 10"></polyline>
+                  </svg>
                   Ease Trained
                 </span>
               </div>
@@ -722,7 +823,9 @@
               </div>
             </div>
             <p class="profile-bio-text" id="profileBio">
-              Warm, patient, and creative caregiver dedicated to nurturing young children. Experienced in newborn care routines, developmental toddler play, and engaging educational activities. Non-smoker, clean driving record, and comfortable with household pets.
+              Warm, patient, and creative caregiver dedicated to nurturing young children. Experienced in newborn care
+              routines, developmental toddler play, and engaging educational activities. Non-smoker, clean driving
+              record, and comfortable with household pets.
             </p>
           </div>
 
@@ -777,13 +880,19 @@
             <h2 class="section-heading">Parent Reviews</h2>
             <div class="reviews-list">
               <div class="review-item">
-                <div class="stars-row"><span class="star-filled">★</span><span class="star-filled">★</span><span class="star-filled">★</span><span class="star-filled">★</span><span class="star-filled">★</span><span class="stars-num">5.0</span></div>
-                <p class="review-text">"Sarah was incredible with our 10-month-old daughter. She was punctual, so warm, and sent us photo check-ins throughout our dinner. Total peace of mind!"</p>
+                <div class="stars-row"><span class="star-filled">★</span><span class="star-filled">★</span><span
+                    class="star-filled">★</span><span class="star-filled">★</span><span
+                    class="star-filled">★</span><span class="stars-num">5.0</span></div>
+                <p class="review-text">"Sarah was incredible with our 10-month-old daughter. She was punctual, so warm,
+                  and sent us photo check-ins throughout our dinner. Total peace of mind!"</p>
                 <span class="review-by">Michelle T. • Bangsar (Parent of 10-month-old)</span>
               </div>
               <div class="review-item">
-                <div class="stars-row"><span class="star-filled">★</span><span class="star-filled">★</span><span class="star-filled">★</span><span class="star-filled">★</span><span class="star-filled">★</span><span class="stars-num">5.0</span></div>
-                <p class="review-text">"Our 3-year-old twins adore Sarah. She reads stories, plays creative games, and follows their bedtime routine to the minute. Highly recommended!"</p>
+                <div class="stars-row"><span class="star-filled">★</span><span class="star-filled">★</span><span
+                    class="star-filled">★</span><span class="star-filled">★</span><span
+                    class="star-filled">★</span><span class="stars-num">5.0</span></div>
+                <p class="review-text">"Our 3-year-old twins adore Sarah. She reads stories, plays creative games, and
+                  follows their bedtime routine to the minute. Highly recommended!"</p>
                 <span class="review-by">Kevin L. • Mont Kiara (Parent of 3-year-old twins)</span>
               </div>
             </div>
@@ -793,9 +902,12 @@
           <div class="card profile-section-card">
             <h2 class="section-heading">Availability</h2>
             <div class="avail-grid">
-              <div class="avail-day"><span class="avail-title">Monday – Friday</span><span class="avail-times">Afternoons & Evenings (1:00 PM – 9:00 PM)</span></div>
-              <div class="avail-day"><span class="avail-title">Saturday</span><span class="avail-times">Full Day (9:00 AM – 10:00 PM)</span></div>
-              <div class="avail-day"><span class="avail-title">Sunday</span><span class="avail-times">Available upon request</span></div>
+              <div class="avail-day"><span class="avail-title">Monday – Friday</span><span
+                  class="avail-times">Afternoons & Evenings (1:00 PM – 9:00 PM)</span></div>
+              <div class="avail-day"><span class="avail-title">Saturday</span><span class="avail-times">Full Day (9:00
+                  AM – 10:00 PM)</span></div>
+              <div class="avail-day"><span class="avail-title">Sunday</span><span class="avail-times">Available upon
+                  request</span></div>
             </div>
           </div>
         </div>
@@ -896,9 +1008,12 @@
                 </tr>
                 <tr class="action-row">
                   <td>Action</td>
-                  <td><button class="btn btn-primary full-width btn-book-from-compare" data-sitter-id="sarah-lim">Book Sarah</button></td>
-                  <td><button class="btn btn-primary full-width btn-book-from-compare" data-sitter-id="nur-ain">Book Nur Ain</button></td>
-                  <td><button class="btn btn-primary full-width btn-book-from-compare" data-sitter-id="aisyah">Book Aisyah</button></td>
+                  <td><button class="btn btn-primary full-width btn-book-from-compare" data-sitter-id="sarah-lim">Book
+                      Sarah</button></td>
+                  <td><button class="btn btn-primary full-width btn-book-from-compare" data-sitter-id="nur-ain">Book Nur
+                      Ain</button></td>
+                  <td><button class="btn btn-primary full-width btn-book-from-compare" data-sitter-id="aisyah">Book
+                      Aisyah</button></td>
                 </tr>
               </tbody>
             </table>
@@ -929,7 +1044,12 @@
                 <label for="authName">Full Name</label>
                 <input type="text" id="authName" class="input-field" placeholder="Jessica Roberts">
                 <span class="input-error-msg" id="errorAuthName" style="display: none;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5"
+                    stroke-linecap="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                  </svg>
                   Please enter your full name.
                 </span>
               </div>
@@ -939,7 +1059,12 @@
                 <label for="authEmail">Email Address</label>
                 <input type="email" id="authEmail" class="input-field" placeholder="jessica@example.com">
                 <span class="input-error-msg" id="errorAuthEmail" style="display: none;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5"
+                    stroke-linecap="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                  </svg>
                   Please enter a valid email address.
                 </span>
               </div>
@@ -949,7 +1074,12 @@
                 <label for="authPhone">Phone Number</label>
                 <input type="tel" id="authPhone" class="input-field" placeholder="012-3456789">
                 <span class="input-error-msg" id="errorAuthPhone" style="display: none;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5"
+                    stroke-linecap="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                  </svg>
                   Please enter a valid phone number.
                 </span>
               </div>
@@ -959,7 +1089,12 @@
                 <label for="authPassword">Password</label>
                 <input type="password" id="authPassword" class="input-field" placeholder="Minimum 6 characters">
                 <span class="input-error-msg" id="errorAuthPassword" style="display: none;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5"
+                    stroke-linecap="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                  </svg>
                   Password must be at least 6 characters.
                 </span>
               </div>
@@ -971,7 +1106,12 @@
                   <span>I agree to the Ease Terms of Service and Privacy Policy.</span>
                 </label>
                 <span class="input-error-msg" id="errorAuthPrivacy" style="display: none;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5"
+                    stroke-linecap="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                  </svg>
                   You must agree to continue.
                 </span>
               </div>
@@ -994,10 +1134,12 @@
               <span class="verify-mail-icon">✉️</span>
             </div>
             <h1 class="section-heading">Verify your email</h1>
-            <p class="section-subtext">We sent a verification link to <strong id="verifyEmailDisplay">jessica@example.com</strong>. Please check your inbox and tap the link.</p>
+            <p class="section-subtext">We sent a verification link to <strong
+                id="verifyEmailDisplay">jessica@example.com</strong>. Please check your inbox and tap the link.</p>
 
             <div class="verify-actions">
-              <button class="btn btn-primary full-width btn-large" id="btnEmailVerifiedDemo">I verified my email</button>
+              <button class="btn btn-primary full-width btn-large" id="btnEmailVerifiedDemo">I verified my
+                email</button>
               <button class="btn btn-secondary full-width" id="btnResendEmail">Resend link</button>
             </div>
           </div>
@@ -1015,11 +1157,21 @@
             <h1 class="section-heading">Add Your Child</h1>
             <p class="section-subtext">Share your child's routine and needs so your babysitter can prepare.</p>
 
-            <form id="addChildForm" class="add-child-form">
+            <!-- Saved Children Section (Visible when 1 or more children are added) -->
+            <div id="savedChildrenSection" class="saved-children-section" style="display: none;">
+              <h3 class="saved-children-title">Saved Children (<span id="savedChildrenCount">0</span>)</h3>
+              <div id="savedChildrenList" class="saved-children-list"></div>
+            </div>
+
+            <form id="addChildForm" class="add-child-form" novalidate>
+              <!-- 1. Basic Information -->
               <div class="form-row">
                 <div class="input-group">
-                  <label for="childName">Child's Name</label>
-                  <input type="text" id="childName" class="input-field" value="Liam" required>
+                  <label for="childName">Child's Name <span class="required-star"
+                      style="color: var(--error-red);">*</span></label>
+                  <input type="text" id="childName" class="input-field" placeholder="e.g. Maya">
+                  <div class="child-error-msg" id="errorChildName" style="display: none;">Please enter child's name
+                  </div>
                 </div>
                 <div class="input-group">
                   <label for="childGender">Gender</label>
@@ -1031,51 +1183,263 @@
                 </div>
               </div>
 
-              <div class="form-row">
-                <div class="input-group">
-                  <label for="childBirthDate">Birth Date</label>
-                  <input type="date" id="childBirthDate" class="input-field" value="2024-05-15" required>
-                </div>
-                <div class="input-group">
-                  <label for="childAllergies">Allergies</label>
-                  <input type="text" id="childAllergies" class="input-field" placeholder="None or e.g. Peanuts" value="None">
-                </div>
-              </div>
-
-              <div class="form-row">
-                <div class="input-group">
-                  <label for="childMedical">Medical Conditions</label>
-                  <input type="text" id="childMedical" class="input-field" placeholder="None or e.g. Asthma" value="None">
-                </div>
-                <div class="input-group">
-                  <label for="childSpecialNeeds">Special Needs</label>
-                  <input type="text" id="childSpecialNeeds" class="input-field" placeholder="None" value="None">
-                </div>
-              </div>
-
               <div class="input-group">
-                <label for="childRoutine">Feeding and Sleep Routine</label>
-                <input type="text" id="childRoutine" class="input-field" placeholder="e.g. Afternoon nap at 1:30 PM, snack at 4 PM" value="Nap at 1:30 PM, water and snack at 4 PM">
-              </div>
-
-              <div class="form-row">
-                <div class="input-group">
-                  <label for="childEmergencyName">Emergency Contact Name</label>
-                  <input type="text" id="childEmergencyName" class="input-field" placeholder="Mark Roberts (Father)" value="Mark Roberts" required>
-                </div>
-                <div class="input-group">
-                  <label for="childEmergencyPhone">Emergency Phone Number</label>
-                  <input type="tel" id="childEmergencyPhone" class="input-field" placeholder="012-9876543" value="012-9876543" required>
+                <label for="childBirthDate">Birth Date <span class="required-star"
+                    style="color: var(--error-red);">*</span></label>
+                <input type="date" id="childBirthDate" class="input-field">
+                <div class="child-error-msg" id="errorChildBirthDate" style="display: none;">Please select a birth date
                 </div>
               </div>
 
-              <div class="input-group">
-                <label for="childDescription">Describe your child and family (optional)</label>
-                <input type="text" id="childDescription" class="input-field" placeholder="e.g. Liam loves animal books, energetic, friendly." value="Loves building blocks and bedtime stories.">
+              <!-- 2. Health & Safety -->
+              <div class="form-group-section">
+                <h3 class="form-group-title">Health & Safety</h3>
+                <p class="form-group-subtext">Optional. Help your babysitter be prepared for your child's well-being.
+                </p>
+
+                <!-- Allergies -->
+                <div class="input-group">
+                  <label>Allergies (optional)</label>
+                  <div class="chips-grid" id="chipsAllergies" data-field="allergies">
+                    <button type="button" class="form-chip" data-value="Peanuts"><span class="chip-check">✓
+                      </span>Peanuts</button>
+                    <button type="button" class="form-chip" data-value="Tree nuts"><span class="chip-check">✓
+                      </span>Tree nuts</button>
+                    <button type="button" class="form-chip" data-value="Milk / Dairy"><span class="chip-check">✓
+                      </span>Milk / Dairy</button>
+                    <button type="button" class="form-chip" data-value="Eggs"><span class="chip-check">✓
+                      </span>Eggs</button>
+                    <button type="button" class="form-chip" data-value="Seafood"><span class="chip-check">✓
+                      </span>Seafood</button>
+                    <button type="button" class="form-chip" data-value="Wheat / Gluten"><span class="chip-check">✓
+                      </span>Wheat / Gluten</button>
+                    <button type="button" class="form-chip" data-value="Soy"><span class="chip-check">✓
+                      </span>Soy</button>
+                    <button type="button" class="form-chip" data-value="Other"><span class="chip-check">✓
+                      </span>Other</button>
+                    <button type="button" class="form-chip" data-value="None"><span class="chip-check">✓
+                      </span>None</button>
+                  </div>
+                  <div class="conditional-input-wrap" id="wrapAllergiesOther" style="display: none;">
+                    <input type="text" id="childAllergiesOther" class="input-field"
+                      placeholder="Please specify other allergy (e.g. Strawberries, Penicillin)">
+                  </div>
+                  <div class="conditional-input-wrap" id="wrapAllergiesDetails" style="display: none;">
+                    <input type="text" id="childAllergiesDetails" class="input-field"
+                      placeholder="Reaction details or care instructions (e.g. Mild hives, carries EpiPen)">
+                  </div>
+                </div>
+
+                <!-- Medical Conditions -->
+                <div class="input-group">
+                  <label>Medical Conditions (optional)</label>
+                  <div class="chips-grid" id="chipsMedical" data-field="medical">
+                    <button type="button" class="form-chip" data-value="Asthma"><span class="chip-check">✓
+                      </span>Asthma</button>
+                    <button type="button" class="form-chip" data-value="Eczema"><span class="chip-check">✓
+                      </span>Eczema</button>
+                    <button type="button" class="form-chip" data-value="Diabetes"><span class="chip-check">✓
+                      </span>Diabetes</button>
+                    <button type="button" class="form-chip" data-value="Epilepsy / Seizures"><span class="chip-check">✓
+                      </span>Epilepsy / Seizures</button>
+                    <button type="button" class="form-chip" data-value="Heart condition"><span class="chip-check">✓
+                      </span>Heart condition</button>
+                    <button type="button" class="form-chip" data-value="Food intolerance"><span class="chip-check">✓
+                      </span>Food intolerance</button>
+                    <button type="button" class="form-chip" data-value="Other"><span class="chip-check">✓
+                      </span>Other</button>
+                    <button type="button" class="form-chip" data-value="None"><span class="chip-check">✓
+                      </span>None</button>
+                  </div>
+                  <div class="conditional-input-wrap" id="wrapMedicalOther" style="display: none;">
+                    <input type="text" id="childMedicalOther" class="input-field"
+                      placeholder="Please specify other medical condition">
+                  </div>
+                  <div class="conditional-input-wrap" id="wrapMedicalDetails" style="display: none;">
+                    <input type="text" id="childMedicalDetails" class="input-field"
+                      placeholder="Medication or care instructions (optional)">
+                  </div>
+                </div>
+
+                <!-- Special Needs -->
+                <div class="input-group">
+                  <label>Special Needs (optional)</label>
+                  <div class="chips-grid" id="chipsSpecialNeeds" data-field="specialNeeds">
+                    <button type="button" class="form-chip" data-value="Autism spectrum"><span class="chip-check">✓
+                      </span>Autism spectrum</button>
+                    <button type="button" class="form-chip" data-value="ADHD"><span class="chip-check">✓
+                      </span>ADHD</button>
+                    <button type="button" class="form-chip" data-value="Speech and language difficulties"><span
+                        class="chip-check">✓ </span>Speech and language difficulties</button>
+                    <button type="button" class="form-chip" data-value="Sensory sensitivities"><span
+                        class="chip-check">✓ </span>Sensory sensitivities</button>
+                    <button type="button" class="form-chip" data-value="Physical disabilities"><span
+                        class="chip-check">✓ </span>Physical disabilities</button>
+                    <button type="button" class="form-chip" data-value="Developmental delays"><span class="chip-check">✓
+                      </span>Developmental delays</button>
+                    <button type="button" class="form-chip" data-value="Learning difficulties"><span
+                        class="chip-check">✓ </span>Learning difficulties</button>
+                    <button type="button" class="form-chip" data-value="Other"><span class="chip-check">✓
+                      </span>Other</button>
+                    <button type="button" class="form-chip" data-value="None"><span class="chip-check">✓
+                      </span>None</button>
+                  </div>
+                  <div class="conditional-input-wrap" id="wrapSpecialNeedsOther" style="display: none;">
+                    <input type="text" id="childSpecialNeedsOther" class="input-field"
+                      placeholder="Please specify other special need">
+                  </div>
+                  <div class="conditional-input-wrap" id="wrapSpecialNeedsDetails" style="display: none;">
+                    <input type="text" id="childSpecialNeedsDetails" class="input-field"
+                      placeholder="How can the babysitter best support your child? (optional)">
+                  </div>
+                </div>
+              </div>
+
+              <!-- 3. Personality & Interests -->
+              <div class="form-group-section">
+                <h3 class="form-group-title">Personality & Interests</h3>
+                <p class="form-group-subtext">Optional. Let caregivers know what your child enjoys.</p>
+
+                <!-- Personality -->
+                <div class="input-group">
+                  <label>Child Personality (optional)</label>
+                  <div class="chips-grid" id="chipsPersonality" data-field="personality">
+                    <button type="button" class="form-chip" data-value="Active and energetic"><span class="chip-check">✓
+                      </span>Active and energetic</button>
+                    <button type="button" class="form-chip" data-value="Calm and quiet"><span class="chip-check">✓
+                      </span>Calm and quiet</button>
+                    <button type="button" class="form-chip" data-value="Friendly and sociable"><span
+                        class="chip-check">✓ </span>Friendly and sociable</button>
+                    <button type="button" class="form-chip" data-value="Shy around strangers"><span class="chip-check">✓
+                      </span>Shy around strangers</button>
+                    <button type="button" class="form-chip" data-value="Independent"><span class="chip-check">✓
+                      </span>Independent</button>
+                    <button type="button" class="form-chip" data-value="Enjoys creative activities"><span
+                        class="chip-check">✓ </span>Enjoys creative activities</button>
+                    <button type="button" class="form-chip" data-value="Loves outdoor activities"><span
+                        class="chip-check">✓ </span>Loves outdoor activities</button>
+                    <button type="button" class="form-chip" data-value="Other"><span class="chip-check">✓
+                      </span>Other</button>
+                  </div>
+                  <div class="conditional-input-wrap" id="wrapPersonalityOther" style="display: none;">
+                    <input type="text" id="childPersonalityOther" class="input-field"
+                      placeholder="Please specify other personality trait">
+                  </div>
+                </div>
+
+                <!-- Interests -->
+                <div class="input-group">
+                  <label>Child Interests (optional)</label>
+                  <div class="chips-grid" id="chipsInterests" data-field="interests">
+                    <button type="button" class="form-chip" data-value="Drawing and colouring"><span
+                        class="chip-check">✓ </span>Drawing and colouring</button>
+                    <button type="button" class="form-chip" data-value="Reading books"><span class="chip-check">✓
+                      </span>Reading books</button>
+                    <button type="button" class="form-chip" data-value="Building blocks"><span class="chip-check">✓
+                      </span>Building blocks</button>
+                    <button type="button" class="form-chip" data-value="Music and dancing"><span class="chip-check">✓
+                      </span>Music and dancing</button>
+                    <button type="button" class="form-chip" data-value="Outdoor play"><span class="chip-check">✓
+                      </span>Outdoor play</button>
+                    <button type="button" class="form-chip" data-value="Puzzles and games"><span class="chip-check">✓
+                      </span>Puzzles and games</button>
+                    <button type="button" class="form-chip" data-value="Other"><span class="chip-check">✓
+                      </span>Other</button>
+                  </div>
+                  <div class="conditional-input-wrap" id="wrapInterestsOther" style="display: none;">
+                    <input type="text" id="childInterestsOther" class="input-field"
+                      placeholder="Please specify other interest (e.g. Dinosaurs, LEGO)">
+                  </div>
+                </div>
+              </div>
+
+              <!-- 4. Feeding & Sleep Routine -->
+              <div class="form-group-section">
+                <h3 class="form-group-title">Feeding & Sleep Routine</h3>
+                <p class="form-group-subtext">Optional. Select routines that apply or write custom instructions.</p>
+
+                <!-- Sleep / Nap Routine -->
+                <div class="input-group">
+                  <label>Nap & Sleep Habits (optional)</label>
+                  <div class="chips-grid" id="chipsRoutineSleep" data-field="routineSleep">
+                    <button type="button" class="form-chip" data-value="Morning nap"><span class="chip-check">✓
+                      </span>Morning nap</button>
+                    <button type="button" class="form-chip" data-value="Afternoon nap (1-2 hrs)"><span
+                        class="chip-check">✓ </span>Afternoon nap (1-2 hrs)</button>
+                    <button type="button" class="form-chip" data-value="Two naps daily"><span class="chip-check">✓
+                      </span>Two naps daily</button>
+                    <button type="button" class="form-chip" data-value="Flexible nap schedule"><span
+                        class="chip-check">✓ </span>Flexible nap schedule</button>
+                    <button type="button" class="form-chip" data-value="No nap needed"><span class="chip-check">✓
+                      </span>No nap needed</button>
+                  </div>
+                </div>
+
+                <!-- Feeding Schedule -->
+                <div class="input-group">
+                  <label>Feeding Schedule (optional)</label>
+                  <div class="chips-grid" id="chipsRoutineFeeding" data-field="routineFeeding">
+                    <button type="button" class="form-chip" data-value="Regular meals & snacks"><span
+                        class="chip-check">✓ </span>Regular meals & snacks</button>
+                    <button type="button" class="form-chip" data-value="Bottle-fed / Formula"><span class="chip-check">✓
+                      </span>Bottle-fed / Formula</button>
+                    <button type="button" class="form-chip" data-value="Pureed / Soft foods"><span class="chip-check">✓
+                      </span>Pureed / Soft foods</button>
+                    <button type="button" class="form-chip" data-value="Finger foods"><span class="chip-check">✓
+                      </span>Finger foods</button>
+                    <button type="button" class="form-chip" data-value="Independent eater"><span class="chip-check">✓
+                      </span>Independent eater</button>
+                  </div>
+                </div>
+
+                <!-- Custom Instructions -->
+                <div class="input-group">
+                  <label for="childRoutineNotes">Custom Routine & Timing Instructions (optional)</label>
+                  <input type="text" id="childRoutineNotes" class="input-field"
+                    placeholder="e.g. Afternoon nap at 1:30 PM, snack at 4 PM, water bottle in bag">
+                </div>
+              </div>
+
+              <!-- 5. Emergency Contact -->
+              <div class="form-group-section">
+                <h3 class="form-group-title">Emergency Contact <span class="required-star"
+                    style="color: var(--error-red);">*</span></h3>
+                <p class="form-group-subtext">Who should the babysitter contact immediately in case of an emergency?</p>
+
+                <!-- Registered Parent Details Toggle (Visible only when registered user is logged in) -->
+                <div class="emergency-toggle-box" id="wrapEmergencyParentToggle" style="display: none;">
+                  <label class="emergency-radio-label">
+                    <input type="radio" name="emergencyChoice" id="radioParentEmergency" value="parent">
+                    <span>Use my registered contact details (<strong id="emergencyParentDetailsText"></strong>)</span>
+                  </label>
+                  <label class="emergency-radio-label">
+                    <input type="radio" name="emergencyChoice" id="radioManualEmergency" value="manual" checked>
+                    <span>Enter a different emergency contact</span>
+                  </label>
+                </div>
+
+                <div class="form-row">
+                  <div class="input-group">
+                    <label for="childEmergencyName">Contact Name <span class="required-star"
+                        style="color: var(--error-red);">*</span></label>
+                    <input type="text" id="childEmergencyName" class="input-field"
+                      placeholder="e.g. Mark Roberts (Father)">
+                    <div class="child-error-msg" id="errorChildEmergencyName" style="display: none;">Please enter
+                      emergency contact name</div>
+                  </div>
+                  <div class="input-group">
+                    <label for="childEmergencyPhone">Phone Number <span class="required-star"
+                        style="color: var(--error-red);">*</span></label>
+                    <input type="tel" id="childEmergencyPhone" class="input-field" placeholder="e.g. 012-9876543">
+                    <div class="child-error-msg" id="errorChildEmergencyPhone" style="display: none;">Please enter
+                      emergency phone number</div>
+                  </div>
+                </div>
               </div>
 
               <div class="add-child-buttons">
-                <button type="button" class="btn btn-secondary full-width" id="btnAddAnotherChild">+ Add another child</button>
+                <button type="button" class="btn btn-secondary full-width" id="btnAddAnotherChild">+ Add another
+                  child</button>
                 <button type="submit" class="btn btn-primary full-width btn-large">Save and continue</button>
               </div>
             </form>
@@ -1110,10 +1474,31 @@
                   <select id="bookingChildSelect" class="input-field">
                     <option value="Liam">Liam (2 years old)</option>
                   </select>
+                  <div class="booking-child-select-header">
+                    <label for="bookingChildSelect">Child</label>
+                    <button type="button" class="inline-action-link" id="btnBookingAddChild">+ Add another
+                      child</button>
+                  </div>
+                  <select id="bookingChildSelect" class="input-field"></select>
                 </div>
                 <div class="input-group">
                   <label for="bookingDateInput">Date</label>
                   <input type="date" id="bookingDateInput" class="input-field" value="2026-11-20" required>
+                </div>
+              </div>
+
+              <!-- Selected Child Summary Card -->
+              <div id="bookingChildSummaryCard" class="card booking-child-card" style="display: none;">
+                <div class="booking-child-card-header">
+                  <span class="booking-child-avatar" id="bookingChildAvatar">🧒</span>
+                  <div class="booking-child-title-wrap">
+                    <strong class="booking-child-name" id="bookingChildName">Child Name</strong>
+                    <span class="booking-child-meta" id="bookingChildMeta">Age • Gender</span>
+                  </div>
+                </div>
+                <div class="booking-child-details">
+                  <p id="bookingChildHealthSummary" class="booking-child-health-text"></p>
+                  <p id="bookingChildRoutineSummary" class="booking-child-routine-text"></p>
                 </div>
               </div>
 
@@ -1140,12 +1525,14 @@
 
               <div class="input-group">
                 <label for="bookingSpecialReq">Special Requirements</label>
-                <input type="text" id="bookingSpecialReq" class="input-field" placeholder="e.g. Help with reading, infant bedtime routine">
+                <input type="text" id="bookingSpecialReq" class="input-field"
+                  placeholder="e.g. Help with reading, infant bedtime routine">
               </div>
 
               <div class="input-group">
                 <label for="bookingExtraNotes">Extra Notes for Caregiver</label>
-                <input type="text" id="bookingExtraNotes" class="input-field" placeholder="e.g. Park visitor parking available in front of building">
+                <input type="text" id="bookingExtraNotes" class="input-field"
+                  placeholder="e.g. Park visitor parking available in front of building">
               </div>
 
               <!-- Trial Session Option -->
@@ -1176,7 +1563,9 @@
               <!-- Cancellation & Replacement Policy Note -->
               <div class="note-box note-box-yellow">
                 <span class="note-icon">🛡️</span>
-                <p><strong>Cancellation & Replacement Policy:</strong> Free 100% cancellation up to 24 hours prior. If your sitter ever cancels, Ease guarantees an immediate certified replacement or instant full refund.</p>
+                <p><strong>Cancellation & Replacement Policy:</strong> Free 100% cancellation up to 24 hours prior. If
+                  your sitter ever cancels, Ease guarantees an immediate certified replacement or instant full refund.
+                </p>
               </div>
 
               <button type="submit" class="btn btn-primary full-width btn-large">Send booking request</button>
@@ -1198,8 +1587,9 @@
             <div id="statusStateWaiting" class="status-state-panel">
               <div class="status-icon-wrap status-icon-waiting">⏳</div>
               <h1 class="section-heading">Request Sent</h1>
-              <p class="section-subtext">Waiting for <strong id="statusSitterNameWaiting">Sarah Lim</strong> to accept your booking for 20 Nov 2026.</p>
-              
+              <p class="section-subtext">Waiting for <strong id="statusSitterNameWaiting">Sarah Lim</strong> to accept
+                your booking for 20 Nov 2026.</p>
+
               <div class="status-timer-box">
                 <span class="timer-label">Response window:</span>
                 <span class="timer-digits" id="waitingCountdown">14:59</span>
@@ -1210,32 +1600,38 @@
                 <p>Caregivers usually respond within 15 minutes. We will notify you immediately once confirmed.</p>
               </div>
 
-              <button type="button" class="btn btn-secondary full-width" id="btnCancelBookingRequest" style="margin-top: 16px;">Cancel request</button>
+              <button type="button" class="btn btn-secondary full-width" id="btnCancelBookingRequest"
+                style="margin-top: 16px;">Cancel request</button>
             </div>
 
             <!-- STATE 2: ACCEPTED -->
             <div id="statusStateAccepted" class="status-state-panel" style="display: none;">
               <div class="status-icon-wrap status-icon-accepted">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#2E8B6E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#2E8B6E" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
               </div>
               <h1 class="section-heading" id="statusAcceptedHeadline">Sarah accepted your booking!</h1>
-              <p class="section-subtext">Your booking request has been accepted. Complete payment to secure your session.</p>
+              <p class="section-subtext">Your booking request has been accepted. Complete payment to secure your
+                session.</p>
               <button class="btn btn-primary full-width btn-large" id="btnPayNow">Pay now</button>
             </div>
 
             <!-- STATE 3: DECLINED -->
             <div id="statusStateDeclined" class="status-state-panel" style="display: none;">
               <div class="status-icon-wrap status-icon-declined">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
                   <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
               </div>
               <h1 class="section-heading">Booking Declined</h1>
-              <p class="section-subtext">The caregiver is unavailable for this timeslot. You can easily find another qualified sitter.</p>
-              <button class="btn btn-secondary full-width btn-large" id="btnFindAnotherSitter">Find another babysitter</button>
+              <p class="section-subtext">The caregiver is unavailable for this timeslot. You can easily find another
+                qualified sitter.</p>
+              <button class="btn btn-secondary full-width btn-large" id="btnFindAnotherSitter">Find another
+                babysitter</button>
             </div>
 
             <!-- Demo Switcher Buttons for Testing States -->
@@ -1271,7 +1667,8 @@
 
             <!-- Payment Options -->
             <div class="options-grid payment-options-grid">
-              <div class="card option-card selected" data-pay-method="fpx" tabindex="0" role="radio" aria-checked="true">
+              <div class="card option-card selected" data-pay-method="fpx" tabindex="0" role="radio"
+                aria-checked="true">
                 <div class="option-card-content">
                   <div class="option-title">FPX Online Banking</div>
                   <div class="option-desc">Maybank, CIMB, Public Bank, RHB</div>
@@ -1312,12 +1709,18 @@
 
             <!-- Error message on first attempt -->
             <div class="payment-error-box" id="paymentErrorBox" style="display: none;">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5"
+                stroke-linecap="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
               <span>Payment failed. Bank connection timed out. Please retry.</span>
             </div>
 
             <button class="btn btn-primary full-width btn-large" id="btnSubmitPayment">Pay RM 105</button>
-            <button class="btn btn-primary full-width btn-large" id="btnRetryPayment" style="display: none;">Retry payment</button>
+            <button class="btn btn-primary full-width btn-large" id="btnRetryPayment" style="display: none;">Retry
+              payment</button>
           </div>
         </div>
       </div>
@@ -1331,7 +1734,8 @@
         <div class="container confirmed-container">
           <div class="card confirmed-card">
             <div class="confirmed-badge-icon">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#2E8B6E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#2E8B6E" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                 <polyline points="22 4 12 14.01 9 11.01"></polyline>
               </svg>
@@ -1360,6 +1764,7 @@
               <div class="receipt-row">
                 <span class="receipt-label">Child</span>
                 <span class="receipt-val">Liam</span>
+                <span class="receipt-val" id="confirmedChildName">Liam</span>
               </div>
               <div class="receipt-row">
                 <span class="receipt-label">Status</span>
@@ -1399,6 +1804,8 @@
               <div class="next-booking-info">
                 <h3 class="card-title">Sarah Lim</h3>
                 <span class="next-booking-time">2:00 PM – 6:00 PM • 4 hours • Liam</span>
+                <span class="next-booking-time" id="homeNextBookingTime">2:00 PM – 6:00 PM • 4 hours • <span
+                    id="homeNextBookingChild">Liam</span></span>
                 <span class="next-booking-location">📍 50450 Kuala Lumpur</span>
               </div>
             </div>
@@ -1471,7 +1878,8 @@
                   <span class="child-age">2 years old • Boy</span>
                 </div>
               </div>
-              <p class="child-meta-text">Allergies: None • Routine: Nap at 1:30 PM • Emergency Contact: Mark Roberts (Father)</p>
+              <p class="child-meta-text">Allergies: None • Routine: Nap at 1:30 PM • Emergency Contact: Mark Roberts
+                (Father)</p>
             </div>
           </div>
 
@@ -1502,7 +1910,11 @@
         <div class="chat-header">
           <div class="chat-header-left">
             <button class="nav-back-btn" id="btnChatBack" aria-label="Back">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2.5" stroke-linecap="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2.5"
+                stroke-linecap="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
             </button>
             <div class="chat-sitter-avatar">👩‍🏫</div>
             <div>
@@ -1532,13 +1944,17 @@
         <!-- Chat Input Bar -->
         <form id="chatForm" class="chat-input-bar">
           <button type="button" class="btn-chat-attach" id="btnChatAttach" aria-label="Attach file">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6E5A66" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6E5A66" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48">
+              </path>
             </svg>
           </button>
           <input type="text" id="chatInputText" class="input-field chat-input" placeholder="Type a message..." required>
           <button type="submit" class="btn btn-primary btn-chat-send" aria-label="Send">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3B2A35" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3B2A35" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
               <line x1="22" y1="2" x2="11" y2="13"></line>
               <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
             </svg>
@@ -1552,23 +1968,44 @@
   <!-- Bottom Navigation Bar (Phone/Mobile, active after login) -->
   <nav class="bottom-nav" id="bottomNav" style="display: none;">
     <button class="bottom-nav-item active" data-nav="home">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+      </svg>
       <span>Home</span>
     </button>
     <button class="bottom-nav-item" data-nav="find">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
       <span>Find</span>
     </button>
     <button class="bottom-nav-item" data-nav="bookings">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+        <line x1="16" y1="2" x2="16" y2="6"></line>
+        <line x1="8" y1="2" x2="8" y2="6"></line>
+        <line x1="3" y1="10" x2="21" y2="10"></line>
+      </svg>
       <span>Bookings</span>
     </button>
     <button class="bottom-nav-item" data-nav="messages">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
       <span>Messages</span>
     </button>
     <button class="bottom-nav-item" data-nav="profile">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+        <circle cx="12" cy="7" r="4"></circle>
+      </svg>
       <span>Profile</span>
     </button>
   </nav>
@@ -1576,7 +2013,8 @@
   <!-- Toast Notification -->
   <div class="toast-card" id="toastNotification" role="status" aria-live="polite">
     <span class="toast-icon" aria-hidden="true">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2E8B6E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2E8B6E" stroke-width="2.5"
+        stroke-linecap="round" stroke-linejoin="round">
         <path d="M20 6L9 17l-5-5"></path>
       </svg>
     </span>
@@ -1585,4 +2023,5 @@
 
   <script src="main.js"></script>
 </body>
+
 </html>

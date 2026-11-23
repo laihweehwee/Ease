@@ -1922,6 +1922,189 @@ label {
   margin-top: 24px;
 }
 
+/* Saved Children List on Add Child Screen */
+.saved-children-section {
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.saved-children-title {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  color: var(--ink);
+  margin-bottom: 12px;
+}
+
+.saved-children-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.saved-child-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+}
+
+.saved-child-avatar {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.saved-child-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.saved-child-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.saved-child-name {
+  font-size: 15px;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.saved-child-meta {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.saved-child-details {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.child-error-msg {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--error-red);
+  margin-top: 4px;
+}
+
+/* Child Profile Form Sections & Chips */
+.form-group-section {
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+.form-group-title {
+  font-family: var(--font-heading);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+
+.form-group-subtext {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.chips-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+  margin-bottom: 6px;
+}
+
+.form-chip {
+  background-color: var(--white);
+  border: 1.5px solid var(--border);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  line-height: 18px;
+  font-weight: 500;
+  border-radius: var(--radius);
+  padding: 8px 13px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.form-chip:hover {
+  background-color: var(--soft-pink);
+  border-color: var(--cherry-pink);
+}
+
+.form-chip.active {
+  background-color: var(--soft-pink);
+  border-color: var(--deep-rose);
+  color: var(--deep-rose);
+  font-weight: 600;
+}
+
+.form-chip .chip-check {
+  display: none;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.form-chip.active .chip-check {
+  display: inline;
+}
+
+.form-chip:focus-visible {
+  outline: 2px solid var(--deep-rose);
+  outline-offset: 1px;
+}
+
+.conditional-input-wrap {
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+.emergency-toggle-box {
+  background-color: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.emergency-radio-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.emergency-radio-label input[type="radio"] {
+  accent-color: var(--deep-rose);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
 /* --------------------------------------------------------------------------
    10. Booking Details
    -------------------------------------------------------------------------- */
@@ -1965,6 +2148,87 @@ label {
   font-size: 13px;
   color: var(--muted);
   margin-top: 2px;
+}
+
+.booking-child-select-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+
+.inline-action-link {
+  background: none;
+  border: none;
+  color: var(--deep-rose);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.inline-action-link:hover {
+  color: var(--cherry-pink-pressed);
+}
+
+.booking-child-card {
+  background-color: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-top: 6px;
+  margin-bottom: 16px;
+}
+
+.booking-child-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.booking-child-avatar {
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.booking-child-title-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.booking-child-name {
+  font-size: 15px;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.booking-child-meta {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.booking-child-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.booking-child-health-text {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.booking-child-routine-text {
+  margin: 0;
+  line-height: 1.4;
+  font-style: italic;
 }
 
 .trial-option-label {

@@ -116,6 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
       phone: '012-3456789',
     },
     hasAddedChild: false,
+    children: [],
     child: {
       name: 'Liam',
       gender: 'Boy',
@@ -158,6 +159,19 @@ document.addEventListener('DOMContentLoaded', () => {
       const parsed = JSON.parse(saved);
       Object.assign(state, parsed);
       state.comparedSitters = new Set(parsed.comparedSitters || []);
+
+      // Multiple children migration / compatibility handling
+      if (Array.isArray(parsed.children) && parsed.children.length > 0) {
+        state.children = parsed.children;
+        state.child = parsed.children[0];
+        state.hasAddedChild = true;
+      } else if (parsed.child && parsed.child.name && parsed.hasAddedChild) {
+        // Migrate single existing child into children array
+        state.children = [parsed.child];
+        state.hasAddedChild = true;
+      } else {
+        state.children = Array.isArray(parsed.children) ? parsed.children : [];
+      }
     }
   } catch (e) {
     console.warn('Could not load localStorage state', e);
@@ -165,6 +179,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function saveState() {
     try {
+      if (state.children && state.children.length > 0) {
+        state.child = state.children[0];
+        state.hasAddedChild = true;
+      }
       const serialized = {
         ...state,
         comparedSitters: Array.from(state.comparedSitters),
@@ -279,6 +297,9 @@ document.addEventListener('DOMContentLoaded', () => {
       setupParentHome();
     } else if (screenId === 'chat') {
       setupChatScreen();
+    } else if (screenId === 'addChild') {
+      setupEmergencyContactToggle();
+      renderSavedChildrenList();
     } else if (screenId === 'verify') {
       const verifyEmail = document.getElementById('verifyEmailDisplay');
       if (verifyEmail) verifyEmail.textContent = state.user.email;
@@ -781,9 +802,12 @@ document.addEventListener('DOMContentLoaded', () => {
     state.bookingIntent = true;
     saveState();
 
+    const hasChildren = Array.isArray(state.children) && state.children.length > 0;
+
     if (!state.isLoggedIn) {
       showScreen('auth');
-    } else if (!state.hasAddedChild) {
+    } else if (!hasChildren) {
+      showToast('Please add your child\'s profile before booking.');
       showScreen('addChild');
     } else {
       showScreen('bookingDetails');
@@ -993,12 +1017,448 @@ document.addEventListener('DOMContentLoaded', () => {
   const addChildForm = document.getElementById('addChildForm');
   const btnAddAnotherChild = document.getElementById('btnAddAnotherChild');
 
+  function validateChildForm() {
+    const nameInput = document.getElementById('childName');
+    const birthDateInput = document.getElementById('childBirthDate');
+    const emergNameInput = document.getElementById('childEmergencyName');
+    const emergPhoneInput = document.getElementById('childEmergencyPhone');
+
+    let isValid = true;
+
+    // Clear previous error states
+    [nameInput, birthDateInput, emergNameInput, emergPhoneInput].forEach(input => {
+      if (input) input.classList.remove('input-error');
+    });
+    document.querySelectorAll('.child-error-msg').forEach(el => {
+      el.style.display = 'none';
+    });
+
+    if (!nameInput || !nameInput.value.trim()) {
+      if (nameInput) nameInput.classList.add('input-error');
+      const err = document.getElementById('errorChildName');
+      if (err) err.style.display = 'flex';
+      isValid = false;
+    }
+
+    if (!birthDateInput || !birthDateInput.value) {
+      if (birthDateInput) birthDateInput.classList.add('input-error');
+      const err = document.getElementById('errorChildBirthDate');
+      if (err) err.style.display = 'flex';
+      isValid = false;
+    }
+
+    if (!emergNameInput || !emergNameInput.value.trim()) {
+      if (emergNameInput) emergNameInput.classList.add('input-error');
+      const err = document.getElementById('errorChildEmergencyName');
+      if (err) err.style.display = 'flex';
+      isValid = false;
+    }
+
+    if (!emergPhoneInput || !emergPhoneInput.value.trim()) {
+      if (emergPhoneInput) emergPhoneInput.classList.add('input-error');
+      const err = document.getElementById('errorChildEmergencyPhone');
+      if (err) err.style.display = 'flex';
+      isValid = false;
+    }
+
+    return isValid;
+  }
+
+  // Clear validation errors on user typing
+  ['childName', 'childBirthDate', 'childEmergencyName', 'childEmergencyPhone'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input', () => {
+        el.classList.remove('input-error');
+        const err = document.getElementById(`error${id.charAt(0).toUpperCase() + id.slice(1)}`);
+        if (err) err.style.display = 'none';
+      });
+    }
+  });
+
+  // Setup multi-select chip groups with mutual-exclusivity for "None" and conditional reveals
+  function setupChipGroups() {
+    const chipGrids = document.querySelectorAll('#screenAddChild .chips-grid');
+    chipGrids.forEach(grid => {
+      const field = grid.getAttribute('data-field');
+      const chips = grid.querySelectorAll('.form-chip');
+
+      chips.forEach(chip => {
+        chip.addEventListener('click', () => {
+          const val = chip.getAttribute('data-value');
+          const isSelected = chip.classList.contains('active');
+
+          if (val === 'None') {
+            if (isSelected) {
+              chip.classList.remove('active');
+            } else {
+              // Deselect all others in this specific grid
+              chips.forEach(c => c.classList.remove('active'));
+              chip.classList.add('active');
+            }
+          } else {
+            // Uncheck "None" in this grid
+            const noneChip = Array.from(chips).find(c => c.getAttribute('data-value') === 'None');
+            if (noneChip) noneChip.classList.remove('active');
+            chip.classList.toggle('active');
+          }
+
+          updateConditionalInputs(field, grid);
+        });
+      });
+    });
+  }
+
+  function updateConditionalInputs(field, grid) {
+    const activeValues = Array.from(grid.querySelectorAll('.form-chip.active')).map(c => c.getAttribute('data-value'));
+    const hasOther = activeValues.includes('Other');
+    const hasAnyRealItem = activeValues.some(v => v !== 'None');
+
+    if (field === 'allergies') {
+      const wrapOther = document.getElementById('wrapAllergiesOther');
+      const wrapDetails = document.getElementById('wrapAllergiesDetails');
+      if (wrapOther) wrapOther.style.display = hasOther ? 'block' : 'none';
+      if (wrapDetails) wrapDetails.style.display = hasAnyRealItem ? 'block' : 'none';
+    } else if (field === 'medical') {
+      const wrapOther = document.getElementById('wrapMedicalOther');
+      const wrapDetails = document.getElementById('wrapMedicalDetails');
+      if (wrapOther) wrapOther.style.display = hasOther ? 'block' : 'none';
+      if (wrapDetails) wrapDetails.style.display = hasAnyRealItem ? 'block' : 'none';
+    } else if (field === 'specialNeeds') {
+      const wrapOther = document.getElementById('wrapSpecialNeedsOther');
+      const wrapDetails = document.getElementById('wrapSpecialNeedsDetails');
+      if (wrapOther) wrapOther.style.display = hasOther ? 'block' : 'none';
+      if (wrapDetails) wrapDetails.style.display = hasAnyRealItem ? 'block' : 'none';
+    } else if (field === 'personality') {
+      const wrapOther = document.getElementById('wrapPersonalityOther');
+      if (wrapOther) wrapOther.style.display = hasOther ? 'block' : 'none';
+    } else if (field === 'interests') {
+      const wrapOther = document.getElementById('wrapInterestsOther');
+      if (wrapOther) wrapOther.style.display = hasOther ? 'block' : 'none';
+    }
+  }
+
+  function getSelectedChips(gridId) {
+    const grid = document.getElementById(gridId);
+    if (!grid) return [];
+    const activeChips = grid.querySelectorAll('.form-chip.active');
+    return Array.from(activeChips).map(c => c.getAttribute('data-value'));
+  }
+
+  // Emergency contact toggle with registered parent details safeguard
+  function setupEmergencyContactToggle() {
+    const toggleBox = document.getElementById('wrapEmergencyParentToggle');
+    const parentDetailsText = document.getElementById('emergencyParentDetailsText');
+    const radioParent = document.getElementById('radioParentEmergency');
+    const radioManual = document.getElementById('radioManualEmergency');
+    const nameInput = document.getElementById('childEmergencyName');
+    const phoneInput = document.getElementById('childEmergencyPhone');
+
+    // SAFEGUARD: Only allow "Use my registered contact details" when user is authenticated
+    // and both actual registered name and phone are non-empty. Never use placeholder data!
+    const hasRegisteredParent = Boolean(
+      state.isLoggedIn &&
+      state.user &&
+      typeof state.user.name === 'string' &&
+      state.user.name.trim() !== '' &&
+      typeof state.user.phone === 'string' &&
+      state.user.phone.trim() !== ''
+    );
+
+    if (hasRegisteredParent && toggleBox && parentDetailsText) {
+      toggleBox.style.display = 'flex';
+      parentDetailsText.textContent = `${state.user.name} • ${state.user.phone}`;
+
+      if (radioParent) {
+        radioParent.onchange = () => {
+          if (radioParent.checked) {
+            nameInput.value = state.user.name;
+            phoneInput.value = state.user.phone;
+            nameInput.classList.remove('input-error');
+            phoneInput.classList.remove('input-error');
+            const errN = document.getElementById('errorChildEmergencyName');
+            const errP = document.getElementById('errorChildEmergencyPhone');
+            if (errN) errN.style.display = 'none';
+            if (errP) errP.style.display = 'none';
+          }
+        };
+      }
+
+      if (radioManual) {
+        radioManual.onchange = () => {
+          if (radioManual.checked) {
+            nameInput.value = '';
+            phoneInput.value = '';
+            nameInput.focus();
+          }
+        };
+      }
+    } else if (toggleBox) {
+      toggleBox.style.display = 'none';
+      if (radioManual) radioManual.checked = true;
+    }
+  }
+
+  function getChildFormData() {
+    const allergies = getSelectedChips('chipsAllergies');
+    const allergiesOther = document.getElementById('childAllergiesOther')?.value.trim() || '';
+    const allergiesDetails = document.getElementById('childAllergiesDetails')?.value.trim() || '';
+
+    const medical = getSelectedChips('chipsMedical');
+    const medicalOther = document.getElementById('childMedicalOther')?.value.trim() || '';
+    const medicalDetails = document.getElementById('childMedicalDetails')?.value.trim() || '';
+
+    const specialNeeds = getSelectedChips('chipsSpecialNeeds');
+    const specialNeedsOther = document.getElementById('childSpecialNeedsOther')?.value.trim() || '';
+    const specialNeedsDetails = document.getElementById('childSpecialNeedsDetails')?.value.trim() || '';
+
+    const personality = getSelectedChips('chipsPersonality');
+    const personalityOther = document.getElementById('childPersonalityOther')?.value.trim() || '';
+
+    const interests = getSelectedChips('chipsInterests');
+    const interestsOther = document.getElementById('childInterestsOther')?.value.trim() || '';
+
+    const routineSleep = getSelectedChips('chipsRoutineSleep');
+    const routineFeeding = getSelectedChips('chipsRoutineFeeding');
+    const routineNotes = document.getElementById('childRoutineNotes')?.value.trim() || '';
+
+    const radioParent = document.getElementById('radioParentEmergency');
+    const isParentEmergency = Boolean(radioParent && radioParent.checked);
+
+    // SAFEGUARD: Generate readable string values for c.routine and c.description
+    // Ensures legacy screens receive clean strings, not arrays!
+    const routineParts = [];
+    if (routineSleep.length > 0) routineParts.push(routineSleep.join(', '));
+    if (routineFeeding.length > 0) routineParts.push(routineFeeding.join(', '));
+    if (routineNotes) routineParts.push(routineNotes);
+    const routineLegacyStr = routineParts.length > 0 ? routineParts.join(' • ') : 'Standard routine';
+
+    const descParts = [];
+    if (personality.length > 0) {
+      const pItems = [...personality.filter(p => p !== 'Other')];
+      if (personalityOther) pItems.push(personalityOther);
+      descParts.push(pItems.join(', '));
+    }
+    if (interests.length > 0) {
+      const iItems = [...interests.filter(i => i !== 'Other')];
+      if (interestsOther) iItems.push(interestsOther);
+      descParts.push('Loves ' + iItems.join(', '));
+    }
+    const descriptionLegacyStr = descParts.length > 0 ? descParts.join('. ') : 'Friendly and curious.';
+
+    return {
+      id: 'child_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+      name: document.getElementById('childName').value.trim(),
+      gender: document.getElementById('childGender').value,
+      birthDate: document.getElementById('childBirthDate').value,
+
+      // Health & Safety
+      allergies: allergies,
+      allergiesOther: allergiesOther,
+      allergiesDetails: allergiesDetails,
+      medical: medical,
+      medicalOther: medicalOther,
+      medicalDetails: medicalDetails,
+      specialNeeds: specialNeeds,
+      specialNeedsOther: specialNeedsOther,
+      specialNeedsDetails: specialNeedsDetails,
+
+      // Personality & Interests
+      personality: personality,
+      personalityOther: personalityOther,
+      interests: interests,
+      interestsOther: interestsOther,
+
+      // Routine
+      routineSleep: routineSleep,
+      routineFeeding: routineFeeding,
+      routineNotes: routineNotes,
+
+      // Emergency Contact
+      isParentEmergencyContact: isParentEmergency,
+      emergencyName: document.getElementById('childEmergencyName').value.trim(),
+      emergencyPhone: document.getElementById('childEmergencyPhone').value.trim(),
+
+      // Backward-compatibility string properties for legacy screens
+      routine: routineLegacyStr,
+      description: descriptionLegacyStr,
+    };
+  }
+
+  function resetChildForm() {
+    const nameEl = document.getElementById('childName');
+    const genderEl = document.getElementById('childGender');
+    const birthEl = document.getElementById('childBirthDate');
+    const routineNotesEl = document.getElementById('childRoutineNotes');
+    const emergNameEl = document.getElementById('childEmergencyName');
+    const emergPhoneEl = document.getElementById('childEmergencyPhone');
+
+    if (nameEl) nameEl.value = '';
+    if (genderEl) genderEl.value = 'Boy';
+    if (birthEl) birthEl.value = '';
+    if (routineNotesEl) routineNotesEl.value = '';
+    if (emergNameEl) emergNameEl.value = '';
+    if (emergPhoneEl) emergPhoneEl.value = '';
+
+    // Clear conditional text inputs
+    ['childAllergiesOther', 'childAllergiesDetails', 'childMedicalOther', 'childMedicalDetails',
+      'childSpecialNeedsOther', 'childSpecialNeedsDetails', 'childPersonalityOther', 'childInterestsOther'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+
+    // Hide conditional wraps
+    ['wrapAllergiesOther', 'wrapAllergiesDetails', 'wrapMedicalOther', 'wrapMedicalDetails',
+      'wrapSpecialNeedsOther', 'wrapSpecialNeedsDetails', 'wrapPersonalityOther', 'wrapInterestsOther'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+      });
+
+    // SAFEGUARD: Do not automatically select "None". Allow no selection until parent makes a choice!
+    document.querySelectorAll('#screenAddChild .form-chip').forEach(chip => {
+      chip.classList.remove('active');
+    });
+
+    // Reset emergency radio to manual if present
+    const radioManual = document.getElementById('radioManualEmergency');
+    if (radioManual) radioManual.checked = true;
+
+    // Clear error highlights
+    ['childName', 'childBirthDate', 'childEmergencyName', 'childEmergencyPhone'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('input-error');
+      const err = document.getElementById(`error${id.charAt(0).toUpperCase() + id.slice(1)}`);
+      if (err) err.style.display = 'none';
+    });
+  }
+
+  function isChildFormPartiallyFilled() {
+    const name = document.getElementById('childName')?.value.trim() || '';
+    const birthDate = document.getElementById('childBirthDate')?.value || '';
+    const emergName = document.getElementById('childEmergencyName')?.value.trim() || '';
+    const emergPhone = document.getElementById('childEmergencyPhone')?.value.trim() || '';
+    const notes = document.getElementById('childRoutineNotes')?.value.trim() || '';
+    const activeChipsCount = document.querySelectorAll('#screenAddChild .form-chip.active').length;
+    return Boolean(name || birthDate || emergName || emergPhone || notes || activeChipsCount > 0);
+  }
+
+  function formatChildAge(birthDateStr) {
+    if (!birthDateStr) return '';
+    const birth = new Date(birthDateStr);
+    if (isNaN(birth.getTime())) return '';
+    const now = new Date();
+    let years = now.getFullYear() - birth.getFullYear();
+    const monthDiff = now.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < birth.getDate())) {
+      years--;
+    }
+    if (years >= 1) {
+      return `${years} year${years > 1 ? 's' : ''} old`;
+    } else {
+      const months = Math.max(1, (now.getFullYear() - birth.getFullYear()) * 12 + monthDiff);
+      return `${months} month${months > 1 ? 's' : ''} old`;
+    }
+  }
+
+  // SAFEGUARD: Distinguish between an empty/unanswered field and explicitly selected "None"
+  function formatAllergiesSummary(c) {
+    if (!c) return 'None reported';
+    if (Array.isArray(c.allergies)) {
+      if (c.allergies.includes('None')) return 'None';
+      if (c.allergies.length > 0) {
+        const items = [...c.allergies.filter(a => a !== 'Other')];
+        if (c.allergiesOther) items.push(c.allergiesOther);
+        return items.join(', ');
+      }
+      return 'None reported';
+    }
+    if (typeof c.allergies === 'string' && c.allergies.trim()) {
+      return c.allergies;
+    }
+    return 'None reported';
+  }
+
+  function formatMedicalSummary(c) {
+    if (!c) return '';
+    if (Array.isArray(c.medical)) {
+      if (c.medical.includes('None')) return 'None';
+      if (c.medical.length > 0) {
+        const items = [...c.medical.filter(m => m !== 'Other')];
+        if (c.medicalOther) items.push(c.medicalOther);
+        return items.join(', ');
+      }
+      return '';
+    }
+    if (typeof c.medical === 'string' && c.medical.trim() && c.medical !== 'None') {
+      return c.medical;
+    }
+    return '';
+  }
+
+  // SAFEGUARD: Display compact & easy to scan summary cards (Name, Age, Gender, Allergies, Medical)
+  function renderSavedChildrenList() {
+    const container = document.getElementById('savedChildrenSection');
+    const list = document.getElementById('savedChildrenList');
+    const countEl = document.getElementById('savedChildrenCount');
+
+    if (!container || !list) return;
+
+    if (!state.children || state.children.length === 0) {
+      container.style.display = 'none';
+      list.innerHTML = '';
+      if (countEl) countEl.textContent = '0';
+      return;
+    }
+
+    container.style.display = 'block';
+    if (countEl) countEl.textContent = state.children.length;
+
+    list.innerHTML = state.children.map(c => {
+      const ageStr = formatChildAge(c.birthDate);
+      const allergiesText = formatAllergiesSummary(c);
+      const medicalText = formatMedicalSummary(c);
+      const avatar = c.gender === 'Girl' ? '👧' : '👦';
+
+      return `
+        <div class="saved-child-card">
+          <div class="saved-child-avatar">${avatar}</div>
+          <div class="saved-child-info">
+            <div class="saved-child-header">
+              <strong class="saved-child-name">${escapeHtml(c.name)}</strong>
+              <span class="saved-child-meta">${escapeHtml(c.gender)}${ageStr ? ' • ' + escapeHtml(ageStr) : ''}</span>
+            </div>
+            <p class="saved-child-details">
+              <span>Allergies: ${escapeHtml(allergiesText)}</span>
+              ${medicalText ? ` • <span>Medical: ${escapeHtml(medicalText)}</span>` : ''}
+            </p>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Initialize chip groups on page load
+  setupChipGroups();
+
   if (btnAddAnotherChild) {
     btnAddAnotherChild.addEventListener('click', () => {
-      const name = document.getElementById('childName').value.trim() || 'Liam';
-      showToast(`Child "${name}" saved! You can add another child now.`);
-      document.getElementById('childName').value = '';
-      document.getElementById('childName').focus();
+      if (!validateChildForm()) {
+        showToast('Please fill in all required fields marked with *');
+        return;
+      }
+      const newChild = getChildFormData();
+      state.children.push(newChild);
+      state.child = newChild;
+      state.bookingData.childId = newChild.id;
+      state.bookingData.childName = newChild.name;
+      state.bookingData.child = newChild;
+      state.hasAddedChild = true;
+      saveState();
+      renderSavedChildrenList();
+      resetChildForm();
+      showToast(`Saved "${newChild.name}"! You can add another child now.`);
+      const nameInput = document.getElementById('childName');
+      if (nameInput) nameInput.focus();
     });
   }
 
@@ -1006,20 +1466,36 @@ document.addEventListener('DOMContentLoaded', () => {
     addChildForm.addEventListener('submit', (e) => {
       e.preventDefault();
 
-      state.child.name = document.getElementById('childName').value.trim() || 'Liam';
-      state.child.gender = document.getElementById('childGender').value;
-      state.child.birthDate = document.getElementById('childBirthDate').value;
-      state.child.allergies = document.getElementById('childAllergies').value.trim() || 'None';
-      state.child.medical = document.getElementById('childMedical').value.trim() || 'None';
-      state.child.specialNeeds = document.getElementById('childSpecialNeeds').value.trim() || 'None';
-      state.child.routine = document.getElementById('childRoutine').value.trim() || 'Standard routine';
-      state.child.emergencyName = document.getElementById('childEmergencyName').value.trim() || 'Mark Roberts';
-      state.child.emergencyPhone = document.getElementById('childEmergencyPhone').value.trim() || '012-9876543';
-      state.child.description = document.getElementById('childDescription').value.trim();
+      const hasSaved = Array.isArray(state.children) && state.children.length > 0;
+      const hasInput = isChildFormPartiallyFilled();
 
+      // If user has entered data in the form or hasn't saved any children yet, validate and save current entry
+      if (hasInput || !hasSaved) {
+        if (!validateChildForm()) {
+          showToast('Please fill in all required fields marked with *');
+          return;
+        }
+        const newChild = getChildFormData();
+        state.children.push(newChild);
+        state.child = newChild;
+        state.bookingData.childId = newChild.id;
+        state.bookingData.childName = newChild.name;
+        state.bookingData.child = newChild;
+        state.hasAddedChild = true;
+        saveState();
+        renderSavedChildrenList();
+        resetChildForm();
+        showToast(`Child "${newChild.name}" saved!`);
+      }
+
+      if (!state.children || state.children.length === 0) {
+        showToast('Please add at least one child.');
+        return;
+      }
+
+      state.child = state.children[0];
       state.hasAddedChild = true;
       saveState();
-      showToast('Child profile saved!');
 
       if (state.bookingIntent) {
         showScreen('bookingDetails');
@@ -1032,7 +1508,48 @@ document.addEventListener('DOMContentLoaded', () => {
   // --------------------------------------------------------------------------
   // 14. Screen 10: Booking Details
   // --------------------------------------------------------------------------
+  function updateBookingChildSummaryCard(child) {
+    const card = document.getElementById('bookingChildSummaryCard');
+    const avatarEl = document.getElementById('bookingChildAvatar');
+    const nameEl = document.getElementById('bookingChildName');
+    const metaEl = document.getElementById('bookingChildMeta');
+    const healthEl = document.getElementById('bookingChildHealthSummary');
+    const routineEl = document.getElementById('bookingChildRoutineSummary');
+
+    if (!card || !child) return;
+
+    card.style.display = 'block';
+    if (avatarEl) avatarEl.textContent = child.gender === 'Girl' ? '👧' : '👦';
+    if (nameEl) nameEl.textContent = child.name;
+
+    const ageStr = formatChildAge(child.birthDate);
+    if (metaEl) metaEl.textContent = `${child.gender || 'Child'}${ageStr ? ' • ' + ageStr : ''}`;
+
+    const allergies = formatAllergiesSummary(child);
+    const medical = formatMedicalSummary(child);
+    let healthText = `Allergies: ${allergies}`;
+    if (medical) healthText += ` • Medical: ${medical}`;
+    if (healthEl) healthEl.textContent = healthText;
+
+    let routineText = '';
+    if (child.routine && typeof child.routine === 'string') {
+      routineText = `Routine: ${child.routine}`;
+    } else if (Array.isArray(child.routineSleep) && child.routineSleep.length > 0) {
+      routineText = `Routine: ${child.routineSleep.join(', ')}`;
+    } else {
+      routineText = 'Routine: Standard daily routine';
+    }
+    if (routineEl) routineEl.textContent = routineText;
+  }
+
   function setupBookingDetails() {
+    const hasChildren = Array.isArray(state.children) && state.children.length > 0;
+    if (!hasChildren) {
+      showToast('Please add your child\'s profile before booking.');
+      showScreen('addChild');
+      return;
+    }
+
     const sitter = sittersData[state.selectedSitterId] || sittersData['sarah-lim'];
 
     const bookingSitterTitle = document.getElementById('bookingSitterTitle');
@@ -1045,10 +1562,47 @@ document.addEventListener('DOMContentLoaded', () => {
     if (bookingLocationInput) bookingLocationInput.value = `${state.postcode} Kuala Lumpur`;
 
     if (bookingChildSelect) {
-      bookingChildSelect.innerHTML = `<option value="${state.child.name}">${state.child.name} (2 years old)</option>`;
+      // Determine which child should be selected
+      let selectedChild = state.children.find(c => c.id === state.bookingData.childId);
+      if (!selectedChild) {
+        selectedChild = state.children[0];
+        state.bookingData.childId = selectedChild.id;
+        state.bookingData.childName = selectedChild.name;
+        state.bookingData.child = selectedChild;
+      }
+
+      bookingChildSelect.innerHTML = state.children.map(c => {
+        const ageStr = formatChildAge(c.birthDate);
+        const isSel = c.id === selectedChild.id ? 'selected' : '';
+        return `<option value="${c.id}" ${isSel}>${escapeHtml(c.name)} (${ageStr || c.gender})</option>`;
+      }).join('');
+
+      updateBookingChildSummaryCard(selectedChild);
+
+      bookingChildSelect.onchange = () => {
+        const chosenId = bookingChildSelect.value;
+        const chosenChild = state.children.find(c => c.id === chosenId) || state.children[0];
+        if (chosenChild) {
+          state.bookingData.childId = chosenChild.id;
+          state.bookingData.childName = chosenChild.name;
+          state.bookingData.child = chosenChild;
+          state.child = chosenChild;
+          updateBookingChildSummaryCard(chosenChild);
+          saveState();
+        }
+      };
     }
 
     recalcBookingPrice();
+  }
+
+  const btnBookingAddChild = document.getElementById('btnBookingAddChild');
+  if (btnBookingAddChild) {
+    btnBookingAddChild.addEventListener('click', () => {
+      state.bookingIntent = true;
+      saveState();
+      showScreen('addChild');
+    });
   }
 
   function recalcBookingPrice() {
@@ -1078,7 +1632,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const priceBreakdownTotal = document.getElementById('priceBreakdownTotal');
 
     if (priceBreakdownHours) {
-      priceBreakdownHours.textContent = isTrial 
+      priceBreakdownHours.textContent = isTrial
         ? `${hours} hrs + 1 hr trial (${totalHours} hrs × RM ${rate}/hr)`
         : `${hours} hours × RM ${rate}/hr`;
     }
@@ -1097,6 +1651,17 @@ document.addEventListener('DOMContentLoaded', () => {
     bookingDetailsForm.addEventListener('submit', (e) => {
       e.preventDefault();
       recalcBookingPrice();
+
+      const bookingChildSelect = document.getElementById('bookingChildSelect');
+      const selectedId = bookingChildSelect ? bookingChildSelect.value : state.bookingData.childId;
+      const selectedChild = state.children.find(c => c.id === selectedId) || state.children[0] || state.child;
+
+      if (selectedChild) {
+        state.bookingData.childId = selectedChild.id;
+        state.bookingData.childName = selectedChild.name;
+        state.bookingData.child = selectedChild;
+        state.child = selectedChild;
+      }
 
       state.bookingData.date = document.getElementById('bookingDateInput').value || '2026-11-20';
       state.bookingData.time = document.getElementById('bookingTimeStart').value || '14:00';
@@ -1267,7 +1832,11 @@ document.addEventListener('DOMContentLoaded', () => {
   function setupBookingConfirmed() {
     const sitter = sittersData[state.selectedSitterId] || sittersData['sarah-lim'];
     const confirmedSitterName = document.getElementById('confirmedSitterName');
+    const confirmedChildName = document.getElementById('confirmedChildName');
     if (confirmedSitterName) confirmedSitterName.textContent = sitter.name;
+    if (confirmedChildName) {
+      confirmedChildName.textContent = state.bookingData.childName || (state.child && state.child.name) || 'Liam';
+    }
   }
 
   const btnAddCalendar = document.getElementById('btnAddCalendar');
@@ -1291,10 +1860,17 @@ document.addEventListener('DOMContentLoaded', () => {
   function setupParentHome() {
     const greeting = document.getElementById('homeGreetingTitle');
     const homeChildName = document.getElementById('homeChildName');
+    const homeNextBookingChild = document.getElementById('homeNextBookingChild');
 
     const firstName = (state.user.name || 'Jessica').split(' ')[0];
     if (greeting) greeting.textContent = `Welcome back, ${firstName}`;
-    if (homeChildName) homeChildName.textContent = state.child.name || 'Liam';
+
+    const activeChild = state.child || (state.children && state.children[0]) || null;
+    const activeChildName = (activeChild && activeChild.name) || 'Liam';
+    if (homeChildName) homeChildName.textContent = activeChildName;
+    if (homeNextBookingChild) {
+      homeNextBookingChild.textContent = state.bookingData.childName || activeChildName;
+    }
   }
 
   const btnHomeViewDetails = document.getElementById('btnHomeViewDetails');
