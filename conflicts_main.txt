@@ -1,0 +1,843 @@
+==============================
+CONFLICT #1 (lines 127-152)
+HEAD (lines 128-139):
+
+      // Multiple children migration / compatibility handling
+      if (Array.isArray(parsed.children) && parsed.children.length > 0) {
+        state.children = parsed.children;
+        state.child = parsed.children[0];
+        state.hasAddedChild = true;
+      } else if (parsed.child && parsed.child.name && parsed.hasAddedChild) {
+        // Migrate single existing child into children array
+        state.children = [parsed.child];
+        state.hasAddedChild = true;
+      } else {
+        state.children = Array.isArray(parsed.children) ? parsed.children : [];
+------------------------------
+ORIGIN/MAIN (lines 141-151):
+      if (!parsed.answeredPreferences) {
+        state.answeredPreferences = {
+          availability: Boolean(parsed.customDate) || (Boolean(parsed.when) && parsed.when !== 'Today'),
+          distance: Boolean(parsed.postcode) && parsed.postcode !== '50450',
+          careType: Boolean(parsed.careType) && parsed.careType !== 'Half day',
+          childAge: Array.isArray(parsed.whoNeedsCare) &&
+            JSON.stringify(parsed.whoNeedsCare) !== JSON.stringify(['Toddler 1 to 3']),
+          budget: parsed.budget !== undefined && Number(parsed.budget) !== 25,
+          extras: Array.isArray(parsed.extras) &&
+            JSON.stringify(parsed.extras) !== JSON.stringify(['CPR certified', 'Speaks Mandarin', 'Newborn experience']),
+        };
+==============================
+
+==============================
+CONFLICT #2 (lines 2785-3291)
+HEAD (lines 2786-3227):
+  function validateChildForm() {
+    const nameInput = document.getElementById('childName');
+    const birthDateInput = document.getElementById('childBirthDate');
+    const emergNameInput = document.getElementById('childEmergencyName');
+    const emergPhoneInput = document.getElementById('childEmergencyPhone');
+
+    let isValid = true;
+
+    // Clear previous error states
+    [nameInput, birthDateInput, emergNameInput, emergPhoneInput].forEach(input => {
+      if (input) input.classList.remove('input-error');
+    });
+    document.querySelectorAll('.child-error-msg').forEach(el => {
+      el.style.display = 'none';
+    });
+
+    if (!nameInput || !nameInput.value.trim()) {
+      if (nameInput) nameInput.classList.add('input-error');
+      const err = document.getElementById('errorChildName');
+      if (err) err.style.display = 'flex';
+      isValid = false;
+    }
+
+    if (!birthDateInput || !birthDateInput.value) {
+      if (birthDateInput) birthDateInput.classList.add('input-error');
+      const err = document.getElementById('errorChildBirthDate');
+      if (err) err.style.display = 'flex';
+      isValid = false;
+    }
+
+    if (!emergNameInput || !emergNameInput.value.trim()) {
+      if (emergNameInput) emergNameInput.classList.add('input-error');
+      const err = document.getElementById('errorChildEmergencyName');
+      if (err) err.style.display = 'flex';
+      isValid = false;
+    }
+
+    if (!emergPhoneInput || !emergPhoneInput.value.trim()) {
+      if (emergPhoneInput) emergPhoneInput.classList.add('input-error');
+      const err = document.getElementById('errorChildEmergencyPhone');
+      if (err) err.style.display = 'flex';
+      isValid = false;
+    }
+
+    return isValid;
+  }
+
+  // Clear validation errors on user typing
+  ['childName', 'childBirthDate', 'childEmergencyName', 'childEmergencyPhone'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input', () => {
+        el.classList.remove('input-error');
+        const err = document.getElementById(`error${id.charAt(0).toUpperCase() + id.slice(1)}`);
+        if (err) err.style.display = 'none';
+      });
+    }
+  });
+
+  // Setup multi-select chip groups with mutual-exclusivity for "None" and conditional reveals
+  function setupChipGroups() {
+    const chipGrids = document.querySelectorAll('#screenAddChild .chips-grid');
+    chipGrids.forEach(grid => {
+      const field = grid.getAttribute('data-field');
+      const chips = grid.querySelectorAll('.form-chip');
+
+      chips.forEach(chip => {
+        chip.addEventListener('click', () => {
+          const val = chip.getAttribute('data-value');
+          const isSelected = chip.classList.contains('active');
+
+          if (val === 'None') {
+            if (isSelected) {
+              chip.classList.remove('active');
+            } else {
+              // Deselect all others in this specific grid
+              chips.forEach(c => c.classList.remove('active'));
+              chip.classList.add('active');
+            }
+          } else {
+            // Uncheck "None" in this grid
+            const noneChip = Array.from(chips).find(c => c.getAttribute('data-value') === 'None');
+            if (noneChip) noneChip.classList.remove('active');
+            chip.classList.toggle('active');
+          }
+
+          updateConditionalInputs(field, grid);
+        });
+      });
+    });
+  }
+
+  function updateConditionalInputs(field, grid) {
+    const activeValues = Array.from(grid.querySelectorAll('.form-chip.active')).map(c => c.getAttribute('data-value'));
+    const hasOther = activeValues.includes('Other');
+    const hasAnyRealItem = activeValues.some(v => v !== 'None');
+
+    if (field === 'allergies') {
+      const wrapOther = document.getElementById('wrapAllergiesOther');
+      const wrapDetails = document.getElementById('wrapAllergiesDetails');
+      if (wrapOther) wrapOther.style.display = hasOther ? 'block' : 'none';
+      if (wrapDetails) wrapDetails.style.display = hasAnyRealItem ? 'block' : 'none';
+    } else if (field === 'medical') {
+      const wrapOther = document.getElementById('wrapMedicalOther');
+      const wrapDetails = document.getElementById('wrapMedicalDetails');
+      if (wrapOther) wrapOther.style.display = hasOther ? 'block' : 'none';
+      if (wrapDetails) wrapDetails.style.display = hasAnyRealItem ? 'block' : 'none';
+    } else if (field === 'specialNeeds') {
+      const wrapOther = document.getElementById('wrapSpecialNeedsOther');
+      const wrapDetails = document.getElementById('wrapSpecialNeedsDetails');
+      if (wrapOther) wrapOther.style.display = hasOther ? 'block' : 'none';
+      if (wrapDetails) wrapDetails.style.display = hasAnyRealItem ? 'block' : 'none';
+    } else if (field === 'personality') {
+      const wrapOther = document.getElementById('wrapPersonalityOther');
+      if (wrapOther) wrapOther.style.display = hasOther ? 'block' : 'none';
+    } else if (field === 'interests') {
+      const wrapOther = document.getElementById('wrapInterestsOther');
+      if (wrapOther) wrapOther.style.display = hasOther ? 'block' : 'none';
+    }
+  }
+
+  function getSelectedChips(gridId) {
+    const grid = document.getElementById(gridId);
+    if (!grid) return [];
+    const activeChips = grid.querySelectorAll('.form-chip.active');
+    return Array.from(activeChips).map(c => c.getAttribute('data-value'));
+  }
+
+  // Emergency contact toggle with registered parent details safeguard
+  function setupEmergencyContactToggle() {
+    const toggleBox = document.getElementById('wrapEmergencyParentToggle');
+    const parentDetailsText = document.getElementById('emergencyParentDetailsText');
+    const radioParent = document.getElementById('radioParentEmergency');
+    const radioManual = document.getElementById('radioManualEmergency');
+    const nameInput = document.getElementById('childEmergencyName');
+    const phoneInput = document.getElementById('childEmergencyPhone');
+
+    // SAFEGUARD: Only allow "Use my registered contact details" when user is authenticated
+    // and both actual registered name and phone are non-empty. Never use placeholder data!
+    const hasRegisteredParent = Boolean(
+      state.isLoggedIn &&
+      state.user &&
+      typeof state.user.name === 'string' &&
+      state.user.name.trim() !== '' &&
+      typeof state.user.phone === 'string' &&
+      state.user.phone.trim() !== ''
+    );
+
+    if (hasRegisteredParent && toggleBox && parentDetailsText) {
+      toggleBox.style.display = 'flex';
+      parentDetailsText.textContent = `${state.user.name} • ${state.user.phone}`;
+
+      if (radioParent) {
+        radioParent.onchange = () => {
+          if (radioParent.checked) {
+            nameInput.value = state.user.name;
+            phoneInput.value = state.user.phone;
+            nameInput.classList.remove('input-error');
+            phoneInput.classList.remove('input-error');
+            const errN = document.getElementById('errorChildEmergencyName');
+            const errP = document.getElementById('errorChildEmergencyPhone');
+            if (errN) errN.style.display = 'none';
+            if (errP) errP.style.display = 'none';
+          }
+        };
+      }
+
+      if (radioManual) {
+        radioManual.onchange = () => {
+          if (radioManual.checked) {
+            nameInput.value = '';
+            phoneInput.value = '';
+            nameInput.focus();
+          }
+        };
+      }
+    } else if (toggleBox) {
+      toggleBox.style.display = 'none';
+      if (radioManual) radioManual.checked = true;
+    }
+  }
+
+  function getChildFormData() {
+    const allergies = getSelectedChips('chipsAllergies');
+    const allergiesOther = document.getElementById('childAllergiesOther')?.value.trim() || '';
+    const allergiesDetails = document.getElementById('childAllergiesDetails')?.value.trim() || '';
+
+    const medical = getSelectedChips('chipsMedical');
+    const medicalOther = document.getElementById('childMedicalOther')?.value.trim() || '';
+    const medicalDetails = document.getElementById('childMedicalDetails')?.value.trim() || '';
+
+    const specialNeeds = getSelectedChips('chipsSpecialNeeds');
+    const specialNeedsOther = document.getElementById('childSpecialNeedsOther')?.value.trim() || '';
+    const specialNeedsDetails = document.getElementById('childSpecialNeedsDetails')?.value.trim() || '';
+
+    const personality = getSelectedChips('chipsPersonality');
+    const personalityOther = document.getElementById('childPersonalityOther')?.value.trim() || '';
+
+    const interests = getSelectedChips('chipsInterests');
+    const interestsOther = document.getElementById('childInterestsOther')?.value.trim() || '';
+
+    const routineSleep = getSelectedChips('chipsRoutineSleep');
+    const routineFeeding = getSelectedChips('chipsRoutineFeeding');
+    const routineNotes = document.getElementById('childRoutineNotes')?.value.trim() || '';
+
+    const radioParent = document.getElementById('radioParentEmergency');
+    const isParentEmergency = Boolean(radioParent && radioParent.checked);
+
+    // SAFEGUARD: Generate readable string values for c.routine and c.description
+    // Ensures legacy screens receive clean strings, not arrays!
+    const routineParts = [];
+    if (routineSleep.length > 0) routineParts.push(routineSleep.join(', '));
+    if (routineFeeding.length > 0) routineParts.push(routineFeeding.join(', '));
+    if (routineNotes) routineParts.push(routineNotes);
+    const routineLegacyStr = routineParts.length > 0 ? routineParts.join(' • ') : 'Standard routine';
+
+    const descParts = [];
+    if (personality.length > 0) {
+      const pItems = [...personality.filter(p => p !== 'Other')];
+      if (personalityOther) pItems.push(personalityOther);
+      descParts.push(pItems.join(', '));
+    }
+    if (interests.length > 0) {
+      const iItems = [...interests.filter(i => i !== 'Other')];
+      if (interestsOther) iItems.push(interestsOther);
+      descParts.push('Loves ' + iItems.join(', '));
+    }
+    const descriptionLegacyStr = descParts.length > 0 ? descParts.join('. ') : 'Friendly and curious.';
+
+    return {
+      id: 'child_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+      name: document.getElementById('childName').value.trim(),
+      gender: document.getElementById('childGender').value,
+      birthDate: document.getElementById('childBirthDate').value,
+
+      // Health & Safety
+      allergies: allergies,
+      allergiesOther: allergiesOther,
+      allergiesDetails: allergiesDetails,
+      medical: medical,
+      medicalOther: medicalOther,
+      medicalDetails: medicalDetails,
+      specialNeeds: specialNeeds,
+      specialNeedsOther: specialNeedsOther,
+      specialNeedsDetails: specialNeedsDetails,
+
+      // Personality & Interests
+      personality: personality,
+      personalityOther: personalityOther,
+      interests: interests,
+      interestsOther: interestsOther,
+
+      // Routine
+      routineSleep: routineSleep,
+      routineFeeding: routineFeeding,
+      routineNotes: routineNotes,
+
+      // Emergency Contact
+      isParentEmergencyContact: isParentEmergency,
+      emergencyName: document.getElementById('childEmergencyName').value.trim(),
+      emergencyPhone: document.getElementById('childEmergencyPhone').value.trim(),
+
+      // Backward-compatibility string properties for legacy screens
+      routine: routineLegacyStr,
+      description: descriptionLegacyStr,
+    };
+  }
+
+  function resetChildForm() {
+    const nameEl = document.getElementById('childName');
+    const genderEl = document.getElementById('childGender');
+    const birthEl = document.getElementById('childBirthDate');
+    const routineNotesEl = document.getElementById('childRoutineNotes');
+    const emergNameEl = document.getElementById('childEmergencyName');
+    const emergPhoneEl = document.getElementById('childEmergencyPhone');
+
+    if (nameEl) nameEl.value = '';
+    if (genderEl) genderEl.value = 'Boy';
+    if (birthEl) birthEl.value = '';
+    if (routineNotesEl) routineNotesEl.value = '';
+    if (emergNameEl) emergNameEl.value = '';
+    if (emergPhoneEl) emergPhoneEl.value = '';
+
+    // Clear conditional text inputs
+    ['childAllergiesOther', 'childAllergiesDetails', 'childMedicalOther', 'childMedicalDetails',
+      'childSpecialNeedsOther', 'childSpecialNeedsDetails', 'childPersonalityOther', 'childInterestsOther'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+
+    // Hide conditional wraps
+    ['wrapAllergiesOther', 'wrapAllergiesDetails', 'wrapMedicalOther', 'wrapMedicalDetails',
+      'wrapSpecialNeedsOther', 'wrapSpecialNeedsDetails', 'wrapPersonalityOther', 'wrapInterestsOther'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+      });
+
+    // SAFEGUARD: Do not automatically select "None". Allow no selection until parent makes a choice!
+    document.querySelectorAll('#screenAddChild .form-chip').forEach(chip => {
+      chip.classList.remove('active');
+    });
+
+    // Reset emergency radio to manual if present
+    const radioManual = document.getElementById('radioManualEmergency');
+    if (radioManual) radioManual.checked = true;
+
+    // Clear error highlights
+    ['childName', 'childBirthDate', 'childEmergencyName', 'childEmergencyPhone'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('input-error');
+      const err = document.getElementById(`error${id.charAt(0).toUpperCase() + id.slice(1)}`);
+      if (err) err.style.display = 'none';
+    });
+  }
+
+  function isChildFormPartiallyFilled() {
+    const name = document.getElementById('childName')?.value.trim() || '';
+    const birthDate = document.getElementById('childBirthDate')?.value || '';
+    const emergName = document.getElementById('childEmergencyName')?.value.trim() || '';
+    const emergPhone = document.getElementById('childEmergencyPhone')?.value.trim() || '';
+    const notes = document.getElementById('childRoutineNotes')?.value.trim() || '';
+    const activeChipsCount = document.querySelectorAll('#screenAddChild .form-chip.active').length;
+    return Boolean(name || birthDate || emergName || emergPhone || notes || activeChipsCount > 0);
+  }
+
+  function formatChildAge(birthDateStr) {
+    if (!birthDateStr) return '';
+    const birth = new Date(birthDateStr);
+    if (isNaN(birth.getTime())) return '';
+    const now = new Date();
+    let years = now.getFullYear() - birth.getFullYear();
+    const monthDiff = now.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < birth.getDate())) {
+      years--;
+    }
+    if (years >= 1) {
+      return `${years} year${years > 1 ? 's' : ''} old`;
+    } else {
+      const months = Math.max(1, (now.getFullYear() - birth.getFullYear()) * 12 + monthDiff);
+      return `${months} month${months > 1 ? 's' : ''} old`;
+    }
+  }
+
+  // SAFEGUARD: Distinguish between an empty/unanswered field and explicitly selected "None"
+  function formatAllergiesSummary(c) {
+    if (!c) return 'None reported';
+    if (Array.isArray(c.allergies)) {
+      if (c.allergies.includes('None')) return 'None';
+      if (c.allergies.length > 0) {
+        const items = [...c.allergies.filter(a => a !== 'Other')];
+        if (c.allergiesOther) items.push(c.allergiesOther);
+        return items.join(', ');
+      }
+      return 'None reported';
+    }
+    if (typeof c.allergies === 'string' && c.allergies.trim()) {
+      return c.allergies;
+    }
+    return 'None reported';
+  }
+
+  function formatMedicalSummary(c) {
+    if (!c) return '';
+    if (Array.isArray(c.medical)) {
+      if (c.medical.includes('None')) return 'None';
+      if (c.medical.length > 0) {
+        const items = [...c.medical.filter(m => m !== 'Other')];
+        if (c.medicalOther) items.push(c.medicalOther);
+        return items.join(', ');
+      }
+      return '';
+    }
+    if (typeof c.medical === 'string' && c.medical.trim() && c.medical !== 'None') {
+      return c.medical;
+    }
+    return '';
+  }
+
+  // SAFEGUARD: Display compact & easy to scan summary cards (Name, Age, Gender, Allergies, Medical)
+  function renderSavedChildrenList() {
+    const container = document.getElementById('savedChildrenSection');
+    const list = document.getElementById('savedChildrenList');
+    const countEl = document.getElementById('savedChildrenCount');
+
+    if (!container || !list) return;
+
+    if (!state.children || state.children.length === 0) {
+      container.style.display = 'none';
+      list.innerHTML = '';
+      if (countEl) countEl.textContent = '0';
+      return;
+    }
+
+    container.style.display = 'block';
+    if (countEl) countEl.textContent = state.children.length;
+
+    list.innerHTML = state.children.map(c => {
+      const ageStr = formatChildAge(c.birthDate);
+      const allergiesText = formatAllergiesSummary(c);
+      const medicalText = formatMedicalSummary(c);
+      const avatar = c.gender === 'Girl' ? '👧' : '👦';
+
+      return `
+        <div class="saved-child-card">
+          <div class="saved-child-avatar">${avatar}</div>
+          <div class="saved-child-info">
+            <div class="saved-child-header">
+              <strong class="saved-child-name">${escapeHtml(c.name)}</strong>
+              <span class="saved-child-meta">${escapeHtml(c.gender)}${ageStr ? ' • ' + escapeHtml(ageStr) : ''}</span>
+            </div>
+            <p class="saved-child-details">
+              <span>Allergies: ${escapeHtml(allergiesText)}</span>
+              ${medicalText ? ` • <span>Medical: ${escapeHtml(medicalText)}</span>` : ''}
+            </p>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Initialize chip groups on page load
+  setupChipGroups();
+
+  if (btnAddAnotherChild) {
+    btnAddAnotherChild.addEventListener('click', () => {
+      if (!validateChildForm()) {
+        showToast('Please fill in all required fields marked with *');
+        return;
+      }
+      const newChild = getChildFormData();
+      state.children.push(newChild);
+      state.child = newChild;
+      state.bookingData.childId = newChild.id;
+      state.bookingData.childName = newChild.name;
+      state.bookingData.child = newChild;
+      state.hasAddedChild = true;
+      saveState();
+      renderSavedChildrenList();
+      resetChildForm();
+      showToast(`Saved "${newChild.name}"! You can add another child now.`);
+      const nameInput = document.getElementById('childName');
+      if (nameInput) nameInput.focus();
+------------------------------
+ORIGIN/MAIN (lines 3229-3290):
+  function readChildForm() {
+    return {
+      name: document.getElementById('childName').value.trim(),
+      gender: document.getElementById('childGender').value,
+      birthDate: document.getElementById('childBirthDate').value,
+      allergies: document.getElementById('childAllergies').value.trim() || 'None',
+      medical: document.getElementById('childMedical').value.trim() || 'None',
+      specialNeeds: document.getElementById('childSpecialNeeds').value.trim() || 'None',
+      routine: document.getElementById('childRoutine').value.trim() || 'Standard routine',
+      emergencyName: document.getElementById('childEmergencyName').value.trim(),
+      emergencyPhone: document.getElementById('childEmergencyPhone').value.trim(),
+      description: document.getElementById('childDescription').value.trim(),
+    };
+  }
+
+  function clearChildForm() {
+    addChildForm.reset();
+    ['childName', 'childBirthDate', 'childEmergencyName', 'childEmergencyPhone'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    ['childAllergies', 'childMedical', 'childSpecialNeeds', 'childRoutine'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('childDescription').value = '';
+    if (state.children.length) {
+      ['childName', 'childBirthDate', 'childEmergencyName', 'childEmergencyPhone'].forEach(id => {
+        document.getElementById(id).required = false;
+      });
+    }
+  }
+
+  function prepareAddChildForm() {
+    if (state.hasAddedChild || state.children.length) clearChildForm();
+  }
+
+  ['childName', 'childBirthDate', 'childEmergencyName', 'childEmergencyPhone'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => {
+      if (state.children.length) {
+        ['childName', 'childBirthDate', 'childEmergencyName', 'childEmergencyPhone'].forEach(fieldId => {
+          document.getElementById(fieldId).required = true;
+        });
+      }
+    });
+  });
+
+  if (btnAddAnotherChild) {
+    btnAddAnotherChild.addEventListener('click', () => {
+      if (!document.getElementById('childName').value.trim()) {
+        document.getElementById('childName').required = true;
+        addChildForm.reportValidity();
+        return;
+      }
+      if (!addChildForm.checkValidity()) {
+        addChildForm.reportValidity();
+        return;
+      }
+      const child = readChildForm();
+      state.children.push(child);
+      saveState();
+      showToast(`Child "${child.name}" saved. Add another child or continue.`);
+      clearChildForm();
+      document.getElementById('childName').focus();
+==============================
+
+==============================
+CONFLICT #3 (lines 3298-3310)
+HEAD (lines 3299-3301):
+
+      const hasSaved = Array.isArray(state.children) && state.children.length > 0;
+      const hasInput = isChildFormPartiallyFilled();
+------------------------------
+ORIGIN/MAIN (lines 3303-3309):
+      const currentName = document.getElementById('childName').value.trim();
+      if ((currentName || !state.children.length) && !addChildForm.checkValidity()) {
+        addChildForm.reportValidity();
+        return;
+      }
+      if (currentName) state.children.push(readChildForm());
+      state.child = state.children[0];
+==============================
+
+==============================
+CONFLICT #4 (lines 3405-3441)
+HEAD (lines 3406-3434):
+      // Determine which child should be selected
+      let selectedChild = state.children.find(c => c.id === state.bookingData.childId);
+      if (!selectedChild) {
+        selectedChild = state.children[0];
+        state.bookingData.childId = selectedChild.id;
+        state.bookingData.childName = selectedChild.name;
+        state.bookingData.child = selectedChild;
+      }
+
+      bookingChildSelect.innerHTML = state.children.map(c => {
+        const ageStr = formatChildAge(c.birthDate);
+        const isSel = c.id === selectedChild.id ? 'selected' : '';
+        return `<option value="${c.id}" ${isSel}>${escapeHtml(c.name)} (${ageStr || c.gender})</option>`;
+      }).join('');
+
+      updateBookingChildSummaryCard(selectedChild);
+
+      bookingChildSelect.onchange = () => {
+        const chosenId = bookingChildSelect.value;
+        const chosenChild = state.children.find(c => c.id === chosenId) || state.children[0];
+        if (chosenChild) {
+          state.bookingData.childId = chosenChild.id;
+          state.bookingData.childName = chosenChild.name;
+          state.bookingData.child = chosenChild;
+          state.child = chosenChild;
+          updateBookingChildSummaryCard(chosenChild);
+          saveState();
+        }
+      };
+------------------------------
+ORIGIN/MAIN (lines 3436-3440):
+      const children = state.children.length ? state.children : [state.child];
+      bookingChildSelect.innerHTML = children.map(child => `
+        <option value="${escapeHtml(child.name)}">${escapeHtml(child.name)} (${getChildAge(child.birthDate)} years old)</option>
+      `).join('');
+      bookingChildSelect.value = state.bookingData.childName || children[0].name;
+==============================
+
+==============================
+CONFLICT #5 (lines 3453-3469)
+HEAD (lines 3454-3460):
+  const btnBookingAddChild = document.getElementById('btnBookingAddChild');
+  if (btnBookingAddChild) {
+    btnBookingAddChild.addEventListener('click', () => {
+      state.bookingIntent = true;
+      saveState();
+      showScreen('addChild');
+    });
+------------------------------
+ORIGIN/MAIN (lines 3462-3468):
+  function getChildAge(birthDate) {
+    if (!birthDate) return 2;
+    const birth = new Date(`${birthDate}T00:00:00`);
+    const now = new Date();
+    let age = now.getFullYear() - birth.getFullYear();
+    if (now.getMonth() < birth.getMonth() || (now.getMonth() === birth.getMonth() && now.getDate() < birth.getDate())) age--;
+    return Math.max(0, age);
+==============================
+
+==============================
+CONFLICT #6 (lines 3519-3534)
+HEAD (lines 3520-3531):
+      const bookingChildSelect = document.getElementById('bookingChildSelect');
+      const selectedId = bookingChildSelect ? bookingChildSelect.value : state.bookingData.childId;
+      const selectedChild = state.children.find(c => c.id === selectedId) || state.children[0] || state.child;
+
+      if (selectedChild) {
+        state.bookingData.childId = selectedChild.id;
+        state.bookingData.childName = selectedChild.name;
+        state.bookingData.child = selectedChild;
+        state.child = selectedChild;
+      }
+
+      state.bookingData.date = document.getElementById('bookingDateInput').value || '2026-11-20';
+------------------------------
+ORIGIN/MAIN (lines 3533-3533):
+      state.bookingData.date = document.getElementById('bookingDateInput').value || defaultBookingDateValue;
+==============================
+
+==============================
+CONFLICT #7 (lines 3748-3881)
+HEAD (lines 3749-3753):
+    const confirmedChildName = document.getElementById('confirmedChildName');
+    if (confirmedSitterName) confirmedSitterName.textContent = sitter.name;
+    if (confirmedChildName) {
+      confirmedChildName.textContent = state.bookingData.childName || (state.child && state.child.name) || 'Liam';
+    }
+------------------------------
+ORIGIN/MAIN (lines 3755-3880):
+    const booking = state.bookingData;
+    const confirmedMessage = document.getElementById('confirmedMessage');
+    const confirmedDate = document.getElementById('confirmedDate');
+    const confirmedTime = document.getElementById('confirmedTime');
+    const confirmedChild = document.getElementById('confirmedChild');
+    const confirmedBookingId = document.getElementById('confirmedBookingId');
+    const confirmedStatus = document.getElementById('confirmedStatus');
+    if (confirmedSitterName) confirmedSitterName.textContent = sitter.name;
+    if (confirmedMessage) {
+      confirmedMessage.textContent = activeBooking && activeBooking.status === 'completed'
+        ? `Your booking with ${sitter.name} has been completed.`
+        : `Your babysitter is locked in. We've notified ${sitter.name}.`;
+    }
+    if (confirmedDate) confirmedDate.textContent = formatBookingDate(booking.date);
+    if (confirmedTime) confirmedTime.textContent = formatBookingTime(booking.time, booking.hours + (booking.isTrial ? 1 : 0));
+    if (confirmedChild) confirmedChild.textContent = booking.childName || state.child.name;
+    if (confirmedBookingId) confirmedBookingId.textContent = activeBooking ? activeBooking.id : '';
+    if (confirmedStatus) confirmedStatus.textContent = activeBooking
+      ? activeBooking.status === 'confirmed' ? 'Confirmed' : activeBooking.status
+      : '';
+  }
+
+  function formatBookingDate(dateValue) {
+    if (!dateValue) return formatBookingDate(defaultBookingDateValue);
+    const date = new Date(`${dateValue}T00:00:00`);
+    return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  function getBookingStatusMarkup(status) {
+    const labels = {
+      waiting: 'Waiting',
+      accepted: 'Accepted',
+      declined: 'Declined',
+      paid: 'Paid',
+      confirmed: 'Confirmed',
+      cancelled: 'Cancelled',
+      completed: 'Completed',
+    };
+    const check = status === 'confirmed'
+      ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>'
+      : '';
+    return `<span class="booking-status-chip status-${status}">${check}${labels[status] || escapeHtml(status)}</span>`;
+  }
+
+  function getBookingAction(booking) {
+    if (booking.status === 'waiting') return { label: 'View request', screen: 'bookingStatus' };
+    if (booking.status === 'accepted') return { label: 'Pay now', screen: 'payment' };
+    if (['declined', 'cancelled'].includes(booking.status)) return { label: 'View booking', screen: 'bookingStatus' };
+    return { label: 'View booking', screen: 'bookingConfirmed' };
+  }
+
+  function renderBookingList(container, list, emptyMessage) {
+    if (!container) return;
+    if (!list.length) {
+      container.innerHTML = `
+        <div class="bookings-empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--deep-rose)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+            <line x1="16" y1="3" x2="16" y2="7"></line>
+            <line x1="8" y1="3" x2="8" y2="7"></line>
+            <line x1="3" y1="11" x2="21" y2="11"></line>
+            <path d="m9 16 2 2 4-4"></path>
+          </svg>
+          <p class="bookings-empty-title">${emptyMessage}</p>
+          <p class="bookings-empty-copy">Find a trusted babysitter and send your first request.</p>
+          <button type="button" class="btn btn-primary booking-empty-find">Find a babysitter</button>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = list.map(booking => {
+      const action = getBookingAction(booking);
+      return `
+        <article class="card booking-list-card">
+          <div class="booking-list-details">
+            <div class="booking-list-title-row">
+              <h2 class="card-title">${escapeHtml(booking.babysitterName)}</h2>
+              ${getBookingStatusMarkup(booking.status)}
+            </div>
+            <p class="booking-list-time">${escapeHtml(formatBookingDate(booking.date))} · ${escapeHtml(formatBookingTime(booking.startTime, booking.hours || 4))}</p>
+            <p class="booking-list-meta">${escapeHtml(booking.child)} · ${escapeHtml(booking.location)}</p>
+          </div>
+          <div class="booking-list-action">
+            <strong>RM ${escapeHtml(String(booking.price))}</strong>
+            <button type="button" class="btn btn-secondary booking-card-action" data-booking-id="${escapeHtml(booking.id)}" data-booking-screen="${action.screen}">${action.label}</button>
+          </div>
+        </article>
+      `;
+    }).join('');
+  }
+
+  function renderBookingsPage() {
+    const bookingsList = document.getElementById('bookingsList');
+    const upcomingButton = document.getElementById('btnUpcomingBookings');
+    const pastButton = document.getElementById('btnPastBookings');
+    const isUpcoming = activeBookingsTab === 'upcoming';
+    if (upcomingButton) {
+      upcomingButton.classList.toggle('active', isUpcoming);
+      upcomingButton.setAttribute('aria-selected', String(isUpcoming));
+    }
+    if (pastButton) {
+      pastButton.classList.toggle('active', !isUpcoming);
+      pastButton.setAttribute('aria-selected', String(!isUpcoming));
+    }
+    renderBookingList(
+      bookingsList,
+      isUpcoming ? getUpcomingBookings() : getPastBookings(),
+      isUpcoming ? 'No upcoming bookings yet.' : 'No past bookings yet.'
+    );
+  }
+
+  function openBookingById(bookingId, targetScreen) {
+    const booking = bookings.find(item => item.id === bookingId);
+    if (!booking) return;
+    syncBookingToState(booking);
+    saveState();
+    showScreen(targetScreen || getBookingAction(booking).screen);
+  }
+
+  function formatBookingTime(timeValue, duration) {
+    const [hours, minutes] = (timeValue || '14:00').split(':').map(Number);
+    const start = new Date(2000, 0, 1, hours, minutes);
+    const end = new Date(start.getTime() + duration * 60 * 60 * 1000);
+    const options = { hour: 'numeric', minute: '2-digit', hour12: true };
+    return `${start.toLocaleTimeString('en-US', options).toUpperCase()} – ${end.toLocaleTimeString('en-US', options).toUpperCase()} (${duration} hours)`;
+==============================
+
+==============================
+CONFLICT #8 (lines 3934-3994)
+HEAD (lines 3935-3945):
+    const homeNextBookingChild = document.getElementById('homeNextBookingChild');
+
+    const firstName = (state.user.name || 'Jessica').split(' ')[0];
+    if (greeting) greeting.textContent = `Welcome back, ${firstName}`;
+
+    const activeChild = state.child || (state.children && state.children[0]) || null;
+    const activeChildName = (activeChild && activeChild.name) || 'Liam';
+    if (homeChildName) homeChildName.textContent = activeChildName;
+    if (homeNextBookingChild) {
+      homeNextBookingChild.textContent = state.bookingData.childName || activeChildName;
+    }
+------------------------------
+ORIGIN/MAIN (lines 3947-3993):
+    const homeChildDetails = document.getElementById('homeChildDetails');
+    const homeChildSummary = document.getElementById('homeChildSummary');
+    const homeBookingDate = document.getElementById('homeBookingDate');
+    const homeBookingSitter = document.getElementById('homeBookingSitter');
+    const homeBookingTime = document.getElementById('homeBookingTime');
+    const homeBookingLocation = document.getElementById('homeBookingLocation');
+    const homeBookingStatus = document.getElementById('homeBookingStatus');
+    const homeNextBookingCard = document.getElementById('homeNextBookingCard');
+    const homeNoBooking = document.getElementById('homeNoBooking');
+    const homeRecentMsgName = document.getElementById('homeRecentMsgName');
+    const homeBookAgainName = document.getElementById('homeBookAgainName');
+    const bookingSitter = sittersData[state.selectedSitterId] || sittersData['sarah-lim'];
+    const nextBooking = getUpcomingBookings()[0] || null;
+
+    document.querySelectorAll('[data-preference-sitter]').forEach(slot => {
+      const sitter = sittersData[slot.dataset.preferenceSitter];
+      if (sitter) slot.innerHTML = renderPreferenceSummary(sitter);
+    });
+    document.querySelectorAll('.home-sitter-card[data-sitter-id]').forEach(card => {
+      const sitter = sittersData[card.dataset.sitterId];
+      if (!sitter) return;
+      const languages = card.querySelector('[data-sitter-languages]');
+      const careTypeChips = card.querySelector('[data-care-types]');
+      if (languages) languages.textContent = `Languages: ${sitter.languages}`;
+      if (careTypeChips) careTypeChips.innerHTML = renderCareTypeChips(sitter);
+    });
+
+    const firstName = (state.user.name || 'Jessica').split(' ')[0];
+    if (greeting) greeting.textContent = `Welcome back, ${firstName}`;
+    if (homeChildName) homeChildName.textContent = state.child.name || 'Liam';
+    if (homeChildDetails) homeChildDetails.textContent = `${getChildAge(state.child.birthDate)} years old • ${state.child.gender || 'Boy'}`;
+    if (homeChildSummary) {
+      homeChildSummary.textContent = `Allergies: ${state.child.allergies || 'None'} • Routine: ${state.child.routine || 'Standard routine'} • Emergency Contact: ${state.child.emergencyName || 'Not added'}`;
+    }
+    if (homeNextBookingCard) homeNextBookingCard.hidden = !nextBooking;
+    if (homeNoBooking) homeNoBooking.hidden = Boolean(nextBooking);
+    if (nextBooking) {
+      if (homeBookingDate) homeBookingDate.textContent = `Next Booking • ${formatBookingDate(nextBooking.date)}`;
+      if (homeBookingSitter) homeBookingSitter.textContent = nextBooking.babysitterName;
+      if (homeBookingTime) homeBookingTime.textContent = `${formatBookingTime(nextBooking.startTime, nextBooking.hours || 4)} • ${nextBooking.child}`;
+      if (homeBookingLocation) homeBookingLocation.textContent = `📍 ${nextBooking.location}`;
+      if (homeBookingStatus) homeBookingStatus.textContent = nextBooking.status;
+      if (btnHomeViewDetails) btnHomeViewDetails.textContent = getBookingAction(nextBooking).label;
+      if (btnHomeMessageSarah) btnHomeMessageSarah.textContent = `Message ${nextBooking.babysitterName.split(' ')[0]}`;
+    }
+    if (homeRecentMsgName) homeRecentMsgName.textContent = bookingSitter.name;
+    if (homeBookAgainName) homeBookAgainName.textContent = bookingSitter.name;
+==============================
+

@@ -3580,6 +3580,24 @@ label {
   padding: 12px 14px;
 }
 
+.saved-child-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.saved-child-action {
+  padding: 7px 10px;
+  font-size: 12px;
+}
+
+.saved-child-remove {
+  color: var(--error-red);
+  border: 1px solid var(--error-red);
+  background: transparent;
+}
+
 .saved-child-avatar {
   font-size: 24px;
   flex-shrink: 0;

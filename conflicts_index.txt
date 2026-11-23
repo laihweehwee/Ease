@@ -1,0 +1,885 @@
+==============================
+CONFLICT #1 (lines 22-35)
+HEAD (lines 23-32):
+        <!-- Back arrow button (visible on inner pages) -->
+        <button class="nav-back-btn" id="navBackBtn" aria-label="Go back" style="display: none;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </button>
+
+        <!-- Hamburger button (visible on welcome screen) -->
+------------------------------
+ORIGIN/MAIN (lines 34-34):
+        <!-- Hamburger button -->
+==============================
+
+==============================
+CONFLICT #2 (lines 74-134)
+HEAD (lines 75-82):
+    <nav class="drawer-nav">
+      <a href="#/" class="drawer-link" data-route="welcome">Home</a>
+      <a href="#/q1" class="drawer-link" data-route="q1">Find a Babysitter</a>
+      <a href="#/summary" class="drawer-link" data-route="summary">My Answers</a>
+      <a href="#/matches" class="drawer-link" data-route="matches">Top Matches</a>
+      <a href="#/compare" class="drawer-link" data-route="compare">Compare Sitters</a>
+      <a href="#/parent-home" class="drawer-link" data-route="parent-home" id="drawerParentHomeLink"
+        style="display: none;">Parent Dashboard</a>
+------------------------------
+ORIGIN/MAIN (lines 84-133):
+    <nav class="drawer-nav" id="drawerMenu" aria-label="Menu">
+      <a href="#/find" class="drawer-item" data-drawer-route="find">
+        <span class="drawer-item-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><line x1="15.5" y1="15.5" x2="21" y2="21"></line></svg></span>
+        <span class="drawer-item-copy"><strong>Find babysitters</strong><small>Search trusted babysitters near you</small></span>
+      </a>
+      <div class="drawer-member-links" id="drawerMemberLinks" hidden>
+        <span class="drawer-section-label" id="drawerMyEaseLabel">My Ease</span>
+        <a href="#/bookings" class="drawer-app-item" id="drawerBookingsItem" data-drawer-route="bookings">
+          <span class="drawer-app-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </span>
+          <span class="drawer-app-title">Bookings</span>
+          <span class="drawer-count" id="drawerBookingsCount" hidden></span>
+        </a>
+        <a href="#/chat" class="drawer-app-item" id="drawerMessagesItem" data-drawer-route="chat">
+          <span class="drawer-app-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+          </span>
+          <span class="drawer-app-title">Messages</span>
+        </a>
+      </div>
+      <div class="drawer-menu-divider" id="drawerMenuDivider" hidden></div>
+      <span class="drawer-section-label" id="drawerAboutLabel" hidden>About Ease</span>
+      <button type="button" class="drawer-item" data-drawer-panel="how-it-works">
+        <span class="drawer-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="3"></circle><path d="m14.1 9.9 5.2-5.2"></path><path d="m19.3 4.7.7 3"></path><path d="m19.3 4.7-3-.7"></path></svg></span>
+        <span class="drawer-item-copy"><strong>How it works</strong><small>Find care in a few simple steps</small></span>
+      </button>
+      <button type="button" class="drawer-item" data-drawer-panel="safety">
+        <span class="drawer-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg></span>
+        <span class="drawer-item-copy"><strong>Safety &amp; Trust</strong><small>How we help keep care safe</small></span>
+      </button>
+      <button type="button" class="drawer-item" data-drawer-panel="care-types">
+        <span class="drawer-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></span>
+        <span class="drawer-item-copy"><strong>Types of care</strong><small>Care to fit your schedule</small></span>
+      </button>
+      <button type="button" class="drawer-item" data-drawer-panel="faq">
+        <span class="drawer-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M9.6 9a2.5 2.5 0 0 1 4.8 1c0 1.7-2.4 2-2.4 4"></path><path d="M12 17h.01"></path></svg></span>
+        <span class="drawer-item-copy"><strong>FAQ</strong><small>Answers to common questions</small></span>
+      </button>
+      <button type="button" class="drawer-item" data-drawer-panel="help">
+        <span class="drawer-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8z"></path></svg></span>
+        <span class="drawer-item-copy"><strong>Help &amp; contact</strong><small>We are here if you need help</small></span>
+      </button>
+==============================
+
+==============================
+CONFLICT #3 (lines 189-199)
+HEAD (lines 190-192):
+        <img src="https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=1600&q=80"
+          alt="Babysitter caring for young children playing at home" class="hero-fullbleed-bg" loading="eager"
+          onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+------------------------------
+ORIGIN/MAIN (lines 194-198):
+        <img src="images/hero-drawing.jpg"
+             alt="A babysitter and a child drawing together at a table"
+             class="hero-fullbleed-bg"
+             loading="eager"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+==============================
+
+==============================
+CONFLICT #4 (lines 220-231)
+HEAD (lines 221-224):
+                <img
+                  src="https://images.unsplash.com/photo-1491438590914-bc09fcaaf77a?auto=format&fit=crop&w=800&h=480&q=80"
+                  alt="A parent with a babysitter and a happy child playing together" class="role-photo" loading="lazy"
+                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+------------------------------
+ORIGIN/MAIN (lines 226-230):
+                <img src="images/card-need-sitter.jpg" 
+                     alt="A parent holding a HELP sign surrounded by young children at home" 
+                     class="role-photo"
+                     loading="lazy"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+==============================
+
+==============================
+CONFLICT #5 (lines 251-262)
+HEAD (lines 252-255):
+                <img
+                  src="https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=800&h=480&q=80"
+                  alt="A smiling caregiver with a child" class="role-photo" loading="lazy"
+                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+------------------------------
+ORIGIN/MAIN (lines 257-261):
+                <img src="images/card-am-sitter.jpg" 
+                     alt="A smiling babysitter playing with a young girl on the living room floor" 
+                     class="role-photo"
+                     loading="lazy"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+==============================
+
+==============================
+CONFLICT #6 (lines 652-657)
+HEAD (lines 653-654):
+              <div class="summary-card-left"><span class="summary-label">When do you need care?</span><span
+                  class="summary-value" id="summaryValWhen">Today</span></div>
+------------------------------
+ORIGIN/MAIN (lines 656-656):
+              <div class="summary-card-left"><span class="summary-label">When would you like care?</span><span class="summary-value" id="summaryValWhen">Today</span></div>
+==============================
+
+==============================
+CONFLICT #7 (lines 666-671)
+HEAD (lines 667-668):
+              <div class="summary-card-left"><span class="summary-label">Who needs care?</span><span
+                  class="summary-value" id="summaryValWho">Toddler 1 to 3</span></div>
+------------------------------
+ORIGIN/MAIN (lines 670-670):
+              <div class="summary-card-left"><span class="summary-label">Child age groups</span><span class="summary-value" id="summaryValWho">Toddler 1 to 3</span></div>
+==============================
+
+==============================
+CONFLICT #8 (lines 795-800)
+HEAD (lines 796-797):
+            <article class="card sitter-match-card" data-sitter-id="sarah-lim" data-cpr="true" data-newborn="true"
+              data-mandarin="true" data-price="25" data-rating="4.9" data-match="98">
+------------------------------
+ORIGIN/MAIN (lines 799-799):
+            <article class="card sitter-match-card" data-sitter-id="sarah-lim" data-cpr="true" data-newborn="true" data-mandarin="true" data-price="25" data-rating="4.9">
+==============================
+
+==============================
+CONFLICT #9 (lines 863-868)
+HEAD (lines 864-865):
+            <article class="card sitter-match-card" data-sitter-id="nur-ain" data-cpr="true" data-newborn="false"
+              data-mandarin="false" data-price="22" data-rating="4.8" data-match="95">
+------------------------------
+ORIGIN/MAIN (lines 867-867):
+            <article class="card sitter-match-card" data-sitter-id="nur-ain" data-cpr="true" data-newborn="false" data-mandarin="false" data-price="22" data-rating="4.8">
+==============================
+
+==============================
+CONFLICT #10 (lines 930-935)
+HEAD (lines 931-932):
+            <article class="card sitter-match-card" data-sitter-id="aisyah" data-cpr="false" data-newborn="false"
+              data-mandarin="false" data-price="20" data-rating="4.7" data-match="93">
+------------------------------
+ORIGIN/MAIN (lines 934-934):
+            <article class="card sitter-match-card" data-sitter-id="aisyah" data-cpr="false" data-newborn="false" data-mandarin="false" data-price="20" data-rating="4.7">
+==============================
+
+==============================
+CONFLICT #11 (lines 1129-1411)
+HEAD (lines 1130-1282):
+          <!-- Profile Hero Card -->
+          <div class="card profile-hero-card">
+            <div class="profile-photo-wrap">
+              <div class="photo-placeholder profile-large-photo">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <span class="profile-photo-name" id="profileDisplayName">Sarah Lim</span>
+              </div>
+            </div>
+
+            <div class="profile-hero-info">
+              <div class="profile-hero-header">
+                <h1 class="page-title profile-title" id="profileName">Sarah Lim</h1>
+                <span class="badge badge-ease-trained">
+                  <svg class="badge-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C2456B"
+                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    <polyline points="9 12 11 14 15 10"></polyline>
+                  </svg>
+                  Ease Trained
+                </span>
+              </div>
+
+              <div class="stars-row profile-stars" id="profileStars">
+                <span class="star-filled" aria-hidden="true">★</span>
+                <span class="star-filled" aria-hidden="true">★</span>
+                <span class="star-filled" aria-hidden="true">★</span>
+                <span class="star-filled" aria-hidden="true">★</span>
+                <span class="star-filled" aria-hidden="true">★</span>
+                <span class="stars-num" id="profileRatingText">4.9 (126 reviews)</span>
+              </div>
+
+              <div class="profile-price-wrap">
+                <span class="profile-price" id="profilePrice">RM 25</span>
+                <span class="profile-price-unit">/ hour</span>
+              </div>
+
+              <!-- Main Action Buttons -->
+              <div class="profile-actions-row">
+                <button class="btn btn-primary btn-large" id="btnProfileBook">Book Sarah</button>
+                <button class="btn btn-secondary btn-large" id="btnProfileMessage">Message</button>
+                <button class="btn btn-secondary" id="btnProfileCompare">Compare</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section: About Me -->
+          <div class="card profile-section-card">
+            <h2 class="section-heading">About Me</h2>
+            <div class="profile-meta-grid">
+              <div class="meta-item">
+                <span class="meta-label">Age</span>
+                <span class="meta-val" id="profileAge">28 years old</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Experience</span>
+                <span class="meta-val" id="profileExp">5 years</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Languages</span>
+                <span class="meta-val" id="profileLanguages">English, Mandarin</span>
+              </div>
+            </div>
+            <p class="profile-bio-text" id="profileBio">
+              Warm, patient, and creative caregiver dedicated to nurturing young children. Experienced in newborn care
+              routines, developmental toddler play, and engaging educational activities. Non-smoker, clean driving
+              record, and comfortable with household pets.
+            </p>
+          </div>
+
+          <!-- Section: Certificates -->
+          <div class="card profile-section-card">
+            <h2 class="section-heading">Certificates</h2>
+            <ul class="cert-list" id="profileCertList">
+              <li class="cert-item">
+                <div class="cert-left">
+                  <span class="check-icon">✓</span>
+                  <div>
+                    <strong>Pediatric & Infant CPR Certification</strong>
+                    <span class="cert-expiry">Verified safety check • Valid until Dec 2027</span>
+                  </div>
+                </div>
+                <span class="badge badge-verified">Verified</span>
+              </li>
+              <li class="cert-item">
+                <div class="cert-left">
+                  <span class="check-icon">✓</span>
+                  <div>
+                    <strong>Pediatric First Aid Training</strong>
+                    <span class="cert-expiry">Malaysian Red Crescent • Valid until Oct 2027</span>
+                  </div>
+                </div>
+                <span class="badge badge-verified">Verified</span>
+              </li>
+              <li class="cert-item">
+                <div class="cert-left">
+                  <span class="check-icon">✓</span>
+                  <div>
+                    <strong>Newborn Care Specialist & Sleep Routine</strong>
+                    <span class="cert-expiry">Certified infant sleep guidance</span>
+                  </div>
+                </div>
+                <span class="badge badge-verified">Verified</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Section: Education -->
+          <div class="card profile-section-card">
+            <h2 class="section-heading">Education</h2>
+            <div class="edu-item">
+              <span class="edu-degree" id="profileEduDegree">Diploma in Early Childhood Education</span>
+              <span class="edu-school" id="profileEduSchool">SEGi College Kuala Lumpur (Graduated 2020)</span>
+            </div>
+          </div>
+
+          <!-- Section: Reviews -->
+          <div class="card profile-section-card">
+            <h2 class="section-heading">Parent Reviews</h2>
+            <div class="reviews-list">
+              <div class="review-item">
+                <div class="stars-row"><span class="star-filled">★</span><span class="star-filled">★</span><span
+                    class="star-filled">★</span><span class="star-filled">★</span><span
+                    class="star-filled">★</span><span class="stars-num">5.0</span></div>
+                <p class="review-text">"Sarah was incredible with our 10-month-old daughter. She was punctual, so warm,
+                  and sent us photo check-ins throughout our dinner. Total peace of mind!"</p>
+                <span class="review-by">Michelle T. • Bangsar (Parent of 10-month-old)</span>
+              </div>
+              <div class="review-item">
+                <div class="stars-row"><span class="star-filled">★</span><span class="star-filled">★</span><span
+                    class="star-filled">★</span><span class="star-filled">★</span><span
+                    class="star-filled">★</span><span class="stars-num">5.0</span></div>
+                <p class="review-text">"Our 3-year-old twins adore Sarah. She reads stories, plays creative games, and
+                  follows their bedtime routine to the minute. Highly recommended!"</p>
+                <span class="review-by">Kevin L. • Mont Kiara (Parent of 3-year-old twins)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section: Availability -->
+          <div class="card profile-section-card">
+            <h2 class="section-heading">Availability</h2>
+            <div class="avail-grid">
+              <div class="avail-day"><span class="avail-title">Monday – Friday</span><span
+                  class="avail-times">Afternoons & Evenings (1:00 PM – 9:00 PM)</span></div>
+              <div class="avail-day"><span class="avail-title">Saturday</span><span class="avail-times">Full Day (9:00
+                  AM – 10:00 PM)</span></div>
+              <div class="avail-day"><span class="avail-title">Sunday</span><span class="avail-times">Available upon
+                  request</span></div>
+            </div>
+------------------------------
+ORIGIN/MAIN (lines 1284-1410):
+          <div class="profile-layout">
+            <div class="profile-main-column">
+              <!-- Profile Hero -->
+              <div class="profile-hero-card">
+                <div class="profile-photo-wrap">
+                  <div class="profile-large-photo photo-placeholder" id="profilePhoto" role="img" aria-label="Photo placeholder for Sarah Lim">
+                    <span class="profile-initials">SL</span>
+                  </div>
+                </div>
+
+                <div class="profile-hero-info">
+                  <div class="profile-hero-header">
+                    <div>
+                      <h2 class="card-title profile-title" id="profileName">Sarah Lim</h2>
+                      <span class="badge badge-ease-trained">
+                        <svg class="badge-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+                        Ease Trained
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="stars-row profile-stars" id="profileStars">
+                    <span class="star-filled" aria-hidden="true">★</span>
+                    <span class="star-filled" aria-hidden="true">★</span>
+                    <span class="star-filled" aria-hidden="true">★</span>
+                    <span class="star-filled" aria-hidden="true">★</span>
+                    <span class="star-filled" aria-hidden="true">★</span>
+                    <span class="stars-num" id="profileRatingText">4.9 (87 reviews)</span>
+                  </div>
+
+                  <div class="care-type-chips" id="profileCareTypeChips" aria-label="Care types offered"></div>
+                  <p class="profile-location" id="profileLocation">Bangsar</p>
+
+                  <div class="profile-verifications">
+                    <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>ID verified</span>
+                    <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>Background checked</span>
+                    <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>References checked</span>
+                  </div>
+                </div>
+              </div>
+
+              <section class="card profile-section-card profile-preferences-section" id="profilePreferencesSection" hidden>
+                <h2 class="section-heading" id="profilePreferencesHeading">How Sarah fits your preferences</h2>
+                <div id="profilePreferencesList"></div>
+              </section>
+
+              <div class="quick-facts-row">
+                <div class="quick-fact quick-fact-yellow"><svg class="quick-fact-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="14" rx="2"></rect><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18M10 12v2h4v-2"></path></svg><strong id="profileExp">6 years</strong><span>experience</span></div>
+                <div class="quick-fact quick-fact-pink"><svg class="quick-fact-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="10" cy="7" r="4"></circle><path d="M20 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"></path></svg><strong>42</strong><span>children cared for</span></div>
+                <div class="quick-fact quick-fact-yellow"><svg class="quick-fact-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m17 2 4 4-4 4"></path><path d="M3 11V9a3 3 0 0 1 3-3h15"></path><path d="m7 22-4-4 4-4"></path><path d="M21 13v2a3 3 0 0 1-3 3H3"></path></svg><strong>18</strong><span>parents booked again</span></div>
+                <div class="quick-fact quick-fact-pink"><svg class="quick-fact-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg><strong id="profileCertCount"></strong><span>certificates</span></div>
+              </div>
+
+              <div class="card profile-section-card">
+                <h2 class="section-heading"><span class="section-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span>About Me</h2>
+                <div class="profile-meta-grid">
+                  <div class="meta-item"><span class="meta-label">Age</span><span class="meta-val" id="profileAge">28 years old</span></div>
+                  <div class="meta-item"><span class="meta-label">Experience</span><span class="meta-val" id="profileExpDetail">6 years</span></div>
+                  <div class="meta-item"><span class="meta-label">Languages</span><span class="meta-val" id="profileLanguages">English and Mandarin</span></div>
+                  <div class="meta-item"><span class="meta-label">Ages cared for</span><span class="meta-val">6 months to 12 years</span></div>
+                </div>
+                <div class="profile-chips"><span>English</span><span>Mandarin</span><span>6 months–12 years</span></div>
+                <p class="profile-bio-text" id="profileBio">Warm, patient, and creative caregiver dedicated to nurturing young children. Experienced in newborn care routines, developmental toddler play, and engaging educational activities.</p>
+                <div class="profile-care-types" id="profileCareTypes">
+                  <strong class="profile-care-types-label">Care offered</strong>
+                  <div class="profile-care-types-list"></div>
+                </div>
+                <div class="care-offered"><span><b>✓</b> Newborn care</span><span><b>✓</b> Homework help</span><span><b>✓</b> Meal preparation</span><span><b>✓</b> Light housekeeping</span><span><b>×</b> Pet care</span></div>
+              </div>
+
+              <div class="card profile-section-card profile-section-yellow">
+                <h2 class="section-heading"><span class="section-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg></span>Certificates</h2>
+                <div class="cert-list" id="profileCertList">
+                  <div class="cert-item"><span class="cert-check">✓</span><div class="cert-copy"><strong>Pediatric First Aid & CPR</strong><span>Malaysian Red Crescent · Expires 2027</span></div><span class="badge badge-verified">✓ Verified</span></div>
+                  <div class="cert-item"><span class="cert-check">✓</span><div class="cert-copy"><strong>Infant Care Specialist</strong><span>Childcare Academy · Expires 2027</span></div><span class="badge badge-verified">✓ Verified</span></div>
+                </div>
+              </div>
+
+              <div class="card profile-section-card">
+                <h2 class="section-heading"><span class="section-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg></span>Education</h2>
+                <div class="edu-item"><span class="edu-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg></span><div><span class="edu-degree" id="profileEduDegree">Diploma in Early Childhood Education</span><span class="edu-school" id="profileEduSchool">Sunway College · 2020</span></div></div>
+              </div>
+
+              <div class="card profile-section-card profile-section-yellow">
+                <h2 class="section-heading"><span class="section-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="#FFE66D" stroke="#C2456B" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></span>Reviews</h2>
+                <div class="reviews-summary">
+                  <div class="rating-summary"><strong>4.9</strong><div>★★★★★</div><span>87 reviews</span></div>
+                  <div class="rating-bars">
+                    <div><span>5</span><div class="rating-track"><i style="width:92%"></i></div></div>
+                    <div><span>4</span><div class="rating-track"><i style="width:58%"></i></div></div>
+                    <div><span>3</span><div class="rating-track"><i style="width:18%"></i></div></div>
+                    <div><span>2</span><div class="rating-track"><i style="width:8%"></i></div></div>
+                    <div><span>1</span><div class="rating-track"><i style="width:4%"></i></div></div>
+                  </div>
+                </div>
+                <div class="endorsement-chips"><span>Attentive and caring 24</span><span>Prioritises safety 31</span><span>Great with toddlers 19</span></div>
+                <button type="button" class="btn btn-secondary write-review-link" id="btnWriteReview">Write a review</button>
+                <div class="reviews-list" id="profileReviews">
+                  <div class="review-item"><div class="review-avatar">MT</div><div class="review-content"><div class="review-head"><strong>Michelle</strong><span>★★★★★</span></div><span class="review-date">12 Nov 2026 · 1 child, 10 months</span><p class="review-text">"Sarah was incredible with our 10-month-old daughter. She was punctual, so warm, and sent us photo check-ins throughout our dinner."</p></div></div>
+                  <div class="review-item"><div class="review-avatar pink">KL</div><div class="review-content"><div class="review-head"><strong>Kevin</strong><span>★★★★★</span></div><span class="review-date">8 Nov 2026 · 2 children, 3 years</span><p class="review-text">"Our 3-year-old twins adore Sarah. She reads stories, plays creative games, and follows their bedtime routine."</p></div></div>
+                </div>
+              </div>
+
+              <div class="card profile-section-card">
+                <h2 class="section-heading"><span class="section-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></span>Availability</h2>
+                <div class="weekly-grid" id="profileAvailability">
+                  <div class="weekly-head"></div><div class="weekly-head">Mon</div><div class="weekly-head">Tue</div><div class="weekly-head">Wed</div><div class="weekly-head">Thu</div><div class="weekly-head">Fri</div><div class="weekly-head">Sat</div><div class="weekly-head">Sun</div>
+                  <div class="time-label">Morning</div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell unavailable"></div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell unavailable"></div>
+                  <div class="time-label">Afternoon</div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell unavailable"></div>
+                  <div class="time-label">Evening</div><div class="avail-cell available">✓</div><div class="avail-cell unavailable"></div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell available">✓</div><div class="avail-cell unavailable"></div>
+                  <div class="time-label">Overnight</div><div class="avail-cell unavailable"></div><div class="avail-cell unavailable"></div><div class="avail-cell unavailable"></div><div class="avail-cell unavailable"></div><div class="avail-cell unavailable"></div><div class="avail-cell available">✓</div><div class="avail-cell unavailable"></div>
+                </div>
+              </div>
+            </div>
+
+            <aside class="profile-sticky-card card">
+              <div class="sticky-price"><span id="stickyProfilePrice">RM 20</span><small>/ hour</small></div>
+              <button class="btn btn-secondary full-width profile-message-button" id="btnProfileStickyMessage" aria-label="Message Sarah">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8z"></path>
+                </svg>
+                <span>Message</span>
+              </button>
+              <button class="btn btn-secondary full-width" id="btnProfileCompare">Compare</button>
+              <button class="btn btn-primary full-width" id="btnProfileStickyBook">Book Sarah</button>
+              <p class="profile-booking-note">You will not be charged until <span id="profileBookingName">Sarah</span> accepts.</p>
+            </aside>
+==============================
+
+==============================
+CONFLICT #12 (lines 1439-1538)
+HEAD (lines 1440-1531):
+        <div class="container compare-table-container">
+          <div class="compare-table-wrap card">
+            <table class="compare-table">
+              <thead>
+                <tr>
+                  <th class="col-feature">Feature</th>
+                  <th class="col-sitter">
+                    <div class="th-sitter-head">
+                      <strong>Sarah Lim</strong>
+                      <span class="match-badge">98% match</span>
+                    </div>
+                  </th>
+                  <th class="col-sitter">
+                    <div class="th-sitter-head">
+                      <strong>Nur Ain</strong>
+                      <span class="match-badge">95% match</span>
+                    </div>
+                  </th>
+                  <th class="col-sitter">
+                    <div class="th-sitter-head">
+                      <strong>Aisyah</strong>
+                      <span class="match-badge">93% match</span>
+                    </div>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="row-label">Age</td>
+                  <td>28 years old</td>
+                  <td>31 years old</td>
+                  <td class="better-val-cell"><span class="check-icon">✓</span> 24 years old</td>
+                </tr>
+                <tr>
+                  <td class="row-label">Languages</td>
+                  <td class="better-val-cell"><span class="check-icon">✓</span> English, Mandarin</td>
+                  <td>Malay, English</td>
+                  <td>Malay, English</td>
+                </tr>
+                <tr>
+                  <td class="row-label">Certificates</td>
+                  <td class="better-val-cell"><span class="check-icon">✓</span> CPR & Newborn</td>
+                  <td>CPR & First Aid</td>
+                  <td>First Aid</td>
+                </tr>
+                <tr>
+                  <td class="row-label">Verification</td>
+                  <td class="better-val-cell"><span class="check-icon">✓</span> Ease Trained</td>
+                  <td class="better-val-cell"><span class="check-icon">✓</span> Ease Trained</td>
+                  <td class="better-val-cell"><span class="check-icon">✓</span> Ease Trained</td>
+                </tr>
+                <tr>
+                  <td class="row-label">Education</td>
+                  <td class="better-val-cell"><span class="check-icon">✓</span> Early Childhood Diploma</td>
+                  <td class="better-val-cell"><span class="check-icon">✓</span> Early Childhood Diploma</td>
+                  <td>SPM & Training</td>
+                </tr>
+                <tr>
+                  <td class="row-label">Rating</td>
+                  <td class="better-val-cell"><span class="check-icon">✓</span> ⭐ 4.9 (126)</td>
+                  <td>⭐ 4.8 (84)</td>
+                  <td>⭐ 4.7 (51)</td>
+                </tr>
+                <tr>
+                  <td class="row-label">Experience</td>
+                  <td class="better-val-cell"><span class="check-icon">✓</span> 5 years</td>
+                  <td>4 years</td>
+                  <td>2 years</td>
+                </tr>
+                <tr>
+                  <td class="row-label">Availability</td>
+                  <td>Afternoons & Evenings</td>
+                  <td class="better-val-cell"><span class="check-icon">✓</span> Weekdays & Weekends</td>
+                  <td>Evenings & Weekends</td>
+                </tr>
+                <tr>
+                  <td class="row-label">Price</td>
+                  <td>RM 25 / hr</td>
+                  <td>RM 22 / hr</td>
+                  <td class="better-val-cell"><span class="check-icon">✓</span> <strong>RM 20 / hr</strong></td>
+                </tr>
+                <tr class="action-row">
+                  <td>Action</td>
+                  <td><button class="btn btn-primary full-width btn-book-from-compare" data-sitter-id="sarah-lim">Book
+                      Sarah</button></td>
+                  <td><button class="btn btn-primary full-width btn-book-from-compare" data-sitter-id="nur-ain">Book Nur
+                      Ain</button></td>
+                  <td><button class="btn btn-primary full-width btn-book-from-compare" data-sitter-id="aisyah">Book
+                      Aisyah</button></td>
+                </tr>
+              </tbody>
+            </table>
+------------------------------
+ORIGIN/MAIN (lines 1533-1537):
+        <div class="container compare-screen-container">
+          <div class="compare-expanded-header" id="compareExpandedHeader">
+            <div class="compare-header-scroll" id="compareHeaderScroll" role="region" aria-label="Babysitter selectors" tabindex="0">
+              <div class="compare-column-grid" id="compareHeaderColumns"></div>
+            </div>
+==============================
+
+==============================
+CONFLICT #13 (lines 1620-1653)
+HEAD (lines 1621-1634):
+            <form id="authForm" class="auth-form" novalidate>
+              <!-- Name (Sign Up only) -->
+              <div class="input-group" id="groupName">
+                <label for="authName">Full Name</label>
+                <input type="text" id="authName" class="input-field" placeholder="Jessica Roberts">
+                <span class="input-error-msg" id="errorAuthName" style="display: none;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5"
+                    stroke-linecap="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                  </svg>
+                  Please enter your full name.
+                </span>
+------------------------------
+ORIGIN/MAIN (lines 1636-1652):
+            <!-- Role Selection (Sign Up only) -->
+            <div class="auth-role-group" id="authRoleGroup">
+              <div class="auth-role-cards" role="group" aria-label="Account type">
+                <button type="button" class="auth-role-card" id="roleSelectParent" aria-pressed="false" aria-controls="authDetails">
+                  <div class="auth-role-text">
+                    <strong><svg class="auth-role-symbol" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="7" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M2 20v-2a6 6 0 0 1 12 0v2m1 0v-1a4 4 0 0 1 8 0v1"/></svg> Sign up as a Parent</strong>
+                    <small>Find &amp; book trusted babysitters</small>
+                  </div>
+                  <span class="auth-role-check" aria-hidden="true">✓</span>
+                </button>
+                <button type="button" class="auth-role-card" id="roleSelectSitter" aria-pressed="false" aria-controls="authDetails">
+                  <div class="auth-role-text">
+                    <strong><svg class="auth-role-symbol" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-8-4.7-8-10a4.4 4.4 0 0 1 8-2.5A4.4 4.4 0 0 1 20 10c0 5.3-8 10-8 10Z"/></svg> Sign up as a Babysitter</strong>
+                    <small>Offer childcare &amp; find jobs</small>
+                  </div>
+                  <span class="auth-role-check" aria-hidden="true">✓</span>
+                </button>
+==============================
+
+==============================
+CONFLICT #14 (lines 1657-1756)
+HEAD (lines 1658-1718):
+              <!-- Email -->
+              <div class="input-group">
+                <label for="authEmail">Email Address</label>
+                <input type="email" id="authEmail" class="input-field" placeholder="jessica@example.com">
+                <span class="input-error-msg" id="errorAuthEmail" style="display: none;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5"
+                    stroke-linecap="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                  </svg>
+                  Please enter a valid email address.
+                </span>
+              </div>
+
+              <!-- Phone (Sign Up only) -->
+              <div class="input-group" id="groupPhone">
+                <label for="authPhone">Phone Number</label>
+                <input type="tel" id="authPhone" class="input-field" placeholder="012-3456789">
+                <span class="input-error-msg" id="errorAuthPhone" style="display: none;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5"
+                    stroke-linecap="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                  </svg>
+                  Please enter a valid phone number.
+                </span>
+              </div>
+
+              <!-- Password -->
+              <div class="input-group">
+                <label for="authPassword">Password</label>
+                <input type="password" id="authPassword" class="input-field" placeholder="Minimum 6 characters">
+                <span class="input-error-msg" id="errorAuthPassword" style="display: none;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5"
+                    stroke-linecap="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                  </svg>
+                  Password must be at least 6 characters.
+                </span>
+              </div>
+
+              <!-- Privacy Consent (Sign Up only) -->
+              <div class="checkbox-group" id="groupPrivacy">
+                <label class="privacy-label">
+                  <input type="checkbox" id="authPrivacy" checked>
+                  <span>I agree to the Ease Terms of Service and Privacy Policy.</span>
+                </label>
+                <span class="input-error-msg" id="errorAuthPrivacy" style="display: none;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5"
+                    stroke-linecap="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                  </svg>
+                  You must agree to continue.
+                </span>
+              </div>
+------------------------------
+ORIGIN/MAIN (lines 1720-1755):
+            <p id="authRoleHint" class="auth-role-hint">Select a role to continue.</p>
+
+            <div id="authDetails" class="auth-details" hidden>
+              <aside class="auth-details-sidebar" id="authDetailsSidebar">
+                <h2 id="authRegistrationTitle">Create your account</h2>
+                <ol>
+                  <li aria-current="step">Account details</li>
+                  <li>Email verification</li>
+                </ol>
+              </aside>
+              <form id="authForm" class="auth-form" novalidate>
+                <!-- Name (Sign Up only) -->
+                <div class="input-group" id="groupName">
+                  <label for="authName">Full Name</label>
+                  <input type="text" id="authName" class="input-field" placeholder="Jessica Roberts">
+                  <span class="input-error-msg" id="errorAuthName" style="display: none;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                    Please enter your full name.
+                  </span>
+                </div>
+
+                <div class="input-group" id="groupAuthDob">
+                  <label for="authDob">Date of Birth</label>
+                  <input type="date" id="authDob" class="input-field" autocomplete="bday" aria-describedby="errorAuthDob">
+                  <span class="input-error-msg" id="errorAuthDob" style="display: none;">Please enter a date of birth in the past.</span>
+                </div>
+
+                <!-- Phone (Sign Up only) -->
+                <div class="input-group" id="groupPhone">
+                  <label for="authPhone">Phone Number</label>
+                  <input type="tel" id="authPhone" class="input-field" placeholder="012-3456789">
+                  <span class="input-error-msg" id="errorAuthPhone" style="display: none;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                    Please enter a valid phone number.
+                  </span>
+                </div>
+==============================
+
+==============================
+CONFLICT #15 (lines 1819-1824)
+HEAD (lines 1820-1821):
+            <p class="section-subtext">We sent a verification link to <strong
+                id="verifyEmailDisplay">jessica@example.com</strong>. Please check your inbox and tap the link.</p>
+------------------------------
+ORIGIN/MAIN (lines 1823-1823):
+            <p class="section-subtext">We sent a link to your email: <strong id="verifyEmailDisplay">jessica@example.com</strong>. Please check your inbox and tap the link.</p>
+==============================
+
+==============================
+CONFLICT #16 (lines 2276-2283)
+HEAD (lines 2277-2279):
+              <p class="section-subtext">Waiting for <strong id="statusSitterNameWaiting">Sarah Lim</strong> to accept
+                your booking for 20 Nov 2026.</p>
+
+------------------------------
+ORIGIN/MAIN (lines 2281-2282):
+              <p class="section-subtext">Waiting for <strong id="statusSitterNameWaiting">Sarah Lim</strong> to accept your booking.</p>
+              
+==============================
+
+==============================
+CONFLICT #17 (lines 2321-2331)
+HEAD (lines 2322-2326):
+              <h1 class="section-heading">Booking Declined</h1>
+              <p class="section-subtext">The caregiver is unavailable for this timeslot. You can easily find another
+                qualified sitter.</p>
+              <button class="btn btn-secondary full-width btn-large" id="btnFindAnotherSitter">Find another
+                babysitter</button>
+------------------------------
+ORIGIN/MAIN (lines 2328-2330):
+              <h1 class="section-heading">Booking cancelled.</h1>
+              <p class="section-subtext">The caregiver is unavailable for this timeslot. You can easily find another qualified sitter.</p>
+              <button class="btn btn-secondary full-width btn-large" id="btnFindAnotherSitter">Find another babysitter</button>
+==============================
+
+==============================
+CONFLICT #18 (lines 2463-2468)
+HEAD (lines 2464-2465):
+                <span class="receipt-val">Liam</span>
+                <span class="receipt-val" id="confirmedChildName">Liam</span>
+------------------------------
+ORIGIN/MAIN (lines 2467-2467):
+                <span class="receipt-val" id="confirmedChild"></span>
+==============================
+
+==============================
+CONFLICT #19 (lines 2612-2622)
+HEAD (lines 2613-2617):
+                <h3 class="card-title">Sarah Lim</h3>
+                <span class="next-booking-time">2:00 PM – 6:00 PM • 4 hours • Liam</span>
+                <span class="next-booking-time" id="homeNextBookingTime">2:00 PM – 6:00 PM • 4 hours • <span
+                    id="homeNextBookingChild">Liam</span></span>
+                <span class="next-booking-location">📍 50450 Kuala Lumpur</span>
+------------------------------
+ORIGIN/MAIN (lines 2619-2621):
+                <h3 class="card-title" id="homeBookingSitter"></h3>
+                <span class="next-booking-time" id="homeBookingTime"></span>
+                <span class="next-booking-location" id="homeBookingLocation"></span>
+==============================
+
+==============================
+CONFLICT #20 (lines 2703-2708)
+HEAD (lines 2704-2705):
+              <p class="child-meta-text">Allergies: None • Routine: Nap at 1:30 PM • Emergency Contact: Mark Roberts
+                (Father)</p>
+------------------------------
+ORIGIN/MAIN (lines 2707-2707):
+              <p class="child-meta-text" id="homeChildSummary">Allergies: None • Routine: Nap at 1:30 PM • Emergency Contact: Mark Roberts (Father)</p>
+==============================
+
+==============================
+CONFLICT #21 (lines 2738-2753)
+HEAD (lines 2739-2747):
+            <button class="nav-back-btn" id="btnChatBack" aria-label="Back">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2.5"
+                stroke-linecap="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+            </button>
+            <div class="chat-sitter-avatar">👩‍🏫</div>
+            <div>
+------------------------------
+ORIGIN/MAIN (lines 2749-2752):
+            <div class="chat-sitter-avatar" id="chatSitterAvatar" role="img" aria-label="Photo placeholder">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </div>
+            <div class="chat-header-info">
+==============================
+
+==============================
+CONFLICT #22 (lines 2782-2805)
+HEAD (lines 2783-2798):
+          <button type="button" class="btn-chat-attach" id="btnChatAttach" aria-label="Attach file">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6E5A66" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48">
+              </path>
+            </svg>
+          </button>
+          <input type="text" id="chatInputText" class="input-field chat-input" placeholder="Type a message..." required>
+          <button type="submit" class="btn btn-primary btn-chat-send" aria-label="Send">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3B2A35" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+------------------------------
+ORIGIN/MAIN (lines 2800-2804):
+          <div class="chat-message-input-group">
+            <label for="chatInputText">Message</label>
+            <input type="text" id="chatInputText" class="input-field chat-input" placeholder="Type a message..." required>
+          </div>
+          <button type="submit" class="btn btn-primary btn-chat-send">Send</button>
+==============================
+
+==============================
+CONFLICT #23 (lines 2953-3000)
+HEAD (lines 2954-2997):
+  <!-- Bottom Navigation Bar (Phone/Mobile, active after login) -->
+  <nav class="bottom-nav" id="bottomNav" style="display: none;">
+    <button class="bottom-nav-item active" data-nav="home">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+      </svg>
+      <span>Home</span>
+    </button>
+    <button class="bottom-nav-item" data-nav="find">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <span>Find</span>
+    </button>
+    <button class="bottom-nav-item" data-nav="bookings">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+        <line x1="16" y1="2" x2="16" y2="6"></line>
+        <line x1="8" y1="2" x2="8" y2="6"></line>
+        <line x1="3" y1="10" x2="21" y2="10"></line>
+      </svg>
+      <span>Bookings</span>
+    </button>
+    <button class="bottom-nav-item" data-nav="messages">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
+      <span>Messages</span>
+    </button>
+    <button class="bottom-nav-item" data-nav="profile">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+        <circle cx="12" cy="7" r="4"></circle>
+      </svg>
+      <span>Profile</span>
+    </button>
+  </nav>
+------------------------------
+ORIGIN/MAIN (lines 2999-2999):
+  <button type="button" class="demo-mode-badge" id="demoModeBadge" aria-label="Turn demo mode off" hidden>Demo mode</button>
+==============================
+

@@ -179,6 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ? state.children
     : (state.hasAddedChild && state.child ? [state.child] : []);
   if (state.children.length) state.child = state.children[0];
+  ensureChildIds(state.children);
 
   const bookingStatuses = ['waiting', 'accepted', 'declined', 'paid', 'confirmed', 'cancelled', 'completed'];
   let activeBookingsTab = 'upcoming';
@@ -642,17 +643,44 @@ document.addEventListener('DOMContentLoaded', () => {
   state.user = state.user || {};
   state.user.email = state.user.email || 'jessica@example.com';
   state.user.dob = state.user.dob || '1992-08-14';
-  state.user.numChildren = state.user.numChildren !== undefined ? state.user.numChildren : (state.children.length || 1);
   state.user.role = state.user.role || 'parent';
   state.user.hourlyRate = state.user.hourlyRate || 25;
   state.user.experience = state.user.experience || '3-5';
   state.user.specialties = state.user.specialties || [];
+  state.user.numChildren = state.children.length;
+
+  function createChildId() {
+    let id;
+    do {
+      id = `child_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+    } while (state.children.some(child => child && child.id === id));
+    return id;
+  }
+
+  function ensureChildIds(children) {
+    const ids = new Set();
+    children.forEach(child => {
+      if (!child || typeof child !== 'object') return;
+      if (typeof child.id !== 'string' || !child.id.trim() || ids.has(child.id)) {
+        child.id = createChildId();
+      }
+      ids.add(child.id);
+    });
+  }
+
+  function syncChildCount() {
+    state.user.numChildren = state.children.length;
+    const numChildrenInput = document.getElementById('parentProfileNumChildren');
+    if (numChildrenInput) numChildrenInput.value = String(state.children.length);
+  }
 
   function saveState() {
     try {
+      ensureChildIds(state.children);
+      syncChildCount();
+      state.hasAddedChild = state.children.length > 0;
       if (state.children && state.children.length > 0) {
         state.child = state.children[0];
-        state.hasAddedChild = true;
       }
       const serialized = {
         ...state,
@@ -2775,6 +2803,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // --------------------------------------------------------------------------
   const addChildForm = document.getElementById('addChildForm');
   const btnAddAnotherChild = document.getElementById('btnAddAnotherChild');
+  const btnCancelChildEdit = document.getElementById('btnCancelChildEdit');
+  let editingChildId = null;
 
   function validateChildForm() {
     const nameInput = document.getElementById('childName');
@@ -2958,7 +2988,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function getChildFormData() {
+  function getChildFormData(childId = null) {
     const allergies = getSelectedChips('chipsAllergies');
     const allergiesOther = document.getElementById('childAllergiesOther')?.value.trim() || '';
     const allergiesDetails = document.getElementById('childAllergiesDetails')?.value.trim() || '';
@@ -3006,7 +3036,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const descriptionLegacyStr = descParts.length > 0 ? descParts.join('. ') : 'Friendly and curious.';
 
     return {
-      id: 'child_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+      id: childId || createChildId(),
       name: document.getElementById('childName').value.trim(),
       gender: document.getElementById('childGender').value,
       birthDate: document.getElementById('childBirthDate').value,
@@ -3042,6 +3072,97 @@ document.addEventListener('DOMContentLoaded', () => {
       routine: routineLegacyStr,
       description: descriptionLegacyStr,
     };
+  }
+
+  function setChildFormMode(isEditing) {
+    const heading = document.getElementById('addChildHeading');
+    const submitButton = addChildForm && addChildForm.querySelector('button[type="submit"]');
+    if (heading) heading.textContent = isEditing ? 'Edit Child Profile' : 'Add Your Child';
+    if (submitButton) submitButton.textContent = isEditing ? 'Save changes' : 'Save and continue';
+    if (btnAddAnotherChild) btnAddAnotherChild.style.display = isEditing ? 'none' : '';
+    if (btnCancelChildEdit) btnCancelChildEdit.style.display = isEditing ? '' : 'none';
+  }
+
+  function getChildChipValues(gridId, savedValue) {
+    const grid = document.getElementById(gridId);
+    if (!grid) return { selected: [], unknown: [] };
+    const options = new Set(Array.from(grid.querySelectorAll('.form-chip'), chip => chip.dataset.value));
+    const values = Array.isArray(savedValue)
+      ? savedValue
+      : (typeof savedValue === 'string' && savedValue.trim() ? savedValue.split(/\s*,\s*/) : []);
+    const selected = [];
+    const unknown = [];
+    values.forEach(value => {
+      if (options.has(value)) selected.push(value);
+      else if (value) unknown.push(value);
+    });
+    if (unknown.length && options.has('Other') && !selected.includes('Other')) selected.push('Other');
+    return { selected, unknown };
+  }
+
+  function populateChildForm(child) {
+    const setValue = (id, value) => {
+      const input = document.getElementById(id);
+      if (input) input.value = value || '';
+    };
+    setValue('childName', child.name);
+    setValue('childGender', child.gender || 'Boy');
+    setValue('childBirthDate', child.birthDate);
+    setValue('childAllergiesDetails', child.allergiesDetails);
+    setValue('childMedicalDetails', child.medicalDetails);
+    setValue('childSpecialNeedsDetails', child.specialNeedsDetails);
+    setValue('childRoutineNotes', child.routineNotes ||
+      (!Array.isArray(child.routineSleep) && !Array.isArray(child.routineFeeding) ? child.routine : ''));
+    setValue('childEmergencyName', child.emergencyName);
+    setValue('childEmergencyPhone', child.emergencyPhone);
+
+    const chipFields = [
+      { gridId: 'chipsAllergies', value: child.allergies, otherId: 'childAllergiesOther', other: child.allergiesOther },
+      { gridId: 'chipsMedical', value: child.medical, otherId: 'childMedicalOther', other: child.medicalOther },
+      { gridId: 'chipsSpecialNeeds', value: child.specialNeeds, otherId: 'childSpecialNeedsOther', other: child.specialNeedsOther },
+      { gridId: 'chipsPersonality', value: child.personality, otherId: 'childPersonalityOther', other: child.personalityOther },
+      { gridId: 'chipsInterests', value: child.interests, otherId: 'childInterestsOther', other: child.interestsOther },
+      { gridId: 'chipsRoutineSleep', value: child.routineSleep },
+      { gridId: 'chipsRoutineFeeding', value: child.routineFeeding },
+    ];
+
+    chipFields.forEach(({ gridId, value, otherId, other }) => {
+      const grid = document.getElementById(gridId);
+      if (!grid) return;
+      const { selected, unknown } = getChildChipValues(gridId, value);
+      grid.querySelectorAll('.form-chip').forEach(chip => {
+        chip.classList.toggle('active', selected.includes(chip.dataset.value));
+      });
+      if (otherId) {
+        const otherValues = [other, ...unknown].filter(Boolean);
+        setValue(otherId, Array.from(new Set(otherValues)).join(', '));
+      }
+      updateConditionalInputs(grid.dataset.field, grid);
+    });
+
+    if (!Array.isArray(child.personality) && !Array.isArray(child.interests) &&
+      child.description && child.description !== 'Friendly and curious.' &&
+      !child.personalityOther && !child.interestsOther) {
+      const personalityGrid = document.getElementById('chipsPersonality');
+      const otherChip = personalityGrid && personalityGrid.querySelector('[data-value="Other"]');
+      if (otherChip) {
+        otherChip.classList.add('active');
+        setValue('childPersonalityOther', child.description);
+        updateConditionalInputs('personality', personalityGrid);
+      }
+    }
+
+    const useParentContact = Boolean(
+      child.isParentEmergencyContact &&
+      state.user.name && state.user.phone &&
+      child.emergencyName === state.user.name &&
+      child.emergencyPhone === state.user.phone
+    );
+    const radioParent = document.getElementById('radioParentEmergency');
+    const radioManual = document.getElementById('radioManualEmergency');
+    if (radioParent) radioParent.checked = useParentContact;
+    if (radioManual) radioManual.checked = !useParentContact;
+    setChildFormMode(true);
   }
 
   function resetChildForm() {
@@ -3156,6 +3277,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // SAFEGUARD: Display compact & easy to scan summary cards (Name, Age, Gender, Allergies, Medical)
   function renderSavedChildrenList() {
+    syncChildCount();
     const container = document.getElementById('savedChildrenSection');
     const list = document.getElementById('savedChildrenList');
     const countEl = document.getElementById('savedChildrenCount');
@@ -3179,7 +3301,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const avatar = c.gender === 'Girl' ? '👧' : '👦';
 
       return `
-        <div class="saved-child-card">
+        <div class="saved-child-card" data-child-id="${escapeHtml(c.id)}">
           <div class="saved-child-avatar">${avatar}</div>
           <div class="saved-child-info">
             <div class="saved-child-header">
@@ -3191,9 +3313,61 @@ document.addEventListener('DOMContentLoaded', () => {
               ${medicalText ? ` • <span>Medical: ${escapeHtml(medicalText)}</span>` : ''}
             </p>
           </div>
+          <div class="saved-child-actions">
+            <button type="button" class="btn btn-secondary saved-child-action"
+              data-child-action="edit" data-child-id="${escapeHtml(c.id)}">Edit</button>
+            <button type="button" class="btn saved-child-action saved-child-remove"
+              data-child-action="remove" data-child-id="${escapeHtml(c.id)}">Remove</button>
+          </div>
         </div>
       `;
     }).join('');
+  }
+
+  const savedChildrenList = document.getElementById('savedChildrenList');
+  if (savedChildrenList) {
+    savedChildrenList.addEventListener('click', event => {
+      const button = event.target.closest('button[data-child-action][data-child-id]');
+      if (!button || !savedChildrenList.contains(button)) return;
+      const childId = button.dataset.childId;
+      const child = state.children.find(savedChild => savedChild.id === childId);
+      if (!child) return;
+
+      if (button.dataset.childAction === 'edit') {
+        editingChildId = child.id;
+        populateChildForm(child);
+        document.getElementById('addChildForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+
+      if (button.dataset.childAction !== 'remove' ||
+        !window.confirm(`Remove ${child.name}'s saved profile? This cannot be undone.`)) return;
+
+      state.children = state.children.filter(savedChild => savedChild.id !== childId);
+      if (state.bookingData.childId === childId) {
+        const nextChild = state.children[0] || null;
+        state.bookingData.childId = nextChild ? nextChild.id : null;
+        state.bookingData.childName = nextChild ? nextChild.name : '';
+        state.bookingData.child = nextChild;
+      }
+      if (!state.children.length) state.child = null;
+      if (editingChildId === childId) {
+        editingChildId = null;
+        resetChildForm();
+        setChildFormMode(false);
+      }
+      saveState();
+      renderSavedChildrenList();
+      showToast(`Removed "${child.name}".`);
+    });
+  }
+
+  if (btnCancelChildEdit) {
+    btnCancelChildEdit.addEventListener('click', () => {
+      editingChildId = null;
+      resetChildForm();
+      setChildFormMode(false);
+    });
   }
 
   // Initialize chip groups on page load
@@ -3215,6 +3389,7 @@ document.addEventListener('DOMContentLoaded', () => {
       saveState();
       renderSavedChildrenList();
       resetChildForm();
+      setChildFormMode(false);
       showToast(`Saved "${newChild.name}"! You can add another child now.`);
       const nameInput = document.getElementById('childName');
       if (nameInput) nameInput.focus();
@@ -3224,6 +3399,36 @@ document.addEventListener('DOMContentLoaded', () => {
   if (addChildForm) {
     addChildForm.addEventListener('submit', (e) => {
       e.preventDefault();
+
+      if (editingChildId) {
+        if (!validateChildForm()) {
+          showToast('Please fill in all required fields marked with *');
+          return;
+        }
+        const childIndex = state.children.findIndex(child => child.id === editingChildId);
+        if (childIndex === -1) {
+          editingChildId = null;
+          resetChildForm();
+          setChildFormMode(false);
+          renderSavedChildrenList();
+          showToast('This child profile could not be found. Please try again.');
+          return;
+        }
+
+        const updatedChild = getChildFormData(editingChildId);
+        state.children[childIndex] = updatedChild;
+        if (state.bookingData.childId === updatedChild.id) {
+          state.bookingData.child = updatedChild;
+          state.bookingData.childName = updatedChild.name;
+        }
+        saveState();
+        renderSavedChildrenList();
+        editingChildId = null;
+        resetChildForm();
+        setChildFormMode(false);
+        showToast(`"${updatedChild.name}" updated successfully.`);
+        return;
+      }
 
       const hasSaved = Array.isArray(state.children) && state.children.length > 0;
       const hasInput = isChildFormPartiallyFilled();
@@ -3244,6 +3449,7 @@ document.addEventListener('DOMContentLoaded', () => {
         saveState();
         renderSavedChildrenList();
         resetChildForm();
+        setChildFormMode(false);
         showToast(`Child "${newChild.name}" saved!`);
       }
 
@@ -4078,11 +4284,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function clearParentProfileErrors() {
-    ['parentProfileName', 'parentProfileDob', 'parentProfilePhone', 'parentProfileEmail', 'parentProfileNumChildren'].forEach(id => {
+    ['parentProfileName', 'parentProfileDob', 'parentProfilePhone', 'parentProfileEmail'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.classList.remove('input-error');
     });
-    ['errorParentProfileName', 'errorParentProfileDob', 'errorParentProfilePhone', 'errorParentProfileEmail', 'errorParentProfileNumChildren'].forEach(id => {
+    ['errorParentProfileName', 'errorParentProfileDob', 'errorParentProfilePhone', 'errorParentProfileEmail'].forEach(id => {
       const err = document.getElementById(id);
       if (err) err.style.display = 'none';
     });
@@ -4104,7 +4310,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     state.user.email = state.user.email || 'jessica@example.com';
     state.user.dob = state.user.dob || '1992-08-14';
-    state.user.numChildren = state.user.numChildren !== undefined ? state.user.numChildren : (state.children.length || 1);
+    syncChildCount();
 
     if (displayName) displayName.textContent = state.user.name;
     if (avatarInitials) avatarInitials.textContent = getInitials(state.user.name);
@@ -4114,7 +4320,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (dobInput) dobInput.value = state.user.dob;
     if (phoneInput) phoneInput.value = state.user.phone;
     if (emailInput) emailInput.value = state.user.email;
-    if (numChildrenInput) numChildrenInput.value = state.user.numChildren;
+    if (numChildrenInput) numChildrenInput.value = String(state.children.length);
 
     if (successAlert) successAlert.style.display = 'none';
     if (errorAlert) errorAlert.style.display = 'none';
@@ -4127,7 +4333,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Clear validation error on typing
-  ['parentProfileName', 'parentProfileDob', 'parentProfilePhone', 'parentProfileEmail', 'parentProfileNumChildren'].forEach(id => {
+  ['parentProfileName', 'parentProfileDob', 'parentProfilePhone', 'parentProfileEmail'].forEach(id => {
     const el = document.getElementById(id);
     if (el) {
       const clearFieldError = () => {
@@ -4153,14 +4359,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const dobInput = document.getElementById('parentProfileDob');
       const phoneInput = document.getElementById('parentProfilePhone');
       const emailInput = document.getElementById('parentProfileEmail');
-      const numChildrenInput = document.getElementById('parentProfileNumChildren');
 
       const nameVal = nameInput ? nameInput.value.trim() : '';
       const dobVal = dobInput ? dobInput.value : '';
       const phoneVal = phoneInput ? phoneInput.value.trim() : '';
       const emailVal = emailInput ? emailInput.value.trim() : '';
-      const numChildrenVal = numChildrenInput ? parseInt(numChildrenInput.value, 10) : NaN;
-
       let hasError = false;
 
       // Validate Full Name
@@ -4209,14 +4412,6 @@ document.addEventListener('DOMContentLoaded', () => {
         hasError = true;
       }
 
-      // Validate Number of Children
-      if (isNaN(numChildrenVal) || numChildrenVal < 1 || numChildrenVal > 20) {
-        if (numChildrenInput) numChildrenInput.classList.add('input-error');
-        const err = document.getElementById('errorParentProfileNumChildren');
-        if (err) err.style.display = 'flex';
-        hasError = true;
-      }
-
       if (hasError) {
         const errorAlert = document.getElementById('parentProfileErrorAlert');
         if (errorAlert) errorAlert.style.display = 'flex';
@@ -4230,7 +4425,6 @@ document.addEventListener('DOMContentLoaded', () => {
       state.user.dob = dobVal;
       state.user.phone = phoneVal;
       state.user.email = emailVal;
-      state.user.numChildren = numChildrenVal;
       saveState();
 
       // Update Parent Profile Header
