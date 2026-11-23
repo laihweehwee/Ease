@@ -37,9 +37,9 @@ document.addEventListener('DOMContentLoaded', () => {
     writtenReviews: {},
     authReturnScreen: 'booking',
     user: {
-      name: 'Jessica Roberts',
+      name: '',
       email: 'jessica@example.com',
-      phone: '012-3456789',
+      phone: '',
       dob: '1992-08-14',
       numChildren: 1,
       role: 'parent',         // 'parent' | 'babysitter'
@@ -148,7 +148,6 @@ document.addEventListener('DOMContentLoaded', () => {
           extras: Array.isArray(parsed.extras) &&
             JSON.stringify(parsed.extras) !== JSON.stringify(['CPR certified', 'Speaks Mandarin', 'Newborn experience']),
         };
-      }
       }
     }
   } catch (e) {
@@ -641,9 +640,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   state.user = state.user || {};
-  state.user.name = state.user.name || 'Jessica Roberts';
   state.user.email = state.user.email || 'jessica@example.com';
-  state.user.phone = state.user.phone || '012-3456789';
   state.user.dob = state.user.dob || '1992-08-14';
   state.user.numChildren = state.user.numChildren !== undefined ? state.user.numChildren : (state.children.length || 1);
   state.user.role = state.user.role || 'parent';
@@ -927,7 +924,8 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (screenId === 'review') {
       prepareReviewForm();
     } else if (screenId === 'addChild') {
-      prepareAddChildForm();
+      setupEmergencyContactToggle();
+      renderSavedChildrenList();
     } else if (screenId === 'bookingDetails') {
       setupBookingDetails();
     } else if (screenId === 'bookings') {
@@ -946,9 +944,6 @@ document.addEventListener('DOMContentLoaded', () => {
       setupParentProfile();
     } else if (screenId === 'chat') {
       setupChatScreen();
-    } else if (screenId === 'addChild') {
-      setupEmergencyContactToggle();
-      renderSavedChildrenList();
     } else if (screenId === 'verify') {
       const verifyEmail = document.getElementById('verifyEmailDisplay');
       if (verifyEmail) verifyEmail.textContent = state.user.email;
@@ -1787,7 +1782,7 @@ document.addEventListener('DOMContentLoaded', () => {
         meetsCareType;
     }).sort((a, b) =>
       b.preferences.filter(preference => preference.met).length -
-        a.preferences.filter(preference => preference.met).length ||
+      a.preferences.filter(preference => preference.met).length ||
       a.distanceKm - b.distanceKm
     );
 
@@ -2611,10 +2606,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (input) input.classList.remove('input-error');
     });
     ['errorAuthName', 'errorAuthEmail', 'errorAuthPhone', 'errorAuthPassword', 'errorAuthPrivacy',
-     'errorAuthParentChildren', 'errorAuthDob'].forEach(id => {
-      const err = document.getElementById(id);
-      if (err) err.style.display = 'none';
-    });
+      'errorAuthParentChildren', 'errorAuthDob'].forEach(id => {
+        const err = document.getElementById(id);
+        if (err) err.style.display = 'none';
+      });
   }
 
   // Clear single error on typing
@@ -4107,9 +4102,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const successAlert = document.getElementById('parentProfileSuccessAlert');
     const errorAlert = document.getElementById('parentProfileErrorAlert');
 
-    state.user.name = state.user.name || 'Jessica Roberts';
     state.user.email = state.user.email || 'jessica@example.com';
-    state.user.phone = state.user.phone || '012-3456789';
     state.user.dob = state.user.dob || '1992-08-14';
     state.user.numChildren = state.user.numChildren !== undefined ? state.user.numChildren : (state.children.length || 1);
 
