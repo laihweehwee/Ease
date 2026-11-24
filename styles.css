@@ -6,18 +6,18 @@
 
 :root {
   /* Colors (Only these are permitted) */
-  --lemon-yellow: #FFE66D;
-  --cherry-pink: #FF8BA7;
-  --cherry-pink-hover: #F27A99;
-  --cherry-pink-pressed: #E96B8C;
-  --cream: #FFFBF2;
+  --lemon-yellow: #F6D365;
+  --cherry-pink: #E87A90;
+  --cherry-pink-hover: #D96B82;
+  --cherry-pink-pressed: #C95F75;
+  --cream: #FAF8F6;
   --white: #FFFFFF;
-  --soft-yellow: #FFF6CC;
-  --soft-pink: #FFE3EA;
-  --ink: #3B2A35;
-  --muted: #6E5A66;
-  --deep-rose: #C2456B;
-  --border: #F1DDD3;
+  --soft-yellow: #FFF3D6;
+  --soft-pink: #FBE3E8;
+  --ink: #2D2A2E;
+  --muted: #6E5B60;
+  --deep-rose: #B84F68;
+  --border: #EADFE1;
   --success-green: #2E8B6E;
   --error-red: #C0392B;
 
@@ -30,6 +30,671 @@
 
   /* Shape: Corners are 8px on EVERYTHING */
   --radius: 8px;
+}
+
+body {
+  background: var(--cream);
+  color: var(--ink);
+}
+
+.role-app-screen {
+  min-height: calc(100vh - 64px);
+}
+
+.role-page {
+  width: min(100% - 40px, 960px);
+  margin: 40px auto 80px;
+}
+
+.role-page-heading {
+  min-height: 120px;
+  padding: 24px 32px;
+  margin-bottom: 24px;
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, #F6D365 0%, #F48FB1 100%);
+}
+
+.role-page-heading h1 {
+  margin: 8px 0 0;
+  color: var(--ink);
+  font: 700 36px/1.15 var(--font-heading);
+}
+
+.role-eyebrow {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.role-panel,
+.role-preview-card,
+.role-list-item,
+.role-calendar,
+.role-modal-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--white);
+  box-shadow: var(--card-shadow);
+}
+
+.role-panel {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px;
+  display: grid;
+  gap: 16px;
+}
+
+.role-panel > h2,
+.role-modal-card h2 {
+  margin: 0;
+  font: 700 28px/1.2 var(--font-heading);
+}
+
+.role-label {
+  display: grid;
+  gap: 8px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.role-panel .role-label {
+  margin-bottom: -8px;
+}
+
+.role-fieldset {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.role-fieldset legend {
+  padding: 0 8px;
+  font-weight: 600;
+}
+
+.role-fieldset label,
+.role-label:has(input[type="checkbox"]) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.role-textarea {
+  min-height: 112px;
+  padding: 12px 16px;
+  resize: vertical;
+}
+
+.role-primary-action {
+  margin-top: 8px;
+}
+
+.role-note {
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  background: var(--soft-yellow);
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+.role-copy {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.role-error {
+  color: var(--error-red);
+}
+
+.role-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.role-grid .card {
+  padding: 20px;
+}
+
+.role-earnings-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.role-earnings-grid .card {
+  display: grid;
+  gap: 8px;
+}
+
+.role-earnings-grid strong {
+  font: 700 28px/1.2 var(--font-heading);
+}
+
+.role-upload-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.role-upload-grid label {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px dashed var(--deep-rose);
+  border-radius: var(--radius);
+  background: #FFF9FA;
+  font-weight: 600;
+}
+
+.role-upload-grid input {
+  max-width: 100%;
+}
+
+.role-preview-card {
+  padding: 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  box-shadow: none;
+}
+
+.role-preview-card h2 {
+  margin: 0 0 8px;
+  font: 700 22px/1.2 var(--font-heading);
+}
+
+.role-preview-card p {
+  margin: 10px 0;
+  line-height: 1.5;
+}
+
+.role-avatar {
+  width: 96px;
+  height: 120px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--soft-pink);
+  font-size: 32px;
+}
+
+.role-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.role-badge {
+  display: inline-flex;
+  padding: 5px 10px;
+  border-radius: var(--radius);
+  background: var(--soft-pink);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.role-stepper {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding: 12px 0;
+}
+
+.role-step {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.role-step span {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+}
+
+.role-step.complete span {
+  border-color: var(--success-green);
+  background: #E4F3EE;
+  color: var(--success-green);
+}
+
+.role-actions,
+.role-calendar-controls,
+.role-filter-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.role-calendar-controls {
+  justify-content: space-between;
+}
+
+.role-calendar-controls h2 {
+  margin: 0 auto;
+  font: 700 20px/1.2 var(--font-heading);
+}
+
+.role-calendar {
+  padding: 16px;
+  box-shadow: none;
+}
+
+.role-calendar-weekdays,
+.role-calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+  text-align: center;
+}
+
+.role-calendar-weekdays {
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.role-calendar-day {
+  min-height: 64px;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  background: var(--cream);
+  color: var(--ink);
+}
+
+.role-calendar-day.has-session {
+  border-color: var(--deep-rose);
+  background: var(--soft-pink);
+}
+
+.role-calendar-day small {
+  display: block;
+  margin-top: 4px;
+  font-size: 10px;
+}
+
+.role-list {
+  display: grid;
+  gap: 12px;
+}
+
+.role-list-item {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--ink);
+  text-align: left;
+}
+
+.role-list-item p,
+.role-list-item small {
+  display: block;
+  margin: 5px 0 0;
+  color: var(--muted);
+}
+
+.role-applicant-row {
+  width: 100%;
+  cursor: pointer;
+  font: inherit;
+}
+
+.role-applicant-row:hover {
+  border-color: var(--deep-rose);
+}
+
+.role-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.role-tabs .active {
+  background: var(--soft-pink);
+}
+
+.role-filter-row .input-field {
+  flex: 1 1 220px;
+}
+
+.role-review-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.role-review-grid .card {
+  padding: 20px;
+  overflow-wrap: anywhere;
+}
+
+.role-modal-layer {
+  position: fixed;
+  z-index: 1200;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(45, 42, 46, 0.48);
+}
+
+.role-modal-layer[hidden] {
+  display: none;
+}
+
+.role-modal-card {
+  position: relative;
+  width: min(100%, 560px);
+  max-height: min(90vh, 760px);
+  overflow: auto;
+  padding: 28px;
+  display: grid;
+  gap: 16px;
+}
+
+.role-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--ink);
+  font-size: 28px;
+  cursor: pointer;
+}
+
+.role-hotline-list {
+  display: grid;
+  gap: 8px;
+}
+
+.role-hotline-list a {
+  padding: 12px 14px;
+  display: grid;
+  gap: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.role-hotline-list a strong {
+  color: var(--deep-rose);
+  font-size: 20px;
+}
+
+.role-hotline-list a span {
+  color: var(--muted);
+}
+
+.role-viewfinder {
+  min-height: 260px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, #FBE3E8, #FFF3D6);
+  color: var(--ink);
+}
+
+.role-viewfinder strong {
+  font: 700 22px var(--font-heading);
+}
+
+.role-welcome-links {
+  max-width: 1120px;
+  margin: 24px auto 40px;
+  padding: 0 24px;
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+}
+
+.role-welcome-links a {
+  color: var(--deep-rose);
+}
+
+.role-bottom-nav {
+  display: none;
+}
+
+.bottom-nav {
+  position: fixed;
+  z-index: 900;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  min-height: 64px;
+  padding: 4px 8px env(safe-area-inset-bottom, 4px);
+  align-items: center;
+  justify-content: space-around;
+  border-top: 1px solid var(--border);
+  background: var(--white);
+}
+
+.bottom-nav-item {
+  min-width: 56px;
+  min-height: 48px;
+  padding: 4px 8px;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--ink);
+  font: 500 11px/1.2 var(--font-body);
+}
+
+.bottom-nav-item.active,
+.bottom-nav-item[aria-current="page"] {
+  background: var(--soft-pink);
+  color: var(--deep-rose);
+}
+
+.role-bottom-nav.visible {
+  position: fixed;
+  z-index: 900;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  min-height: 64px;
+  padding: 4px 8px env(safe-area-inset-bottom, 4px);
+  align-items: center;
+  justify-content: space-around;
+  border-top: 1px solid var(--border);
+  background: var(--white);
+}
+
+.role-bottom-nav button {
+  min-width: 54px;
+  min-height: 48px;
+  padding: 4px;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--ink);
+}
+
+.role-bottom-nav button span {
+  font-size: 11px;
+}
+
+.role-bottom-nav button[aria-current="page"] {
+  background: var(--soft-pink);
+  color: var(--deep-rose);
+}
+
+.global-sos-button {
+  position: fixed;
+  z-index: 950;
+  right: 24px;
+  bottom: 24px;
+  width: 64px;
+  height: 64px;
+  display: none;
+  align-content: center;
+  justify-items: center;
+  border: 2px solid #FFFFFF;
+  border-radius: 50%;
+  background: var(--error-red);
+  color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(45, 42, 46, 0.2);
+  cursor: pointer;
+}
+
+.global-sos-button.visible {
+  display: grid;
+}
+
+.global-sos-button span {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.global-sos-button strong {
+  font-size: 12px;
+}
+
+.role-chat-perspective {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.role-drawer-report[hidden],
+.role-sitter-link[hidden],
+.role-admin-link[hidden],
+#drawerBookingsItem[hidden],
+#drawerMenu [data-drawer-route="find"][hidden] {
+  display: none;
+}
+
+.role-modal-open {
+  overflow: hidden;
+}
+
+@media (min-width: 1024px) {
+  .bottom-nav {
+    display: none !important;
+  }
+
+  body.role-desktop-sidebar .nav-drawer {
+    top: 64px;
+    width: 264px;
+    height: calc(100vh - 64px);
+    padding: 20px 16px;
+    border-radius: 0;
+    transform: none;
+    box-shadow: none;
+  }
+
+  body.role-desktop-sidebar .drawer-overlay,
+  body.role-desktop-sidebar .drawer-close,
+  body.role-desktop-sidebar .hamburger-btn {
+    display: none !important;
+  }
+
+  body.role-desktop-sidebar #appContainer {
+    margin-left: 264px;
+  }
+
+  body.role-desktop-sidebar .nav-drawer.active {
+    transform: none;
+  }
+}
+
+@media (max-width: 1023px) {
+  .role-bottom-nav.visible {
+    display: flex;
+  }
+}
+
+@media (max-width: 640px) {
+  .role-page {
+    width: calc(100% - 40px);
+    margin: 24px auto 88px;
+  }
+
+  .role-page-heading {
+    min-height: 96px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .role-page-heading h1 {
+    font-size: 30px;
+  }
+
+  .role-panel {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .role-panel > h2,
+  .role-modal-card h2 {
+    font-size: 22px;
+  }
+
+  .role-grid,
+  .role-upload-grid,
+  .role-review-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .role-earnings-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .role-list-item {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .role-modal-card {
+    padding: 24px 16px;
+  }
+
+  .role-welcome-links {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .global-sos-button {
+    right: 16px;
+    bottom: 76px;
+    width: 56px;
+    height: 56px;
+  }
 }
 
 /* ==========================================================================
@@ -3892,8 +4557,8 @@ label {
 
 .trial-option-label input {
   accent-color: var(--cherry-pink);
-  width: 18px;
-  height: 18px;
+  width: 24px;
+  height: 24px;
   cursor: pointer;
 }
 
@@ -3911,6 +4576,10 @@ label {
   font-size: 14px;
   color: var(--muted);
   margin-bottom: 8px;
+}
+
+.price-breakdown-row[hidden] {
+  display: none;
 }
 
 .price-breakdown-divider {
@@ -7974,4 +8643,406 @@ body,
   margin-inline-end: 4px;
   vertical-align: -0.12em;
   color: var(--deep-rose);
+}
+
+/* Booking prototype flow */
+.prototype-page-banner {
+  height: 120px;
+  background: linear-gradient(180deg, var(--lemon-yellow) 0%, var(--cherry-pink) 100%);
+}
+
+.prototype-page-banner[hidden],
+.prototype-nav[hidden],
+.cancel-booking-modal[hidden] {
+  display: none;
+}
+
+.prototype-banner-inner {
+  width: min(1120px, calc(100% - 40px));
+  height: 100%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.prototype-banner-inner h1 {
+  margin: 0;
+  color: var(--ink);
+  font: 700 56px/62px var(--font-heading);
+}
+
+.prototype-back-button {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  border: 1px solid var(--deep-rose);
+  border-radius: var(--radius);
+  background: var(--white);
+  color: var(--deep-rose);
+  font: 600 24px/1 var(--font-body);
+  cursor: pointer;
+}
+
+.prototype-flow-active {
+  background: var(--cream);
+  padding-bottom: 72px;
+}
+
+.prototype-flow-active #bottomNav {
+  display: none !important;
+}
+
+.prototype-flow-active .content-section {
+  padding: 48px 0;
+}
+
+.prototype-flow-active #screenBookingDetails .booking-details-card > h1,
+.prototype-flow-active #screenPayment .payment-card > h1 {
+  display: none;
+}
+
+.prototype-flow-active .booking-details-container,
+.prototype-flow-active .status-container,
+.prototype-flow-active .payment-container,
+.prototype-flow-active .confirmed-container,
+.prototype-flow-active .reschedule-container {
+  max-width: 560px;
+}
+
+.prototype-flow-active .booking-details-card,
+.prototype-flow-active .status-card,
+.prototype-flow-active .payment-card,
+.prototype-flow-active .confirmed-card,
+.prototype-flow-active .reschedule-card,
+.prototype-flow-active .price-breakdown-card,
+.prototype-flow-active .confirmed-receipt {
+  padding: 24px;
+  border-radius: var(--radius);
+  box-shadow: var(--card-shadow);
+}
+
+.booking-status-summary {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+  margin: 16px 0;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--white);
+  color: var(--ink);
+  text-align: left;
+}
+
+.booking-status-summary > :last-child {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.demo-controls-box {
+  padding-top: 24px;
+}
+
+.demo-btn-group .btn {
+  min-height: 44px;
+  border-radius: var(--radius);
+  font-size: 14px;
+}
+
+.payment-summary-box {
+  gap: 16px;
+}
+
+.payment-summary-box > span {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.payment-sitter-summary {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.payment-bank-label {
+  display: block;
+  margin-top: 12px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.payment-bank-select {
+  min-height: 44px;
+  margin-top: 4px;
+  background: var(--white);
+}
+
+#btnSimulatePaymentFailure {
+  margin-top: 12px;
+}
+
+.reschedule-card {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.reschedule-card > .eyebrow,
+.reschedule-card > .section-heading,
+.reschedule-card > .section-subtext {
+  margin: 0;
+}
+
+.reschedule-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--cream);
+}
+
+.reschedule-form .card-title,
+.cancel-booking-section .card-title {
+  margin: 0;
+}
+
+.cancel-booking-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+
+.btn-cancel-outline {
+  min-height: 48px;
+  padding: 12px 24px;
+  border: 2px solid var(--error-red);
+  border-radius: var(--radius);
+  background: var(--white);
+  color: var(--error-red);
+  font: 600 16px/24px var(--font-body);
+  cursor: pointer;
+}
+
+.btn-cancel-outline:hover {
+  background: var(--soft-pink);
+}
+
+.cancel-booking-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(59, 42, 53, 0.35);
+}
+
+.cancel-modal-card {
+  width: min(100%, 480px);
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--white);
+  box-shadow: var(--card-shadow);
+}
+
+.cancel-modal-card p {
+  color: var(--muted);
+  line-height: 24px;
+}
+
+.cancel-modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.prototype-match-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.prototype-match-actions p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.home-booking-id {
+  margin: 0 0 16px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.next-booking-actions {
+  flex-wrap: wrap;
+}
+
+.prototype-nav {
+  position: fixed;
+  z-index: 1000;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  min-height: 64px;
+  display: flex;
+  justify-content: center;
+  border-top: 1px solid var(--border);
+  background: var(--white);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.prototype-nav button {
+  min-width: 88px;
+  min-height: 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 4px 12px;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--white);
+  color: var(--ink);
+  font: 600 16px/20px var(--font-body);
+  cursor: pointer;
+}
+
+.prototype-nav button span {
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.prototype-nav button:hover,
+.prototype-nav button.active {
+  background: var(--soft-pink);
+  color: var(--deep-rose);
+}
+
+.prototype-back-button:focus-visible,
+.prototype-nav button:focus-visible {
+  outline: 3px solid var(--deep-rose);
+  outline-offset: 2px;
+}
+
+.prototype-flow-active .topbar-get-started-btn {
+  display: none !important;
+}
+
+.prototype-flow-active .topbar-login-link {
+  min-height: 44px;
+  padding: 8px 16px;
+  border: 2px solid var(--deep-rose);
+  border-radius: var(--radius);
+  background: var(--white);
+  color: var(--deep-rose);
+  font: 600 16px/24px var(--font-body);
+}
+
+.prototype-flow-active .topbar-login-link:hover {
+  background: var(--soft-pink);
+}
+
+.prototype-flow-active .price-breakdown-card {
+  background: var(--white);
+}
+
+.prototype-flow-active #screenMatches > .gradient-banner {
+  display: none;
+}
+
+.prototype-flow-active #screenMatches .content-section {
+  padding-top: 32px;
+}
+
+.prototype-flow-active .next-booking-card {
+  border: 1px solid var(--border);
+  box-shadow: var(--card-shadow);
+}
+
+@media (max-width: 640px) {
+  .prototype-page-banner {
+    height: 96px;
+  }
+
+  .prototype-banner-inner {
+    width: calc(100% - 40px);
+    gap: 16px;
+  }
+
+  .prototype-banner-inner h1 {
+    font-size: 32px;
+    line-height: 38px;
+  }
+
+  .prototype-flow-active .content-section {
+    padding: 32px 0;
+  }
+
+  .prototype-flow-active .booking-details-card,
+  .prototype-flow-active .status-card,
+  .prototype-flow-active .payment-card,
+  .prototype-flow-active .confirmed-card,
+  .prototype-flow-active .reschedule-card {
+    padding: 16px;
+  }
+
+  .prototype-flow-active .price-breakdown-card,
+  .prototype-flow-active .confirmed-receipt,
+  .reschedule-form {
+    padding: 16px;
+  }
+
+  .prototype-flow-active .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .prototype-match-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .next-booking-actions,
+  .cancel-modal-actions {
+    flex-direction: column;
+  }
+
+  .next-booking-actions .btn,
+  .cancel-modal-actions .btn {
+    width: 100%;
+  }
+
+  .prototype-nav {
+    min-height: 56px;
+    justify-content: flex-start;
+    overflow-x: auto;
+  }
+
+  .prototype-nav button {
+    min-width: 0;
+    min-height: 56px;
+    flex: 1 1 0;
+    padding: 2px;
+    font-size: 14px;
+  }
+
+  .prototype-nav button span {
+    font-size: 10px;
+    line-height: 14px;
+  }
 }

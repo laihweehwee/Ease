@@ -68,10 +68,10 @@ document.addEventListener('DOMContentLoaded', () => {
     bookingIntent: true, // true if booking, false if messaging
     bookingData: {
       childName: 'Liam',
-      date: defaultBookingDateValue,
+      date: '2026-11-20',
       time: '14:00',
       hours: 4,
-      location: '50450 Kuala Lumpur',
+      location: 'Bangsar, Kuala Lumpur',
       specialReq: '',
       extraNotes: '',
       isTrial: false,
@@ -85,6 +85,13 @@ document.addEventListener('DOMContentLoaded', () => {
     selectedPaymentMethod: 'fpx',
   };
 
+  const sampleJobDateLabel = defaultBookingDate.toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' });
+  let savedJobStatuses = {};
+  try {
+    savedJobStatuses = JSON.parse(localStorage.getItem('ease_sitter_job_statuses') || '{}');
+  } catch (error) {
+    console.warn('Could not load sitter job statuses', error);
+  }
   const sampleJobRequests = [
     {
       id: 'job-001',
@@ -92,13 +99,16 @@ document.addEventListener('DOMContentLoaded', () => {
       area: 'Bangsar, Kuala Lumpur',
       childrenCount: '1 child',
       childAges: '2 years old',
-      date: 'Tomorrow',
+      date: sampleJobDateLabel,
+      dateKey: defaultBookingDateValue,
       time: '9:00 AM – 1:00 PM',
+      startTime: '09:00 AM',
+      endTime: '01:00 PM',
       location: 'Bangsar, Kuala Lumpur',
       tasks: 'Prepare snacks, playtime, and follow the nap routine.',
       specialNeeds: 'No special needs noted.',
       pay: 25,
-      status: 'available',
+      status: savedJobStatuses['job-001'] || 'available',
     },
     {
       id: 'job-002',
@@ -106,13 +116,16 @@ document.addEventListener('DOMContentLoaded', () => {
       area: 'Mont Kiara, Kuala Lumpur',
       childrenCount: '2 children',
       childAges: '3 and 6 years old',
-      date: 'Saturday',
-      time: '2:00 PM – 6:00 PM',
+      date: sampleJobDateLabel,
+      dateKey: defaultBookingDateValue,
+      time: '11:00 AM – 3:00 PM',
+      startTime: '11:00 AM',
+      endTime: '03:00 PM',
       location: 'Mont Kiara, Kuala Lumpur',
       tasks: 'Prepare a light meal, supervise play, and help with reading.',
       specialNeeds: 'No special needs noted.',
       pay: 28,
-      status: 'available',
+      status: savedJobStatuses['job-002'] || 'available',
     },
   ];
   let selectedJobRequestId = null;
@@ -181,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (state.children.length) state.child = state.children[0];
   ensureChildIds(state.children);
 
-  const bookingStatuses = ['waiting', 'accepted', 'declined', 'paid', 'confirmed', 'cancelled', 'completed'];
+  const bookingStatuses = ['waiting', 'accepted', 'paid', 'confirmed', 'in_progress', 'completed', 'declined', 'cancelled'];
   let activeBookingsTab = 'upcoming';
   let bookings = [];
   try {
@@ -288,7 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const today = getTodayDateValue();
     return bookings
       .filter(booking =>
-        ['waiting', 'accepted', 'paid', 'confirmed'].includes(booking.status) &&
+        ['waiting', 'accepted', 'paid', 'confirmed', 'in_progress'].includes(booking.status) &&
         booking.date >= today
       )
       .sort((a, b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime));
@@ -727,15 +740,33 @@ document.addEventListener('DOMContentLoaded', () => {
     bookingStatus: document.getElementById('screenBookingStatus'),
     payment: document.getElementById('screenPayment'),
     bookingConfirmed: document.getElementById('screenBookingConfirmed'),
+    reschedule: document.getElementById('screenReschedule'),
     parentHome: document.getElementById('screenParentHome'),
     babysitterHome: document.getElementById('screenBabysitterHome'),
     availableJobs: document.getElementById('screenAvailableJobs'),
     requestDetail: document.getElementById('screenRequestDetail'),
     parentProfile: document.getElementById('screenParentProfile'),
     chat: document.getElementById('screenChat'),
+    ...(window.easeAdditionalScreens || {}),
   };
+  const combinedPaymentCard = document.querySelector('#screenPayment .payment-card');
+  const acceptedStatusPanel = document.getElementById('statusStateAccepted');
+  if (combinedPaymentCard && acceptedStatusPanel) acceptedStatusPanel.appendChild(combinedPaymentCard);
 
   const hamburgerBtn = document.getElementById('hamburgerBtn');
+  const prototypeNav = document.getElementById('prototypeNav');
+  const prototypePageBanner = document.getElementById('prototypePageBanner');
+  const prototypePageTitle = document.getElementById('prototypePageTitle');
+  const prototypeScreens = ['bookingDetails', 'bookingStatus', 'payment', 'bookingConfirmed', 'reschedule', 'parentHome', 'matches'];
+  const prototypeScreenTitles = {
+    bookingDetails: 'Booking Details',
+    bookingStatus: 'Booking Status',
+    payment: 'Payment',
+    bookingConfirmed: "You're all set!",
+    reschedule: 'Reschedule / Cancel',
+    parentHome: 'Parent Home',
+    matches: 'Top Matches',
+  };
   const navDrawer = document.getElementById('navDrawer');
   const drawerOverlay = document.getElementById('drawerOverlay');
   const drawerCloseBtn = document.getElementById('drawerCloseBtn');
@@ -773,7 +804,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       saveBookings();
     }
-    if (demoControls) demoControls.hidden = !demoModeEnabled;
+    if (demoControls) demoControls.hidden = false;
     if (demoModeBadge) demoModeBadge.hidden = !demoModeEnabled;
     const sampleButton = document.getElementById('btnLoadSampleBookings');
     if (demoModeEnabled && bookingDemoActions && !sampleButton) {
@@ -869,19 +900,50 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function showScreen(screenId) {
     if (!screens[screenId]) return;
+    if (screenId === 'payment') {
+      state.bookingStatusState = 'accepted';
+      screenId = 'bookingStatus';
+    }
     if (['bookingStatus', 'payment', 'bookingConfirmed'].includes(screenId)) {
       const activeBooking = getActiveBooking() || getLatestBooking();
       if (activeBooking) {
         syncBookingToState(activeBooking);
-        if (screenId === 'bookingStatus' && ['paid', 'confirmed', 'completed'].includes(activeBooking.status)) {
-          screenId = 'bookings';
-        }
-      } else {
-        screenId = 'bookings';
       }
     }
 
-    const loggedInOnlyScreens = ['addChild', 'bookingDetails', 'bookingStatus', 'payment', 'bookingConfirmed', 'parentHome', 'parentProfile', 'chat', 'review'];
+    const loggedInOnlyScreens = ['addChild', 'bookingStatus', 'payment', 'bookingConfirmed', 'parentHome', 'parentProfile', 'chat', 'review',
+      'sitterDocuments', 'sitterApplication', 'sitterSchedule', 'sitterEarnings'];
+    const roleRequired = {
+      bookings: 'parent',
+      parentHome: 'parent',
+      parentProfile: 'parent',
+      reschedule: 'parent',
+      review: 'parent',
+      sitterDocuments: 'babysitter',
+      sitterApplication: 'babysitter',
+      sitterHome: 'babysitter',
+      babysitterHome: 'babysitter',
+      sitterSchedule: 'babysitter',
+      sitterEarnings: 'babysitter',
+      availableJobs: 'babysitter',
+      requestDetail: 'babysitter',
+      adminDashboard: 'admin',
+      adminReview: 'admin',
+    }[screenId];
+    if (roleRequired && (!state.isLoggedIn || state.user.role !== roleRequired)) {
+      state.authReturnScreen = screenId;
+      state.bookingIntent = false;
+      if (roleRequired === 'admin' && !state.isLoggedIn) {
+        screenId = 'adminLogin';
+      } else if (state.isLoggedIn) {
+        showToast(`Please log in as a ${roleRequired === 'admin' ? 'platform admin' : 'babysitter'} to continue.`);
+        screenId = 'welcome';
+      } else {
+        setAuthMode('signup', roleRequired === 'babysitter' ? 'babysitter' : null);
+        screenId = 'auth';
+      }
+    }
+
     if (!state.isLoggedIn && loggedInOnlyScreens.includes(screenId)) {
       state.bookingIntent = !['parentHome', 'parentProfile', 'chat', 'review'].includes(screenId);
       state.authReturnScreen = ['parentHome', 'parentProfile', 'chat', 'review'].includes(screenId) ? screenId : 'booking';
@@ -900,6 +962,16 @@ document.addEventListener('DOMContentLoaded', () => {
     currentScreen = screenId;
 
     window.location.hash = screenId === 'welcome' ? '#/' : `#/${screenId}`;
+    const isPrototypeScreen = prototypeScreens.includes(screenId);
+    document.body.classList.toggle('prototype-flow-active', isPrototypeScreen);
+    if (prototypeNav) prototypeNav.hidden = !isPrototypeScreen;
+    if (prototypePageBanner) prototypePageBanner.hidden = !isPrototypeScreen;
+    if (prototypePageTitle && isPrototypeScreen) prototypePageTitle.textContent = prototypeScreenTitles[screenId];
+    document.querySelectorAll('[data-prototype-screen]').forEach(button => {
+      button.classList.toggle('active', button.dataset.prototypeScreen === screenId);
+      if (button.dataset.prototypeScreen === screenId) button.setAttribute('aria-current', 'page');
+      else button.removeAttribute('aria-current');
+    });
     hamburgerBtn.style.display = 'flex';
     if (topbarLoginBtn) topbarLoginBtn.style.display = state.isLoggedIn ? 'none' : '';
     if (topbarGetStartedBtn) topbarGetStartedBtn.style.display = state.isLoggedIn ? 'none' : '';
@@ -966,6 +1038,8 @@ document.addEventListener('DOMContentLoaded', () => {
       setupPaymentScreen();
     } else if (screenId === 'bookingConfirmed') {
       setupBookingConfirmed();
+    } else if (screenId === 'reschedule') {
+      setupRescheduleScreen();
     } else if (screenId === 'parentHome') {
       setupParentHome();
     } else if (screenId === 'parentProfile') {
@@ -978,7 +1052,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     updateDemoBadgePosition();
+    window.dispatchEvent(new CustomEvent('ease:screenchange', {
+      detail: { screenId, role: state.user.role, isLoggedIn: state.isLoggedIn },
+    }));
     saveState();
+  }
+
+  if (prototypeNav) {
+    prototypeNav.addEventListener('click', event => {
+      const button = event.target.closest('[data-prototype-screen]');
+      if (button) showScreen(button.dataset.prototypeScreen);
+    });
+  }
+
+  const prototypeBackButton = document.getElementById('prototypeBackButton');
+  if (prototypeBackButton) {
+    prototypeBackButton.addEventListener('click', () => {
+      if (currentScreen === 'reschedule') showScreen('parentHome');
+      else if (currentScreen === 'bookingStatus') showScreen('bookingDetails');
+      else if (currentScreen === 'payment') showScreen('bookingStatus');
+      else if (currentScreen === 'bookingConfirmed') showScreen('payment');
+      else showScreen('bookingDetails');
+    });
+  }
+
+  const btnMatchesBackToBooking = document.getElementById('btnMatchesBackToBooking');
+  if (btnMatchesBackToBooking) {
+    btnMatchesBackToBooking.addEventListener('click', () => showScreen('bookingDetails'));
   }
 
   // Topbar Logo goes to Welcome / Home
@@ -1090,7 +1190,13 @@ document.addEventListener('DOMContentLoaded', () => {
       if (card.id === 'roleNeedSitterCard') {
         showScreen('q1');
       } else {
-        showScreen('babysitterHome');
+          if (state.isLoggedIn) {
+            if (state.user.role === 'babysitter') showScreen('sitterHome');
+            else showToast('Log out of your current account to start a babysitter profile.');
+          } else {
+            state.user.role = 'babysitter';
+            showScreen('sitterQ1');
+          }
       }
     });
     card.addEventListener('keydown', (e) => {
@@ -1191,7 +1297,84 @@ document.addEventListener('DOMContentLoaded', () => {
         showScreen('availableJobs');
         return;
       }
+      if (button.id === 'btnAcceptRequest' && (!state.isLoggedIn || state.user.role !== 'babysitter')) {
+        state.authReturnScreen = 'requestDetail';
+        state.bookingIntent = false;
+        if (state.isLoggedIn) {
+          showToast('Log in with a babysitter account to accept this job.');
+          return;
+        }
+        setAuthMode('signup', 'babysitter');
+        showScreen('auth');
+        return;
+      }
+      if (button.id === 'btnAcceptRequest') {
+        const toMinutes = value => {
+          if (!value) return null;
+          const text = String(value).trim();
+          const match = text.match(/^(\d{1,2}):(\d{2})(?:\s*(AM|PM))?$/i);
+          if (!match) return null;
+          let hour = Number(match[1]);
+          const minute = Number(match[2]);
+          if (match[3]) {
+            const meridiem = match[3].toUpperCase();
+            if (meridiem === 'PM' && hour < 12) hour += 12;
+            if (meridiem === 'AM' && hour === 12) hour = 0;
+          }
+          return hour * 60 + minute;
+        };
+        let acceptedJobs = [];
+        let storedBookings = [];
+        try {
+          acceptedJobs = JSON.parse(localStorage.getItem('ease_sitter_jobs') || '[]');
+          storedBookings = JSON.parse(localStorage.getItem('easeBookings') || '[]');
+        } catch (error) {
+          console.error('Could not check the sitter schedule', error);
+          showToast('We could not check your schedule. Please try again.');
+          return;
+        }
+        const proposedStart = toMinutes(request.startTime);
+        const proposedEnd = toMinutes(request.endTime);
+        const overlaps = item => {
+          if (item.dateKey !== request.dateKey && item.date !== request.dateKey) return false;
+          const start = toMinutes(item.startTime || item.time);
+          const end = toMinutes(item.endTime) ?? (start == null ? null : start + Number(item.hours || 4) * 60);
+          return start != null && end != null && proposedStart < end && proposedEnd > start;
+        };
+        if (acceptedJobs.some(item => item.status === 'accepted' && overlaps(item)) ||
+            storedBookings.some(item => ['confirmed', 'paid'].includes(item.status) && overlaps(item))) {
+          window.alert('Schedule Conflict: You already have a confirmed booking on this date and time. You cannot accept overlapping jobs.');
+          return;
+        }
+        acceptedJobs.push({
+          id: request.id,
+          dateKey: request.dateKey,
+          startTime: request.startTime,
+          endTime: request.endTime,
+          time: request.time,
+          parent: request.parent,
+          location: request.location,
+          child: request.childAges,
+          amount: Number(request.pay) * 4,
+          status: 'accepted',
+        });
+        try {
+          localStorage.setItem('ease_sitter_jobs', JSON.stringify(acceptedJobs));
+        } catch (error) {
+          console.error('Could not save accepted sitter job', error);
+          showToast('We could not save this job. Please try again.');
+          return;
+        }
+      }
       request.status = button.id === 'btnAcceptRequest' ? 'accepted' : 'declined';
+      savedJobStatuses[request.id] = request.status;
+      try {
+        localStorage.setItem('ease_sitter_job_statuses', JSON.stringify(savedJobStatuses));
+      } catch (error) {
+        console.error('Could not save sitter job status', error);
+        showToast('We could not save this request status.');
+        return;
+      }
       renderAvailableJobs();
       showScreen('availableJobs');
       showToast(`Request ${request.status}.`);
@@ -1215,7 +1398,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   if (profileBtn) {
-    profileBtn.addEventListener('click', () => showScreen('parentProfile'));
+    profileBtn.addEventListener('click', () => {
+      if (state.user.role === 'babysitter') showScreen('sitterHome');
+      else if (state.user.role === 'admin') showScreen('adminDashboard');
+      else showScreen('parentProfile');
+    });
   }
   if (drawerLogoutBtn) {
     drawerLogoutBtn.addEventListener('click', () => {
@@ -2561,11 +2748,17 @@ document.addEventListener('DOMContentLoaded', () => {
     groupParentChildren.style.display = isParent ? 'flex' : 'none';
     authForm.classList.toggle('sitter-mode', isSitter);
 
-    authHeadline.textContent = role
-      ? `Create your ${roleLabel} account`
-      : 'Create your Ease account';
+    authHeadline.textContent = role === 'parent'
+      ? 'Create an account to book'
+      : role === 'babysitter'
+        ? 'Create an account to submit your profile'
+        : 'Create your Ease account';
     authSubtext.hidden = !role;
-    authSubtext.textContent = role ? 'Enter your details below.' : '';
+    authSubtext.textContent = role === 'parent'
+      ? 'Set up your account to book trusted care.'
+      : role === 'babysitter'
+        ? 'Set up your account to submit your profile for review.'
+        : '';
     authRegistrationTitle.textContent = role
       ? `${isParent ? 'Parent' : 'Babysitter'} registration`
       : 'Create your account';
@@ -2624,6 +2817,49 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     clearAuthErrors();
   }
+
+  window.easeApp = {
+    navigate: showScreen,
+    setRoleSession(role, user = {}) {
+      state.user = { ...state.user, ...user, role };
+      setLoggedIn(true);
+      saveState();
+    },
+    beginSignup(role, returnScreen) {
+      if (state.isLoggedIn && state.user.role !== role) setLoggedIn(false);
+      state.authReturnScreen = returnScreen;
+      state.bookingIntent = role === 'parent';
+      state.user.role = role;
+      setAuthMode('signup', role);
+      showScreen('auth');
+    },
+    beginLogin(returnScreen = 'parentHome') {
+      state.authReturnScreen = returnScreen;
+      state.bookingIntent = false;
+      setAuthMode('login');
+      showScreen('auth');
+    },
+    logout() {
+      setLoggedIn(false);
+      state.bookingIntent = false;
+      state.authReturnScreen = 'welcome';
+      saveState();
+      showScreen('welcome');
+    },
+    updateBookingStatus(bookingId, status) {
+      const booking = bookings.find(item => item.id === bookingId);
+      if (!booking) return false;
+      booking.status = status;
+      saveBookings();
+      if (currentScreen === 'bookings') renderBookingsPage();
+      if (currentScreen === 'parentHome') setupParentHome();
+      return true;
+    },
+    getSession() {
+      return { isLoggedIn: state.isLoggedIn, role: state.user.role, user: { ...state.user } };
+    },
+    toast: showToast,
+  };
 
   if (tabSignUp) tabSignUp.addEventListener('click', () => setAuthMode('signup'));
   if (tabLogIn) tabLogIn.addEventListener('click', () => setAuthMode('login'));
@@ -2739,6 +2975,9 @@ document.addEventListener('DOMContentLoaded', () => {
         saveState();
         if (completeSavedMessageIntent()) {
           return;
+        } else if (state.user.role === 'babysitter') {
+          const sitterReturn = ['requestDetail', 'availableJobs', 'sitterHome', 'babysitterHome', 'sitterSchedule', 'sitterEarnings', 'sitterApplication', 'sitterDocuments'];
+          showScreen(sitterReturn.includes(state.authReturnScreen) ? state.authReturnScreen : 'sitterHome');
         } else if (state.authReturnScreen === 'parentHome') {
           showScreen('parentHome');
         } else if (state.authReturnScreen === 'parentProfile') {
@@ -2782,6 +3021,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (completeSavedMessageIntent()) {
         return;
+      } else if (state.user.role === 'babysitter') {
+        showScreen('sitterDocuments');
       } else if (state.authReturnScreen === 'parentHome') {
         showScreen('parentHome');
       } else if (state.authReturnScreen === 'parentProfile') {
@@ -3473,6 +3714,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // --------------------------------------------------------------------------
   // 14. Screen 10: Booking Details
   // --------------------------------------------------------------------------
+  const sampleBookingChildren = [
+    { id: 'sample-aiden', name: 'Aiden', gender: 'Boy', birthDate: '2023-11-24', displayAge: '3 yrs', allergies: 'None', medical: 'None', routine: 'Loves building blocks and bedtime stories.' },
+    { id: 'sample-maya', name: 'Maya', gender: 'Girl', birthDate: '2025-11-24', displayAge: '1 yr', allergies: 'None', medical: 'None', routine: 'Enjoys quiet play and an early bedtime.' },
+  ];
+
   function updateBookingChildSummaryCard(child) {
     const card = document.getElementById('bookingChildSummaryCard');
     const avatarEl = document.getElementById('bookingChildAvatar');
@@ -3509,11 +3755,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function setupBookingDetails() {
     const hasChildren = Array.isArray(state.children) && state.children.length > 0;
-    if (!hasChildren) {
+    if (!hasChildren && !prototypeScreens.includes(currentScreen)) {
       showToast('Please add your child\'s profile before booking.');
       showScreen('addChild');
       return;
     }
+    const children = hasChildren ? state.children : sampleBookingChildren;
 
     const sitter = sittersData[state.selectedSitterId] || sittersData['sarah-lim'];
 
@@ -3527,31 +3774,30 @@ document.addEventListener('DOMContentLoaded', () => {
     if (bookingLocationInput) bookingLocationInput.value = state.bookingData.location || `${state.postcode} Kuala Lumpur`;
 
     if (bookingChildSelect) {
-      // Determine which child should be selected
-      let selectedChild = state.children.find(c => c.id === state.bookingData.childId);
+      let selectedChild = children.find(child => child.id === state.bookingData.childId);
       if (!selectedChild) {
-        selectedChild = state.children[0];
+        selectedChild = children.find(child => child.name === state.bookingData.childName) || children[0];
         state.bookingData.childId = selectedChild.id;
         state.bookingData.childName = selectedChild.name;
         state.bookingData.child = selectedChild;
       }
 
-      bookingChildSelect.innerHTML = state.children.map(c => {
-        const ageStr = formatChildAge(c.birthDate);
-        const isSel = c.id === selectedChild.id ? 'selected' : '';
-        return `<option value="${c.id}" ${isSel}>${escapeHtml(c.name)} (${ageStr || c.gender})</option>`;
+      bookingChildSelect.innerHTML = children.map(child => {
+        const ageLabel = child.displayAge || formatChildAge(child.birthDate);
+        const isSelected = child.id === selectedChild.id ? 'selected' : '';
+        return `<option value="${escapeHtml(child.id)}" ${isSelected}>${escapeHtml(child.name)} (${escapeHtml(ageLabel || child.gender)})</option>`;
       }).join('');
 
       updateBookingChildSummaryCard(selectedChild);
 
       bookingChildSelect.onchange = () => {
         const chosenId = bookingChildSelect.value;
-        const chosenChild = state.children.find(c => c.id === chosenId) || state.children[0];
+        const chosenChild = children.find(child => child.id === chosenId) || children[0];
         if (chosenChild) {
           state.bookingData.childId = chosenChild.id;
           state.bookingData.childName = chosenChild.name;
           state.bookingData.child = chosenChild;
-          state.child = chosenChild;
+          if (hasChildren) state.child = chosenChild;
           updateBookingChildSummaryCard(chosenChild);
           saveState();
         }
@@ -3595,10 +3841,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const isTrial = trialOption ? trialOption.checked : false;
     const rate = sitter.price;
 
-    let totalHours = hours;
-    if (isTrial) totalHours += 1; // 1-hour trial session
-
-    const subtotal = totalHours * rate;
+    const baseSubtotal = hours * rate;
+    const trialAmount = isTrial ? rate : 0;
+    const subtotal = baseSubtotal + trialAmount;
     const fee = 5;
     const total = subtotal + fee;
 
@@ -3606,18 +3851,19 @@ document.addEventListener('DOMContentLoaded', () => {
     state.bookingData.isTrial = isTrial;
     state.bookingData.rate = rate;
     state.bookingData.subtotal = subtotal;
+    state.bookingData.fee = fee;
     state.bookingData.total = total;
 
     const priceBreakdownHours = document.getElementById('priceBreakdownHours');
     const priceBreakdownBase = document.getElementById('priceBreakdownBase');
+    const priceBreakdownTrial = document.getElementById('priceBreakdownTrial');
+    const priceBreakdownTrialAmount = document.getElementById('priceBreakdownTrialAmount');
     const priceBreakdownTotal = document.getElementById('priceBreakdownTotal');
 
-    if (priceBreakdownHours) {
-      priceBreakdownHours.textContent = isTrial
-        ? `${hours} hrs + 1 hr trial (${totalHours} hrs × RM ${rate}/hr)`
-        : `${hours} hours × RM ${rate}/hr`;
-    }
-    if (priceBreakdownBase) priceBreakdownBase.textContent = `RM ${subtotal}`;
+    if (priceBreakdownHours) priceBreakdownHours.textContent = `${hours} hours × RM ${rate}/hr`;
+    if (priceBreakdownBase) priceBreakdownBase.textContent = `RM ${baseSubtotal}`;
+    if (priceBreakdownTrial) priceBreakdownTrial.hidden = !isTrial;
+    if (priceBreakdownTrialAmount) priceBreakdownTrialAmount.textContent = `RM ${trialAmount}`;
     if (priceBreakdownTotal) priceBreakdownTotal.textContent = `RM ${total}`;
   }
 
@@ -3635,13 +3881,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const bookingChildSelect = document.getElementById('bookingChildSelect');
       const selectedId = bookingChildSelect ? bookingChildSelect.value : state.bookingData.childId;
-      const selectedChild = state.children.find(c => c.id === selectedId) || state.children[0] || state.child;
+      const bookingChildren = state.children.length ? state.children : sampleBookingChildren;
+      const selectedChild = bookingChildren.find(child => child.id === selectedId) || bookingChildren[0] || state.child;
 
       if (selectedChild) {
         state.bookingData.childId = selectedChild.id;
         state.bookingData.childName = selectedChild.name;
         state.bookingData.child = selectedChild;
-        state.child = selectedChild;
+        if (state.children.length) state.child = selectedChild;
       }
 
       state.bookingData.date = document.getElementById('bookingDateInput').value || defaultBookingDateValue;
@@ -3649,6 +3896,20 @@ document.addEventListener('DOMContentLoaded', () => {
       state.bookingData.location = document.getElementById('bookingLocationInput').value || '50450 Kuala Lumpur';
       state.bookingData.specialReq = document.getElementById('bookingSpecialReq').value;
       state.bookingData.extraNotes = document.getElementById('bookingExtraNotes').value;
+
+      if (!state.isLoggedIn || state.user.role !== 'parent') {
+        state.bookingIntent = true;
+        state.authReturnScreen = 'booking';
+        saveState();
+        if (state.isLoggedIn) {
+          showToast('A parent account is required to send a booking request.');
+          return;
+        }
+        setAuthMode('signup', 'parent');
+        showScreen('auth');
+        showToast('Create an account or log in to send your booking request.');
+        return;
+      }
 
       const sitter = sittersData[state.selectedSitterId] || sittersData['sarah-lim'];
       const bookingHours = state.bookingData.hours + (state.bookingData.isTrial ? 1 : 0);
@@ -3703,14 +3964,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const sitterNameWaiting = document.getElementById('statusSitterNameWaiting');
     const statusAcceptedHeadline = document.getElementById('statusAcceptedHeadline');
     const waitingDescription = document.querySelector('#statusStateWaiting .section-subtext');
+    const statusSummarySitter = document.getElementById('statusSummarySitter');
+    const statusSummaryDate = document.getElementById('statusSummaryDate');
+    const statusSummaryTotal = document.getElementById('statusSummaryTotal');
 
     if (sitterNameWaiting) sitterNameWaiting.textContent = sitter.name;
     if (waitingDescription) waitingDescription.innerHTML = `Waiting for <strong id="statusSitterNameWaiting">${escapeHtml(sitter.name)}</strong> to accept your booking for ${escapeHtml(formatBookingDate(state.bookingData.date))}.`;
+    if (statusSummarySitter) statusSummarySitter.textContent = sitter.name;
+    if (statusSummaryDate) statusSummaryDate.textContent = formatBookingDate(state.bookingData.date);
+    if (statusSummaryTotal) statusSummaryTotal.textContent = `RM ${state.bookingData.total || 105}`;
     if (statusAcceptedHeadline) statusAcceptedHeadline.textContent = `${sitter.name.split(' ')[0]} accepted.`;
 
     if (panelWaiting) panelWaiting.style.display = statusState === 'waiting' ? 'flex' : 'none';
     if (panelAccepted) panelAccepted.style.display = statusState === 'accepted' ? 'flex' : 'none';
     if (panelDeclined) panelDeclined.style.display = statusState === 'declined' ? 'flex' : 'none';
+    if (statusState === 'accepted') setupPaymentScreen();
 
     // Countdown Timer in Waiting state
     clearInterval(waitingCountdownInterval);
@@ -3760,7 +4028,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (btnPayNow) {
     btnPayNow.addEventListener('click', () => {
-      showScreen('payment');
+      showScreen('bookingStatus');
     });
   }
 
@@ -3785,16 +4053,21 @@ document.addEventListener('DOMContentLoaded', () => {
   // --------------------------------------------------------------------------
   function setupPaymentScreen() {
     const totalAmountDisplay = document.querySelector('.payment-total-amount');
+    const sitterSummaryDisplay = document.getElementById('paymentSitterSummary');
     const btnSubmitPayment = document.getElementById('btnSubmitPayment');
+    const btnSimulatePaymentFailure = document.getElementById('btnSimulatePaymentFailure');
     const btnRetryPayment = document.getElementById('btnRetryPayment');
     const paymentErrorBox = document.getElementById('paymentErrorBox');
 
     const total = state.bookingData.total || 105;
+    const sitter = sittersData[state.selectedSitterId] || sittersData['sarah-lim'];
     if (totalAmountDisplay) totalAmountDisplay.textContent = `RM ${total}`;
+    if (sitterSummaryDisplay) sitterSummaryDisplay.textContent = `${sitter.name} · ${formatBookingDate(state.bookingData.date)}`;
     if (btnSubmitPayment) {
-      btnSubmitPayment.textContent = `Pay RM ${total}`;
+      btnSubmitPayment.textContent = `Confirm & Pay RM ${total}`;
       btnSubmitPayment.style.display = 'block';
     }
+    if (btnSimulatePaymentFailure) btnSimulatePaymentFailure.style.display = 'block';
     if (btnRetryPayment) btnRetryPayment.style.display = 'none';
     if (paymentErrorBox) paymentErrorBox.style.display = 'none';
     paymentOptions.forEach(card => {
@@ -3819,30 +4092,44 @@ document.addEventListener('DOMContentLoaded', () => {
       state.selectedPaymentMethod = card.getAttribute('data-pay-method');
       saveState();
     });
+    card.addEventListener('keydown', event => {
+      if (event.target !== card) return;
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        card.click();
+      }
+    });
   });
 
   const btnSubmitPayment = document.getElementById('btnSubmitPayment');
+  const btnSimulatePaymentFailure = document.getElementById('btnSimulatePaymentFailure');
   const btnRetryPayment = document.getElementById('btnRetryPayment');
   const paymentErrorBox = document.getElementById('paymentErrorBox');
 
   if (btnSubmitPayment) {
     btnSubmitPayment.addEventListener('click', () => {
-      // First attempt fails deliberately with a clear error
+      state.paymentAttempts += 1;
+      updateActiveBookingStatus('paid');
+      showScreen('bookingConfirmed');
+    });
+  }
+
+  if (btnSimulatePaymentFailure) {
+    btnSimulatePaymentFailure.addEventListener('click', () => {
       state.paymentAttempts = 1;
-      btnSubmitPayment.style.display = 'none';
       if (paymentErrorBox) paymentErrorBox.style.display = 'flex';
+      if (btnSubmitPayment) btnSubmitPayment.style.display = 'none';
+      if (btnSimulatePaymentFailure) btnSimulatePaymentFailure.style.display = 'none';
       if (btnRetryPayment) btnRetryPayment.style.display = 'block';
     });
   }
 
   if (btnRetryPayment) {
     btnRetryPayment.addEventListener('click', () => {
-      // Second attempt succeeds
-      state.paymentAttempts = 2;
-      updateActiveBookingStatus('paid');
       if (paymentErrorBox) paymentErrorBox.style.display = 'none';
-      showToast('Payment successful! Your session is confirmed.');
-      showScreen('bookingConfirmed');
+      if (btnRetryPayment) btnRetryPayment.style.display = 'none';
+      if (btnSubmitPayment) btnSubmitPayment.style.display = 'block';
+      if (btnSimulatePaymentFailure) btnSimulatePaymentFailure.style.display = 'block';
     });
   }
 
@@ -3873,7 +4160,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (confirmedDate) confirmedDate.textContent = formatBookingDate(booking.date);
     if (confirmedTime) confirmedTime.textContent = formatBookingTime(booking.time, booking.hours + (booking.isTrial ? 1 : 0));
     if (confirmedChild) confirmedChild.textContent = booking.childName || (state.child && state.child.name) || '';
-    if (confirmedBookingId) confirmedBookingId.textContent = activeBooking ? activeBooking.id : '';
+    if (confirmedBookingId) confirmedBookingId.textContent = activeBooking ? activeBooking.id : 'BK001';
+    const confirmedAmountPaid = document.getElementById('confirmedAmountPaid');
+    if (confirmedAmountPaid) confirmedAmountPaid.textContent = `RM ${booking.total || 105}`;
     if (confirmedStatus) confirmedStatus.textContent = activeBooking
       ? activeBooking.status === 'confirmed' ? 'Confirmed' : activeBooking.status
       : '';
@@ -3892,6 +4181,7 @@ document.addEventListener('DOMContentLoaded', () => {
       declined: 'Declined',
       paid: 'Paid',
       confirmed: 'Confirmed',
+      in_progress: 'In progress',
       cancelled: 'Cancelled',
       completed: 'Completed',
     };
@@ -3905,6 +4195,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (booking.status === 'waiting') return { label: 'View request', screen: 'bookingStatus' };
     if (booking.status === 'accepted') return { label: 'Pay now', screen: 'payment' };
     if (['declined', 'cancelled'].includes(booking.status)) return { label: 'View booking', screen: 'bookingStatus' };
+    if (['confirmed', 'paid'].includes(booking.status)) return { label: 'Edit', screen: 'reschedule' };
     return { label: 'View booking', screen: 'bookingConfirmed' };
   }
 
@@ -4019,7 +4310,7 @@ document.addEventListener('DOMContentLoaded', () => {
       downloadLink.download = 'ease-booking.ics';
       downloadLink.click();
       setTimeout(() => URL.revokeObjectURL(calendarUrl), 1000);
-      showToast('Calendar event downloaded.');
+      showToast('Added to your calendar!');
     });
   }
 
@@ -4028,6 +4319,83 @@ document.addEventListener('DOMContentLoaded', () => {
       showScreen('parentHome');
     });
   }
+
+  function setupRescheduleScreen() {
+    const activeBooking = getActiveBooking() || getLatestBooking();
+    const sitter = activeBooking
+      ? sittersData[activeBooking.babysitterId] || sittersData[state.selectedSitterId] || sittersData['sarah-lim']
+      : sittersData[state.selectedSitterId] || sittersData['sarah-lim'];
+    const date = activeBooking ? activeBooking.date : state.bookingData.date;
+    const id = document.getElementById('rescheduleBookingId');
+    const summary = document.getElementById('rescheduleBookingSummary');
+    const dateInput = document.getElementById('rescheduleDate');
+    const timeSelect = document.getElementById('rescheduleTime');
+
+    if (id) id.textContent = activeBooking ? activeBooking.id : 'BK001';
+    if (summary) summary.textContent = `${sitter.name} · ${formatBookingDate(date)}`;
+    if (dateInput) dateInput.value = date || '2026-11-20';
+    if (timeSelect) timeSelect.value = activeBooking ? activeBooking.startTime : state.bookingData.time || '14:00';
+  }
+
+  const rescheduleForm = document.getElementById('rescheduleForm');
+  if (rescheduleForm) {
+    rescheduleForm.addEventListener('submit', event => {
+      event.preventDefault();
+      if (!rescheduleForm.reportValidity()) return;
+
+      const newDate = document.getElementById('rescheduleDate').value;
+      const newTime = document.getElementById('rescheduleTime').value;
+      const activeBooking = getActiveBooking();
+      const duration = activeBooking ? activeBooking.baseHours || activeBooking.hours || 4 : state.bookingData.hours || 4;
+      const [hour, minute] = newTime.split(':').map(Number);
+      const end = new Date(2000, 0, 1, hour, minute);
+      end.setHours(end.getHours() + duration);
+
+      state.bookingData.date = newDate;
+      state.bookingData.time = newTime;
+      if (activeBooking) {
+        activeBooking.date = newDate;
+        activeBooking.startTime = newTime;
+        activeBooking.endTime = `${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}`;
+        saveBookings();
+      }
+      saveState();
+      showToast('Booking updated successfully.');
+      setupRescheduleScreen();
+    });
+  }
+
+  const cancelBookingModal = document.getElementById('cancelBookingModal');
+  const btnOpenCancelBooking = document.getElementById('btnOpenCancelBooking');
+  const btnKeepBooking = document.getElementById('btnKeepBooking');
+  const btnConfirmCancelBooking = document.getElementById('btnConfirmCancelBooking');
+
+  if (btnOpenCancelBooking && cancelBookingModal) {
+    btnOpenCancelBooking.addEventListener('click', () => {
+      cancelBookingModal.hidden = false;
+      btnKeepBooking?.focus();
+    });
+  }
+  if (btnKeepBooking && cancelBookingModal) {
+    btnKeepBooking.addEventListener('click', () => {
+      cancelBookingModal.hidden = true;
+      btnOpenCancelBooking?.focus();
+    });
+  }
+  if (btnConfirmCancelBooking && cancelBookingModal) {
+    btnConfirmCancelBooking.addEventListener('click', () => {
+      updateActiveBookingStatus('cancelled');
+      cancelBookingModal.hidden = true;
+      showToast('Booking cancelled.');
+      showScreen('parentHome');
+    });
+  }
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && cancelBookingModal && !cancelBookingModal.hidden) {
+      cancelBookingModal.hidden = true;
+      btnOpenCancelBooking?.focus();
+    }
+  });
 
   // --------------------------------------------------------------------------
   // 18. Screen 14: Parent Home (Logged In Dashboard)
@@ -4045,12 +4413,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const homeBookingTime = document.getElementById('homeBookingTime');
     const homeBookingLocation = document.getElementById('homeBookingLocation');
     const homeBookingStatus = document.getElementById('homeBookingStatus');
+    const homeBookingId = document.getElementById('homeBookingId');
     const homeNextBookingCard = document.getElementById('homeNextBookingCard');
     const homeNoBooking = document.getElementById('homeNoBooking');
     const homeRecentMsgName = document.getElementById('homeRecentMsgName');
     const homeBookAgainName = document.getElementById('homeBookAgainName');
     const bookingSitter = sittersData[state.selectedSitterId] || sittersData['sarah-lim'];
-    const nextBooking = getUpcomingBookings()[0] || null;
+    const nextBooking = getUpcomingBookings()[0] || bookings.find(booking =>
+      booking.id === state.activeBookingId && ['waiting', 'accepted', 'paid', 'confirmed', 'in_progress'].includes(booking.status)
+    ) || null;
 
     document.querySelectorAll('[data-preference-sitter]').forEach(slot => {
       const sitter = sittersData[slot.dataset.preferenceSitter];
@@ -4065,8 +4436,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (careTypeChips) careTypeChips.innerHTML = renderCareTypeChips(sitter);
     });
 
-    const firstName = (state.user.name || 'Jessica').split(' ')[0];
-    if (greeting) greeting.textContent = `Welcome back, ${firstName}`;
+    const firstName = (state.user.name || 'Mei Ling').split(' ')[0];
+    if (greeting) greeting.textContent = `Hello, ${firstName}`;
     if (homeChildName) homeChildName.textContent = activeChildName;
     if (homeChildDetails) homeChildDetails.textContent = `${getChildAge(activeChild && activeChild.birthDate)} years old • ${(activeChild && activeChild.gender) || ''}`;
     if (homeChildSummary) {
@@ -4075,13 +4446,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (homeNextBookingCard) homeNextBookingCard.hidden = !nextBooking;
     if (homeNoBooking) homeNoBooking.hidden = Boolean(nextBooking);
     if (nextBooking) {
+      if (homeBookingId) homeBookingId.textContent = `Booking ID: ${nextBooking.id}`;
       if (homeBookingDate) homeBookingDate.textContent = `Next Booking • ${formatBookingDate(nextBooking.date)}`;
       if (homeBookingSitter) homeBookingSitter.textContent = nextBooking.babysitterName;
       if (homeBookingTime) homeBookingTime.textContent = `${formatBookingTime(nextBooking.startTime, nextBooking.hours || 4)} • ${nextBooking.child}`;
       if (homeBookingLocation) homeBookingLocation.textContent = `📍 ${nextBooking.location}`;
-      if (homeBookingStatus) homeBookingStatus.textContent = nextBooking.status;
+      if (homeBookingStatus) homeBookingStatus.textContent = nextBooking.status === 'confirmed' ? 'Confirmed' : nextBooking.status;
       if (btnHomeViewDetails) btnHomeViewDetails.textContent = getBookingAction(nextBooking).label;
       if (btnHomeMessageSarah) btnHomeMessageSarah.textContent = `Message ${nextBooking.babysitterName.split(' ')[0]}`;
+    }
+    if (btnHomeManageBooking) {
+      btnHomeManageBooking.hidden = !nextBooking || !['confirmed', 'paid'].includes(nextBooking.status);
+      btnHomeManageBooking.textContent = 'Edit booking';
     }
     if (homeRecentMsgName) homeRecentMsgName.textContent = bookingSitter.name;
     if (homeBookAgainName) homeBookAgainName.textContent = bookingSitter.name;
@@ -4089,6 +4465,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   const btnHomeViewDetails = document.getElementById('btnHomeViewDetails');
+  const btnHomeManageBooking = document.getElementById('btnHomeManageBooking');
   const btnHomeMessageSarah = document.getElementById('btnHomeMessageSarah');
   const btnHomeFindSitter = document.getElementById('btnHomeFindSitter');
   const btnHomeViewNur = document.getElementById('btnHomeViewNur');
@@ -4100,8 +4477,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (btnHomeViewDetails) {
     btnHomeViewDetails.addEventListener('click', () => {
-      const booking = getUpcomingBookings()[0];
+      const booking = getUpcomingBookings()[0] || getActiveBooking();
       if (booking) openBookingById(booking.id);
+    });
+  }
+
+  if (btnHomeManageBooking) {
+    btnHomeManageBooking.addEventListener('click', () => {
+      showScreen('bookings');
     });
   }
 
@@ -4171,14 +4554,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatSitterName = document.getElementById('chatSitterName');
     const chatSitterAvatar = document.getElementById('chatSitterAvatar');
     const chatMessagesArea = document.getElementById('chatMessagesArea');
+    const isBabysitter = state.user.role === 'babysitter';
 
-    if (chatSitterName) chatSitterName.textContent = sitter.name;
+    if (chatSitterName) chatSitterName.textContent = isBabysitter ? 'Mei Ling' : sitter.name;
     if (chatSitterAvatar) chatSitterAvatar.setAttribute('aria-label', `Photo placeholder for ${sitter.name}`);
     if (chatMessagesArea) {
+      const ownRole = isBabysitter ? 'sitter' : 'parent';
+      const otherRole = isBabysitter ? 'parent' : 'sitter';
       chatMessagesArea.innerHTML = `
-        <div class="chat-message chat-msg-parent"><p>Hello! Is Saturday free?</p><span class="chat-time">10:15 AM</span></div>
-        <div class="chat-message chat-msg-sitter"><p>Yes, I am free all day.</p><span class="chat-time">10:18 AM</span></div>
-        <div class="chat-message chat-msg-parent"><p>Great, can you do 9 am to 3 pm?</p><span class="chat-time">10:20 AM</span></div>
+        <div class="chat-message chat-msg-${ownRole}"><p>${isBabysitter ? 'Hello Mei Ling, I am ready for today’s session.' : 'Hello Sarah! How is Aiden doing?'}</p><span class="chat-time">Today</span></div>
+        <div class="chat-message chat-msg-${otherRole}"><p>${isBabysitter ? 'Thank you. Aiden’s routine is in his profile.' : 'He is enjoying story time. I will keep you updated.'}</p><span class="chat-time">Today</span></div>
       `;
     }
     if (chatMessagesArea) chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
@@ -4204,27 +4589,28 @@ document.addEventListener('DOMContentLoaded', () => {
       const now = new Date();
       const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-      // Append parent bubble
-      const parentBubble = document.createElement('div');
-      parentBubble.className = 'chat-message chat-msg-parent';
-      parentBubble.innerHTML = `
+      const ownRole = state.user.role === 'babysitter' ? 'sitter' : 'parent';
+      const otherRole = ownRole === 'sitter' ? 'parent' : 'sitter';
+      const ownBubble = document.createElement('div');
+      ownBubble.className = `chat-message chat-msg-${ownRole}`;
+      ownBubble.innerHTML = `
         <p>${escapeHtml(text)}</p>
         <span class="chat-time">${timeStr}</span>
       `;
-      chatMessagesArea.appendChild(parentBubble);
+      chatMessagesArea.appendChild(ownBubble);
       chatInputText.value = '';
       chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
 
       // Simulated auto-reply from sitter after 900ms
       setTimeout(() => {
         const replyTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        const sitterBubble = document.createElement('div');
-        sitterBubble.className = 'chat-message chat-msg-sitter';
-        sitterBubble.innerHTML = `
+        const replyBubble = document.createElement('div');
+        replyBubble.className = `chat-message chat-msg-${otherRole}`;
+        replyBubble.innerHTML = `
           <p>Thanks for your message! Looking forward to our session.</p>
           <span class="chat-time">${replyTime}</span>
         `;
-        chatMessagesArea.appendChild(sitterBubble);
+        chatMessagesArea.appendChild(replyBubble);
         chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
       }, 900);
     });

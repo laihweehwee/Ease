@@ -5,7 +5,7 @@ A modern, responsive web application for finding, vetting, and booking certified
 ## Features
 - **Instant Caregiver Search**: Filter by care type (Date Night, After School, Infant & Toddler, Overnight).
 - **Vetted Caregiver Profiles**: View ratings, badges (CPR certified, Early Childhood Education, clean driving record), and hourly rates.
-- **Interactive Booking Request Flow**: Modal booking form with live validation and confirmation.
+- **End-to-End Booking Prototype**: Live trial pricing, accept/decline states, simulated payment and retry, confirmation, calendar download, and reschedule/cancel.
 - **FAQ Accordion & Testimonials**: Built-in parent reviews and expandable Q&A.
 - **Zero-Dependency Live Dev Server**: Built-in hot reload via Server-Sent Events (SSE).
 -  **Responsive Landing Page**: Introduces Ease and provides separate entry points for parents looking for childcare and babysitters looking to join. Visitors can search by postcode without creating an account.
