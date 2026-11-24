@@ -75,6 +75,26 @@
       </a>
       <div class="drawer-member-links" id="drawerMemberLinks" hidden>
         <span class="drawer-section-label" id="drawerMyEaseLabel">My Ease</span>
+        <a href="#/parentProfile" class="drawer-app-item" id="drawerProfileItem" data-drawer-route="parentProfile">
+          <span class="drawer-app-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="8" r="4"></circle>
+              <path d="M5 21v-2a7 7 0 0 1 14 0v2"></path>
+            </svg>
+          </span>
+          <span class="drawer-app-title">Profile</span>
+        </a>
+        <a href="#/myChildren" class="drawer-app-item" id="drawerChildrenItem" data-drawer-route="myChildren">
+          <span class="drawer-app-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="9" cy="7" r="3"></circle>
+              <circle cx="17" cy="9" r="2.5"></circle>
+              <path d="M3 20v-1a6 6 0 0 1 12 0v1"></path>
+              <path d="M15 16a5 5 0 0 1 6 4"></path>
+            </svg>
+          </span>
+          <span class="drawer-app-title">My Children</span>
+        </a>
         <a href="#/bookings" class="drawer-app-item" id="drawerBookingsItem" data-drawer-route="bookings">
           <span class="drawer-app-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -2477,6 +2497,18 @@
             </form>
           </div>
 
+          <section class="card parent-profile-children-card" aria-labelledby="parentProfileChildrenTitle">
+            <div class="parent-profile-children-header">
+              <div>
+                <h2 class="section-heading" id="parentProfileChildrenTitle">My Children</h2>
+                <p class="section-subtext">Manage the child profiles saved to your account.</p>
+              </div>
+              <button type="button" class="btn btn-primary" id="btnParentAddChild">Add Another Child</button>
+            </div>
+            <div class="saved-children-list" id="parentProfileChildrenList"></div>
+            <p class="children-empty-state" id="parentProfileChildrenEmpty" hidden>No child profiles have been added yet.</p>
+          </section>
+
           <!-- Booking History Card -->
           <div class="card parent-profile-history">
             <h2 class="section-heading">Booking History</h2>
@@ -2499,6 +2531,28 @@
             </button>
           </div>
 
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SCREEN 17: MY CHILDREN
+         ==================================================================== -->
+    <section class="app-screen" id="screenMyChildren" style="display: none;">
+      <div class="content-section parent-profile-section">
+        <div class="container parent-profile-container">
+          <div class="parent-profile-header-group my-children-header">
+            <h1 class="page-title parent-profile-title">My Children</h1>
+            <p class="section-subtext">View and manage the child profiles saved to your account.</p>
+          </div>
+          <div class="card my-children-card">
+            <div class="saved-children-list" id="myChildrenList"></div>
+            <div class="children-empty-state" id="myChildrenEmpty" hidden>
+              <h2>No child profiles yet</h2>
+              <p>Add a child profile to help caregivers prepare for your family.</p>
+              <button type="button" class="btn btn-primary" id="btnMyChildrenAddChild">Add Child</button>
+            </div>
+          </div>
         </div>
       </div>
     </section>

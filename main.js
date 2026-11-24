@@ -728,6 +728,7 @@ document.addEventListener('DOMContentLoaded', () => {
     payment: document.getElementById('screenPayment'),
     bookingConfirmed: document.getElementById('screenBookingConfirmed'),
     parentHome: document.getElementById('screenParentHome'),
+    myChildren: document.getElementById('screenMyChildren'),
     babysitterHome: document.getElementById('screenBabysitterHome'),
     availableJobs: document.getElementById('screenAvailableJobs'),
     requestDetail: document.getElementById('screenRequestDetail'),
@@ -748,6 +749,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const drawerBookingsItem = document.getElementById('drawerBookingsItem');
   const drawerBookingsCount = document.getElementById('drawerBookingsCount');
   const drawerMessagesItem = document.getElementById('drawerMessagesItem');
+  const drawerProfileItem = document.getElementById('drawerProfileItem');
+  const drawerChildrenItem = document.getElementById('drawerChildrenItem');
   const drawerLogoutBtn = document.getElementById('drawerLogoutBtn');
   const bookingDemoActions = document.getElementById('bookingDemoActions');
   const demoControls = document.querySelector('.demo-controls-box');
@@ -827,11 +830,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const bookingScreens = ['bookings', 'bookingDetails', 'bookingStatus', 'payment', 'bookingConfirmed'];
     const isBookingsCurrent = loggedIn && bookingScreens.includes(screenId);
     const isMessagesCurrent = loggedIn && screenId === 'chat';
+    const isProfileCurrent = loggedIn && screenId === 'parentProfile';
+    const isChildrenCurrent = loggedIn && screenId === 'myChildren';
     const isFindCurrent = screenId === 'find';
     [
       [drawerFindItem, isFindCurrent],
       [drawerBookingsItem, isBookingsCurrent],
       [drawerMessagesItem, isMessagesCurrent],
+      [drawerProfileItem, isProfileCurrent],
+      [drawerChildrenItem, isChildrenCurrent],
     ].forEach(([item, isCurrent]) => {
       if (!item) return;
       item.classList.toggle('active', isCurrent);
@@ -881,10 +888,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    const loggedInOnlyScreens = ['addChild', 'bookingDetails', 'bookingStatus', 'payment', 'bookingConfirmed', 'parentHome', 'parentProfile', 'chat', 'review'];
+    const loggedInOnlyScreens = ['addChild', 'bookingDetails', 'bookingStatus', 'payment', 'bookingConfirmed', 'parentHome', 'parentProfile', 'myChildren', 'chat', 'review'];
     if (!state.isLoggedIn && loggedInOnlyScreens.includes(screenId)) {
       state.bookingIntent = !['parentHome', 'parentProfile', 'chat', 'review'].includes(screenId);
-      state.authReturnScreen = ['parentHome', 'parentProfile', 'chat', 'review'].includes(screenId) ? screenId : 'booking';
+      state.authReturnScreen = ['parentHome', 'parentProfile', 'myChildren', 'chat', 'review'].includes(screenId) ? screenId : 'booking';
       setAuthMode('signup');
       screenId = 'auth';
     }
@@ -953,6 +960,8 @@ document.addEventListener('DOMContentLoaded', () => {
       prepareReviewForm();
     } else if (screenId === 'addChild') {
       setupEmergencyContactToggle();
+      renderSavedChildrenList();
+    } else if (screenId === 'myChildren') {
       renderSavedChildrenList();
     } else if (screenId === 'bookingDetails') {
       setupBookingDetails();
@@ -2586,7 +2595,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function setAuthMode(mode, role = state.authReturnScreen === 'parentHome' ? null : 'parent') {
+  function setAuthMode(mode, role = ['parentHome', 'myChildren'].includes(state.authReturnScreen) ? null : 'parent') {
     authMode = mode;
     const isSignup = mode === 'signup';
     authDetailsSidebar.hidden = !isSignup;
@@ -2743,6 +2752,8 @@ document.addEventListener('DOMContentLoaded', () => {
           showScreen('parentHome');
         } else if (state.authReturnScreen === 'parentProfile') {
           showScreen('parentProfile');
+        } else if (state.authReturnScreen === 'myChildren') {
+          showScreen('myChildren');
         } else if (state.authReturnScreen === 'review') {
           showScreen('review');
         } else if (state.bookingIntent) {
@@ -2786,6 +2797,8 @@ document.addEventListener('DOMContentLoaded', () => {
         showScreen('parentHome');
       } else if (state.authReturnScreen === 'parentProfile') {
         showScreen('parentProfile');
+      } else if (state.authReturnScreen === 'myChildren') {
+        showScreen('myChildren');
       } else if (state.authReturnScreen === 'review') {
         showScreen('review');
       } else if (state.bookingIntent && !state.hasAddedChild) {
@@ -2805,6 +2818,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnAddAnotherChild = document.getElementById('btnAddAnotherChild');
   const btnCancelChildEdit = document.getElementById('btnCancelChildEdit');
   let editingChildId = null;
+  let editingReturnScreen = null;
 
   function validateChildForm() {
     const nameInput = document.getElementById('childName');
@@ -3278,27 +3292,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // SAFEGUARD: Display compact & easy to scan summary cards (Name, Age, Gender, Allergies, Medical)
   function renderSavedChildrenList() {
     syncChildCount();
-    const container = document.getElementById('savedChildrenSection');
-    const list = document.getElementById('savedChildrenList');
-    const countEl = document.getElementById('savedChildrenCount');
-
-    if (!container || !list) return;
-
-    if (!state.children || state.children.length === 0) {
-      container.style.display = 'none';
-      list.innerHTML = '';
-      if (countEl) countEl.textContent = '0';
-      return;
-    }
-
-    container.style.display = 'block';
-    if (countEl) countEl.textContent = state.children.length;
-
-    list.innerHTML = state.children.map(c => {
+    const cards = state.children.map(c => {
       const ageStr = formatChildAge(c.birthDate);
       const allergiesText = formatAllergiesSummary(c);
       const medicalText = formatMedicalSummary(c);
       const avatar = c.gender === 'Girl' ? '👧' : '👦';
+      const birthDateText = c.birthDate
+        ? new Date(`${c.birthDate}T00:00:00`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+        : 'Date of birth not provided';
 
       return `
         <div class="saved-child-card" data-child-id="${escapeHtml(c.id)}">
@@ -3306,9 +3307,10 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="saved-child-info">
             <div class="saved-child-header">
               <strong class="saved-child-name">${escapeHtml(c.name)}</strong>
-              <span class="saved-child-meta">${escapeHtml(c.gender)}${ageStr ? ' • ' + escapeHtml(ageStr) : ''}</span>
+              <span class="saved-child-meta">${escapeHtml(c.gender || 'Gender not provided')}${ageStr ? ' • ' + escapeHtml(ageStr) : ''}</span>
             </div>
             <p class="saved-child-details">
+              <span>Date of birth: ${escapeHtml(birthDateText)}</span> •
               <span>Allergies: ${escapeHtml(allergiesText)}</span>
               ${medicalText ? ` • <span>Medical: ${escapeHtml(medicalText)}</span>` : ''}
             </p>
@@ -3322,51 +3324,89 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       `;
     }).join('');
-  }
 
-  const savedChildrenList = document.getElementById('savedChildrenList');
-  if (savedChildrenList) {
-    savedChildrenList.addEventListener('click', event => {
-      const button = event.target.closest('button[data-child-action][data-child-id]');
-      if (!button || !savedChildrenList.contains(button)) return;
-      const childId = button.dataset.childId;
-      const child = state.children.find(savedChild => savedChild.id === childId);
-      if (!child) return;
+    ['savedChildrenList', 'parentProfileChildrenList', 'myChildrenList'].forEach(id => {
+      const list = document.getElementById(id);
+      if (list) list.innerHTML = cards;
+    });
 
-      if (button.dataset.childAction === 'edit') {
-        editingChildId = child.id;
-        populateChildForm(child);
-        document.getElementById('addChildForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        return;
-      }
-
-      if (button.dataset.childAction !== 'remove' ||
-        !window.confirm(`Remove ${child.name}'s saved profile? This cannot be undone.`)) return;
-
-      state.children = state.children.filter(savedChild => savedChild.id !== childId);
-      if (state.bookingData.childId === childId) {
-        const nextChild = state.children[0] || null;
-        state.bookingData.childId = nextChild ? nextChild.id : null;
-        state.bookingData.childName = nextChild ? nextChild.name : '';
-        state.bookingData.child = nextChild;
-      }
-      if (!state.children.length) state.child = null;
-      if (editingChildId === childId) {
-        editingChildId = null;
-        resetChildForm();
-        setChildFormMode(false);
-      }
-      saveState();
-      renderSavedChildrenList();
-      showToast(`Removed "${child.name}".`);
+    const hasChildren = state.children.length > 0;
+    const addChildSection = document.getElementById('savedChildrenSection');
+    if (addChildSection) addChildSection.style.display = hasChildren ? 'block' : 'none';
+    const savedCount = document.getElementById('savedChildrenCount');
+    if (savedCount) savedCount.textContent = String(state.children.length);
+    const profileEmpty = document.getElementById('parentProfileChildrenEmpty');
+    if (profileEmpty) profileEmpty.hidden = hasChildren;
+    const myChildrenEmpty = document.getElementById('myChildrenEmpty');
+    if (myChildrenEmpty) myChildrenEmpty.hidden = hasChildren;
+    ['savedChildrenList', 'parentProfileChildrenList', 'myChildrenList'].forEach(id => {
+      const list = document.getElementById(id);
+      if (list) list.hidden = !hasChildren;
     });
   }
+
+  document.addEventListener('click', event => {
+    const button = event.target.closest('button[data-child-action][data-child-id]');
+    if (!button) return;
+    const list = button.closest('#savedChildrenList, #parentProfileChildrenList, #myChildrenList');
+    if (!list) return;
+    const childId = button.dataset.childId;
+    const child = state.children.find(savedChild => savedChild.id === childId);
+    if (!child) return;
+
+    if (button.dataset.childAction === 'edit') {
+      editingChildId = child.id;
+      editingReturnScreen = currentScreen;
+      populateChildForm(child);
+      showScreen('addChild');
+      document.getElementById('addChildForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+
+    if (button.dataset.childAction !== 'remove' ||
+      !window.confirm(`Remove ${child.name}'s saved profile? This cannot be undone.`)) return;
+
+    state.children = state.children.filter(savedChild => savedChild.id !== childId);
+    if (state.bookingData.childId === childId) {
+      const nextChild = state.children[0] || null;
+      state.bookingData.childId = nextChild ? nextChild.id : null;
+      state.bookingData.childName = nextChild ? nextChild.name : '';
+      state.bookingData.child = nextChild;
+    }
+    if (!state.children.length) state.child = null;
+    if (editingChildId === childId) {
+      editingChildId = null;
+      resetChildForm();
+      setChildFormMode(false);
+      if (editingReturnScreen && editingReturnScreen !== 'addChild') {
+        const returnScreen = editingReturnScreen;
+        editingReturnScreen = null;
+        showScreen(returnScreen);
+      }
+    }
+    saveState();
+    renderSavedChildrenList();
+    showToast(`Removed "${child.name}".`);
+  });
+
+  ['btnParentAddChild', 'btnMyChildrenAddChild'].forEach(id => {
+    const button = document.getElementById(id);
+    if (button) button.addEventListener('click', () => {
+      state.bookingIntent = false;
+      showScreen('addChild');
+    });
+  });
 
   if (btnCancelChildEdit) {
     btnCancelChildEdit.addEventListener('click', () => {
       editingChildId = null;
       resetChildForm();
       setChildFormMode(false);
+      if (editingReturnScreen && editingReturnScreen !== 'addChild') {
+        const returnScreen = editingReturnScreen;
+        editingReturnScreen = null;
+        showScreen(returnScreen);
+      }
     });
   }
 
@@ -3408,6 +3448,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const childIndex = state.children.findIndex(child => child.id === editingChildId);
         if (childIndex === -1) {
           editingChildId = null;
+          editingReturnScreen = null;
           resetChildForm();
           setChildFormMode(false);
           renderSavedChildrenList();
@@ -3423,10 +3464,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         saveState();
         renderSavedChildrenList();
+        const returnScreen = editingReturnScreen;
         editingChildId = null;
+        editingReturnScreen = null;
         resetChildForm();
         setChildFormMode(false);
         showToast(`"${updatedChild.name}" updated successfully.`);
+        if (returnScreen && returnScreen !== 'addChild') showScreen(returnScreen);
         return;
       }
 
@@ -4330,6 +4374,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (historyEl && typeof renderBookingList === 'function' && Array.isArray(bookings)) {
       renderBookingList(historyEl, bookings.slice().reverse(), 'No past bookings yet.');
     }
+    renderSavedChildrenList();
   }
 
   // Clear validation error on typing

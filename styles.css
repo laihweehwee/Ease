@@ -3570,6 +3570,10 @@ label {
   gap: 10px;
 }
 
+.saved-children-list[hidden] {
+  display: none;
+}
+
 .saved-child-card {
   display: flex;
   align-items: center;
@@ -7371,6 +7375,50 @@ body,
   margin-bottom: 20px;
 }
 
+.parent-profile-children-card,
+.my-children-card {
+  margin-top: 24px;
+  padding: 24px;
+  text-align: left;
+}
+
+.parent-profile-children-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.parent-profile-children-header .section-heading {
+  margin: 0 0 4px;
+}
+
+.parent-profile-children-header .section-subtext {
+  margin: 0;
+}
+
+.children-empty-state {
+  padding: 24px 12px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.children-empty-state[hidden] {
+  display: none;
+}
+
+.children-empty-state h2 {
+  margin-bottom: 8px;
+  color: var(--ink);
+  font-family: var(--font-heading);
+  font-size: 20px;
+}
+
+.children-empty-state p {
+  margin: 0 0 16px;
+}
+
 .home-no-booking {
   display: flex;
   align-items: center;
@@ -7406,6 +7454,27 @@ body,
 
   .parent-profile-history {
     padding: 16px;
+  }
+
+  .parent-profile-children-card,
+  .my-children-card {
+    padding: 16px;
+  }
+
+  .parent-profile-children-header {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .saved-child-card {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .saved-child-actions {
+    width: 100%;
+    justify-content: flex-end;
   }
 
   .home-no-booking {
