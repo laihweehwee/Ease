@@ -179,3 +179,119 @@ export const babysittersData = {
     ],
   },
 };
+
+function calculateDistanceKm(parentPostcode, sitterPostcode) {
+  const origin = postcodeLocations[String(parentPostcode || '').trim()];
+  const destination = postcodeLocations[String(sitterPostcode || '').trim()];
+  if (!origin || !destination) return null;
+
+  const toRadians = degrees => degrees * Math.PI / 180;
+  const latitudeDifference = toRadians(destination.latitude - origin.latitude);
+  const longitudeDifference = toRadians(destination.longitude - origin.longitude);
+  const originLatitude = toRadians(origin.latitude);
+  const destinationLatitude = toRadians(destination.latitude);
+  const haversine = Math.sin(latitudeDifference / 2) ** 2 +
+    Math.cos(originLatitude) * Math.cos(destinationLatitude) *
+    Math.sin(longitudeDifference / 2) ** 2;
+  return 6371 * 2 * Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine));
+}
+
+function dateMatchesAvailabilityDay(date, day) {
+  const weekday = date.getDay();
+  const dayName = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(date);
+  if (day === dayName) return true;
+  if (day === 'Weekdays') return weekday >= 1 && weekday <= 5;
+  if (day === 'Weekends') return weekday === 0 || weekday === 6;
+  return false;
+}
+
+function availabilityMatches(sitter, filter) {
+  if (!filter) return true;
+
+  const availability = typeof filter === 'string' ? { day: filter } : filter;
+  const requestedTime = availability.time || '';
+  let requestedDates = [];
+
+  if (availability.date) {
+    const date = new Date(`${availability.date}T00:00:00`);
+    if (!Number.isNaN(date.getTime())) requestedDates = [date];
+  } else if (availability.when === 'Today') {
+    requestedDates = [new Date()];
+  } else if (availability.when === 'This week') {
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    requestedDates = Array.from({ length: 7 }, (_, offset) => {
+      const date = new Date(start);
+      date.setDate(date.getDate() + offset);
+      return date;
+    });
+  } else if ((availability.when === 'Pick a date' || availability.when === 'Custom date') && availability.customDate) {
+    const date = new Date(`${availability.customDate}T00:00:00`);
+    if (!Number.isNaN(date.getTime())) requestedDates = [date];
+  }
+
+  const requestedDays = [
+    ...(availability.day ? [availability.day] : []),
+    ...(Array.isArray(availability.days) ? availability.days : []),
+  ];
+  if (!requestedDates.length && !requestedDays.length) return false;
+
+  let requestedMinutes = null;
+  if (requestedTime) {
+    if (!/^\d{2}:\d{2}$/.test(requestedTime)) return false;
+    const [hour, minute] = requestedTime.split(':').map(Number);
+    if (hour > 23 || minute > 59) return false;
+    requestedMinutes = hour * 60 + minute;
+  }
+
+  const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+  const weekendDays = ['Saturday', 'Sunday'];
+  return (sitter.availability || []).some(slot => {
+    const matchesDay = requestedDates.some(date => dateMatchesAvailabilityDay(date, slot.day)) ||
+      requestedDays.some(day => {
+        if (day === slot.day) return true;
+        if (day === 'Weekdays') return slot.day === 'Weekdays' || weekdays.includes(slot.day);
+        if (day === 'Weekends') return slot.day === 'Weekends' || weekendDays.includes(slot.day);
+        if (slot.day === 'Weekdays') return weekdays.includes(day);
+        if (slot.day === 'Weekends') return weekendDays.includes(day);
+        return false;
+      });
+    if (!matchesDay) return false;
+    if (requestedMinutes === null) return true;
+
+    const [startHour, startMinute] = (slot.startTime || '').split(':').map(Number);
+    const [endHour, endMinute] = (slot.endTime || '').split(':').map(Number);
+    if (![startHour, startMinute, endHour, endMinute].every(Number.isFinite)) return false;
+    const startMinutes = startHour * 60 + startMinute;
+    const endMinutes = endHour * 60 + endMinute;
+    return requestedMinutes >= startMinutes && requestedMinutes < endMinutes;
+  });
+}
+
+export function getMatchingSitters(filters = {}) {
+  const minRating = Number(filters.minRating) || 0;
+  const maxPrice = Number(filters.maxPrice) || 0;
+  const maxDistance = Number(filters.maxDistance) || 0;
+  const careType = String(filters.careType || '');
+
+  return Object.values(babysittersData)
+    .map((sitter, order) => ({
+      ...sitter,
+      distanceKm: calculateDistanceKm(filters.postcode, sitter.postcode),
+      order,
+    }))
+    .filter(sitter =>
+      sitter.ratingValue >= minRating &&
+      (!maxPrice || sitter.price <= maxPrice) &&
+      (!maxDistance || (sitter.distanceKm !== null && sitter.distanceKm <= maxDistance)) &&
+      (!careType || (sitter.careTypes || []).includes(careType)) &&
+      availabilityMatches(sitter, filters.availability)
+    )
+    .sort((a, b) =>
+      b.ratingValue - a.ratingValue ||
+      (a.distanceKm ?? Number.POSITIVE_INFINITY) - (b.distanceKm ?? Number.POSITIVE_INFINITY) ||
+      a.price - b.price ||
+      a.order - b.order
+    )
+    .map(({ order, ...sitter }) => sitter);
+}

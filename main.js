@@ -1,5 +1,5 @@
 // Ease Babysitter - Comprehensive Application Logic (Phase 1 & Phase 2)
-import { babysittersData as sittersData, careTypeLabels, postcodeLocations } from './data/babysitters.js';
+import { babysittersData as sittersData, careTypeLabels, getMatchingSitters, postcodeLocations } from './data/babysitters.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   const defaultBookingDate = new Date();
@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
       extras: false,
     },
     comparedSitters: new Set(),
+    compareSelectionCustom: false,
 
     // User & Auth state
     isLoggedIn: false,
@@ -266,6 +267,47 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function getRequestedAvailabilityFilter() {
+    if (!state.answeredPreferences.availability) return null;
+    if ((state.when === 'Pick a date' || state.when === 'Custom date') && !state.customDate) return null;
+    return {
+      when: state.when,
+      customDate: state.customDate,
+      time: state.bookingData && state.bookingData.time,
+    };
+  }
+
+  function readEaseFilters() {
+    try {
+      const saved = localStorage.getItem('easeFilters');
+      if (!saved) return null;
+      const parsed = JSON.parse(saved);
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
+      return {
+        postcode: /^\d{5}$/.test(String(parsed.postcode || '')) ? String(parsed.postcode) : '',
+        minRating: Number.isFinite(Number(parsed.minRating)) ? Math.max(0, Number(parsed.minRating)) : 0,
+        maxPrice: Number.isFinite(Number(parsed.maxPrice)) ? Math.max(0, Number(parsed.maxPrice)) : 0,
+        maxDistance: Number.isFinite(Number(parsed.maxDistance)) ? Math.max(0, Number(parsed.maxDistance)) : 0,
+        careType: careTypeLabels.includes(parsed.careType) ? parsed.careType : '',
+        availability: typeof parsed.availability === 'string' ||
+          (parsed.availability && typeof parsed.availability === 'object')
+          ? parsed.availability
+          : null,
+      };
+    } catch (e) {
+      console.warn('Could not load Ease filters', e);
+      return null;
+    }
+  }
+
+  function writeEaseFilters(filters) {
+    try {
+      localStorage.setItem('easeFilters', JSON.stringify(filters));
+    } catch (e) {
+      console.warn('Could not save Ease filters', e);
+    }
+  }
+
   function getDateValueOffset(dayOffset) {
     const date = new Date();
     date.setDate(date.getDate() + dayOffset);
@@ -406,8 +448,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const normalizedHaversine = Math.min(1, Math.max(0, haversine));
     return 6371 * 2 * Math.atan2(Math.sqrt(normalizedHaversine), Math.sqrt(1 - normalizedHaversine));
   }
-
-  const preferenceTooltipText = 'This counts how many of your preferences this babysitter fits. It is not a rating.';
 
   function formatPreferenceTime(time) {
     const [hourText, minuteText] = String(time).split(':');
@@ -565,25 +605,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
     return preferences;
-  }
-
-  function renderPreferenceSummary(sitter, preferences = getPreferencesForSitter(sitter), showInfo = true) {
-    if (!preferences.length) return '';
-    const metCount = preferences.filter(preference => preference.met).length;
-    const allMet = metCount === preferences.length;
-    const label = preferences.length === 1 && allMet
-      ? '1 preference met'
-      : allMet
-        ? `All ${preferences.length} preferences met`
-        : `${metCount} of ${preferences.length} preferences met`;
-    return `
-      <span class="preference-summary-chip${allMet ? ' all-met' : ''}">
-        <svg class="preference-summary-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
-        <span>${escapeHtml(label)}</span>
-      </span>
-      ${showInfo ? `<span class="preference-info" title="${preferenceTooltipText}" aria-label="${preferenceTooltipText}" tabindex="0">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><line x1="12" y1="11" x2="12" y2="16"></line><line x1="12" y1="7" x2="12.01" y2="7"></line></svg>
-      </span>` : ''}`;
   }
 
   function getListedPreferences(preferences) {
@@ -809,6 +830,7 @@ document.addEventListener('DOMContentLoaded', () => {
   updateDemoModeUI();
 
   let currentScreen = 'welcome';
+  let compareProfileSitterId = null;
   let waitingCountdownInterval = null;
 
   function updateDrawerNavigation(screenId) {
@@ -869,6 +891,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function showScreen(screenId) {
     if (!screens[screenId]) return;
+    if (currentScreen === 'compare' && screenId !== 'compare') compareProfileSitterId = null;
     if (['bookingStatus', 'payment', 'bookingConfirmed'].includes(screenId)) {
       const activeBooking = getActiveBooking() || getLatestBooking();
       if (activeBooking) {
@@ -936,11 +959,8 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (screenId === 'q6') {
       syncQuestionOptions('#screenQ6', state.extras);
     } else if (screenId === 'find') {
-      const savedSearchPostcode = getSearchPostcode();
-      activeFindPostcode = savedSearchPostcode || state.postcode || '50450';
-      if (savedSearchPostcode) state.postcode = savedSearchPostcode;
-      if (findPostcode) findPostcode.value = activeFindPostcode;
       renderFindSitters();
+      updateFindDraftStatus();
     } else if (screenId === 'matches') {
       renderTopMatches();
     } else if (screenId === 'availableJobs') {
@@ -1247,6 +1267,8 @@ document.addEventListener('DOMContentLoaded', () => {
       errorPostcode.style.display = 'none';
       state.postcode = val;
       saveSearchPostcode(val);
+      if (findPostcode) findPostcode.value = val;
+      updateFindDraftStatus();
       state.answeredPreferences.distance = true;
       saveState();
       return true;
@@ -1299,6 +1321,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       state.answeredPreferences.availability = val !== 'Pick a date' && val !== 'Custom date';
       saveState();
+      syncAvailabilityFilterFromState();
     });
   });
 
@@ -1312,6 +1335,7 @@ document.addEventListener('DOMContentLoaded', () => {
         state.answeredPreferences.availability = true;
       }
       saveState();
+      syncAvailabilityFilterFromState();
       showScreen('q3');
     });
   }
@@ -1330,6 +1354,10 @@ document.addEventListener('DOMContentLoaded', () => {
       card.setAttribute('aria-checked', 'true');
       state.careType = card.getAttribute('data-value');
       state.answeredPreferences.careType = true;
+      if (findCareTypeFilter) {
+        findCareTypeFilter.value = careTypeLabels.includes(state.careType) ? state.careType : '';
+        updateFindDraftStatus();
+      }
       saveState();
     });
   });
@@ -1337,6 +1365,11 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnNextQ3) {
     btnNextQ3.addEventListener('click', () => {
       state.answeredPreferences.careType = true;
+      if (findCareTypeFilter && !careTypeLabels.includes(findCareTypeFilter.value) &&
+        careTypeLabels.includes(state.careType)) {
+        findCareTypeFilter.value = state.careType;
+      }
+      updateFindDraftStatus();
       saveState();
       showScreen('q4');
     });
@@ -1505,34 +1538,125 @@ document.addEventListener('DOMContentLoaded', () => {
   const findActiveFilters = document.getElementById('findActiveFilters');
   const findResultsCount = document.getElementById('findResultsCount');
   const findEmptyState = document.getElementById('findEmptyState');
+  const findFiltersChangedMessage = document.getElementById('findFiltersChangedMessage');
   const findCareTypeFilter = document.getElementById('filterCareType');
   const matchesPostcodeError = document.getElementById('matchesPostcodeError');
   const matchesNearbyState = document.getElementById('matchesNearbyState');
   const findFilters = ['filterRating', 'filterPrice', 'filterDistance', 'filterCareType']
     .map(id => document.getElementById(id));
+  const savedEaseFilters = readEaseFilters();
+  const savedSearchPostcode = getSearchPostcode();
+  const savedCareType = getSearchCareType();
+  const questionCareType = state.answeredPreferences.careType && careTypeLabels.includes(state.careType)
+    ? state.careType
+    : '';
+  let activeFindPostcode = (savedEaseFilters && savedEaseFilters.postcode) ||
+    savedSearchPostcode || state.postcode || '50450';
+  let appliedEaseFilters = savedEaseFilters
+    ? { ...savedEaseFilters, postcode: activeFindPostcode }
+    : {
+      postcode: activeFindPostcode,
+      minRating: 0,
+      maxPrice: 0,
+      maxDistance: 0,
+      careType: '',
+      availability: null,
+    };
+  let draftAvailabilityFilter = savedEaseFilters
+    ? appliedEaseFilters.availability
+    : getRequestedAvailabilityFilter();
   if (findCareTypeFilter) {
     findCareTypeFilter.innerHTML = `
       <option value="">Any care type</option>
       ${careTypeLabels.map(careType => `<option value="${escapeHtml(careType)}">${escapeHtml(careType)}</option>`).join('')}
     `;
-    const savedCareType = getSearchCareType();
-    const questionCareType = state.answeredPreferences.careType && careTypeLabels.includes(state.careType)
-      ? state.careType
-      : '';
-    findCareTypeFilter.value = savedCareType ?? questionCareType;
+    findCareTypeFilter.value = savedEaseFilters
+      ? appliedEaseFilters.careType
+      : savedCareType ?? questionCareType;
   }
-  const savedSearchPostcode = getSearchPostcode();
-  let activeFindPostcode = savedSearchPostcode || state.postcode || '50450';
-  if (savedSearchPostcode) state.postcode = savedSearchPostcode;
+  document.getElementById('filterRating').value = String(appliedEaseFilters.minRating);
+  document.getElementById('filterPrice').value = String(appliedEaseFilters.maxPrice);
+  document.getElementById('filterDistance').value = String(appliedEaseFilters.maxDistance);
+  if (activeFindPostcode) state.postcode = activeFindPostcode;
   if (findPostcode) findPostcode.value = activeFindPostcode;
+  function collectDraftEaseFilters() {
+    return {
+      postcode: findPostcode ? findPostcode.value.trim() : activeFindPostcode,
+      minRating: Number(document.getElementById('filterRating').value) || 0,
+      maxPrice: Number(document.getElementById('filterPrice').value) || 0,
+      maxDistance: Number(document.getElementById('filterDistance').value) || 0,
+      careType: findCareTypeFilter ? findCareTypeFilter.value : '',
+      availability: draftAvailabilityFilter,
+    };
+  }
+
+  function saveAppliedEaseFilters() {
+    writeEaseFilters(appliedEaseFilters);
+  }
+
+  function applyEaseFilters(filters) {
+    appliedEaseFilters = { ...filters };
+    activeFindPostcode = filters.postcode || activeFindPostcode || '50450';
+    draftAvailabilityFilter = filters.availability;
+    state.postcode = activeFindPostcode;
+    if (findPostcode) findPostcode.value = activeFindPostcode;
+    document.getElementById('filterRating').value = String(filters.minRating);
+    document.getElementById('filterPrice').value = String(filters.maxPrice);
+    document.getElementById('filterDistance').value = String(filters.maxDistance);
+    if (findCareTypeFilter) findCareTypeFilter.value = filters.careType;
+    updateFindDraftStatus();
+  }
+
+  function clearEaseFilters() {
+    const findContainer = findResultsCount && findResultsCount.closest('.find-container');
+    if (findContainer) findContainer.style.paddingBottom = '';
+    applyEaseFilters({
+      postcode: '50450',
+      minRating: 0,
+      maxPrice: 0,
+      maxDistance: 0,
+      careType: '',
+      availability: null,
+    });
+    saveAppliedEaseFilters();
+    saveSearchPostcode(appliedEaseFilters.postcode);
+    saveSearchCareType('');
+    saveState();
+  }
+
+  function syncAvailabilityFilterFromState() {
+    draftAvailabilityFilter = getRequestedAvailabilityFilter();
+    updateFindDraftStatus();
+  }
+
+  function updateFindDraftStatus() {
+    if (!findFiltersChangedMessage) return;
+    const draft = collectDraftEaseFilters();
+    const isUnchanged = draft.postcode === appliedEaseFilters.postcode &&
+      draft.minRating === appliedEaseFilters.minRating &&
+      draft.maxPrice === appliedEaseFilters.maxPrice &&
+      draft.maxDistance === appliedEaseFilters.maxDistance &&
+      draft.careType === appliedEaseFilters.careType &&
+      JSON.stringify(draft.availability || null) === JSON.stringify(appliedEaseFilters.availability || null);
+    findFiltersChangedMessage.hidden = isUnchanged;
+  }
+
   let activeSitterFilter = 'all';
 
   function scrollFindResults() {
-    const resultsTarget = findSitterList && findSitterList.children.length
-      ? findResultsCount
-      : findEmptyState;
-    if (!resultsTarget || resultsTarget.style.display === 'none') return;
-    resultsTarget.scrollIntoView({
+    if (!findResultsCount) return;
+    const findContainer = findResultsCount.closest('.find-container');
+    const scrollElement = document.scrollingElement;
+    if (findContainer && scrollElement) {
+      findContainer.style.paddingBottom = '';
+      const heading = findResultsCount.getBoundingClientRect();
+      const minimumScrollToShowHeading = heading.bottom + window.scrollY - window.innerHeight + 8;
+      const maximumScroll = scrollElement.scrollHeight - window.innerHeight;
+      const extraSpace = Math.max(0, minimumScrollToShowHeading - maximumScroll);
+      if (extraSpace) findContainer.style.paddingBottom = `${extraSpace}px`;
+    }
+    findResultsCount.focus({ preventScroll: true });
+    findResultsCount.scrollIntoView({
       behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',
       block: 'start',
     });
@@ -1566,11 +1690,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
       clearHomeSearchError();
       state.postcode = postcode;
-      saveState();
-      saveSearchPostcode(postcode);
+      if (findPostcode) findPostcode.value = postcode;
       findFilters.forEach(filter => {
         if (filter.id !== 'filterCareType') filter.value = '0';
       });
+      applyEaseFilters(collectDraftEaseFilters());
+      saveAppliedEaseFilters();
+      saveSearchPostcode(postcode);
+      saveSearchCareType(appliedEaseFilters.careType);
+      saveState();
       showScreen('find');
       scrollFindResults();
     });
@@ -1598,10 +1726,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (mode === 'match') {
         return (matchScores[b.dataset.sitterId] || 0) - (matchScores[a.dataset.sitterId] || 0) ||
           Number(b.dataset.preferenceCount) - Number(a.dataset.preferenceCount) ||
-          Number(a.dataset.distanceKm) - Number(b.dataset.distanceKm);
-      }
-      if (mode === 'preferences') {
-        return Number(b.dataset.preferenceCount) - Number(a.dataset.preferenceCount) ||
           Number(a.dataset.distanceKm) - Number(b.dataset.distanceKm);
       }
       if (mode === 'rating') return Number(b.dataset.rating) - Number(a.dataset.rating);
@@ -1640,7 +1764,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const distanceText = `${sitter.area} · ${distanceKm.toFixed(1)} km away`;
       const preferences = getPreferencesForSitter(sitter);
-      const preferenceSummary = card.querySelector('[data-preference-summary]');
       const preferenceList = card.querySelector('[data-preference-list]');
       const careTypeChips = card.querySelector('[data-care-types]');
       const matchScore = card.querySelector('[data-match-score]');
@@ -1657,7 +1780,6 @@ document.addEventListener('DOMContentLoaded', () => {
         recommendationBox.append(title, whyRecommended);
         card.querySelector('.sitter-bottom')?.before(recommendationBox);
       }
-      if (preferenceSummary) preferenceSummary.innerHTML = renderPreferenceSummary(sitter, preferences);
       if (preferenceList) preferenceList.innerHTML = renderPreferenceCardList(preferences);
       if (careTypeChips) careTypeChips.innerHTML = renderCareTypeChips(sitter);
       if (matchScore) {
@@ -1730,6 +1852,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateCompareBar() {
     const checked = Array.from(compareInputs).filter(i => i.checked);
     state.comparedSitters = new Set(checked.map(i => i.getAttribute('data-sitter-id')));
+    state.compareSelectionCustom = true;
 
     if (checked.length >= 2) {
       compareFloatingBar.style.display = 'block';
@@ -1753,13 +1876,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function renderActiveFindFilters() {
-    const activeFilters = [];
-    if (activeFindPostcode !== '50450') activeFilters.push(`Postcode ${activeFindPostcode}`);
-    findFilters.forEach(filter => {
-      if (filter.value && filter.value !== '0') {
-        activeFilters.push(filter.options[filter.selectedIndex].textContent.trim());
-      }
-    });
+    const activeFilters = getEaseFilterLabels(appliedEaseFilters);
 
     findActiveFilters.innerHTML = activeFilters.length ? `
       <div class="find-filter-chips">
@@ -1775,46 +1892,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderFindSitters() {
     if (!findSitterList) return;
-    const minRating = Number(document.getElementById('filterRating').value);
-    const maxPrice = Number(document.getElementById('filterPrice').value);
-    const maxDistance = Number(document.getElementById('filterDistance').value);
-    const careType = findCareTypeFilter ? findCareTypeFilter.value : '';
-    if (!postcodeLocations[activeFindPostcode]) {
-      findSitterList.innerHTML = '';
-      findSitterList.style.display = 'none';
-      findResultsCount.textContent = '';
-      findEmptyState.innerHTML = '<p role="alert">We could not find that postcode. Try 50450, 59000 or 50480.</p>';
-      findEmptyState.style.display = 'block';
-      renderActiveFindFilters();
-      return;
-    }
+    const filters = appliedEaseFilters;
+    const filteredSitters = getMatchingSitters(filters)
+      .map(sitter => ({ ...sitter, preferences: getPreferencesForSitter(sitter) }));
 
-    const sitters = Object.values(sittersData).map(sitter => {
-      const distanceKm = calculateDistanceKm(activeFindPostcode, sitter.postcode);
-      if (distanceKm === null) {
-        throw new Error(`Missing postcode coordinates for ${sitter.id}`);
-      }
-      return { ...sitter, distanceKm, preferences: getPreferencesForSitter(sitter) };
-    });
-    const withinTravelAndDistance = sitters.filter(sitter =>
-      sitter.distanceKm <= sitter.travelKm && (!maxDistance || sitter.distanceKm <= maxDistance)
-    );
-    const filteredSitters = withinTravelAndDistance.filter(sitter => {
-      const availabilityPreference = sitter.preferences.find(preference => preference.key === 'availability');
-      const availableForRequest = !state.answeredPreferences.availability ||
-        !availabilityPreference || availabilityPreference.met;
-      const meetsCareType = !careType || (sitter.careTypes || []).includes(careType);
-      return sitter.ratingValue >= minRating &&
-        (!maxPrice || sitter.price <= maxPrice) &&
-        availableForRequest &&
-        meetsCareType;
-    }).sort((a, b) =>
-      b.preferences.filter(preference => preference.met).length -
-      a.preferences.filter(preference => preference.met).length ||
-      a.distanceKm - b.distanceKm
-    );
-
-    findSitterList.style.display = '';
+    findSitterList.style.display = filteredSitters.length ? '' : 'none';
     findSitterList.innerHTML = filteredSitters.map(sitter => {
       const certificateChips = sitter.certs.slice(0, 2).map(cert =>
         `<span class="chip"><span class="check-icon" aria-hidden="true">✓</span>${escapeHtml(cert.name)}</span>`
@@ -1837,11 +1919,10 @@ document.addEventListener('DOMContentLoaded', () => {
                   Ease Trained
                 </span>
               </div>
-              <span class="preference-summary-slot">${renderPreferenceSummary(sitter, sitter.preferences)}</span>
               <p class="sitter-meta">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>${sitter.age} years old ·
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="14" rx="2"></rect><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>${escapeHtml(sitter.exp)} experience ·
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>${escapeHtml(sitter.area)} · ${sitter.distanceKm.toFixed(1)} km away
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>${escapeHtml(sitter.area)} · ${Number.isFinite(sitter.distanceKm) ? `${sitter.distanceKm.toFixed(1)} km away` : 'distance unavailable'}
               </p>
               <div class="stars-row" aria-label="Rating: ${sitter.ratingValue} out of 5 stars">
                 <span class="find-stars">${stars}</span>
@@ -1867,8 +1948,13 @@ document.addEventListener('DOMContentLoaded', () => {
     findResultsCount.textContent = `${filteredSitters.length} ${filteredSitters.length === 1 ? 'babysitter' : 'babysitters'} found`;
     if (!filteredSitters.length) {
       findEmptyState.innerHTML = `
-        <p>No babysitters match these filters. Try a different care type.</p>
-        <button type="button" class="btn btn-secondary reset-find-filters">Reset filters</button>
+        <svg class="find-empty-state-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"></circle>
+          <line x1="16" y1="16" x2="21" y2="21"></line>
+        </svg>
+        <h2 class="card-title">No babysitters match your filters</h2>
+        <p>Try changing your filters to see more.</p>
+        <button type="button" class="clear-filters-link reset-find-filters">Clear filters</button>
       `;
       findEmptyState.style.display = 'block';
     } else {
@@ -1880,44 +1966,42 @@ document.addEventListener('DOMContentLoaded', () => {
   if (findEmptyState) {
     findEmptyState.addEventListener('click', event => {
       if (!event.target.closest('.reset-find-filters')) return;
-      findFilters.forEach(filter => {
-        filter.value = filter.id === 'filterCareType' ? '' : '0';
-      });
-      saveSearchCareType('');
+      clearEaseFilters();
       renderFindSitters();
-      scrollFindResults();
     });
   }
 
   if (findForm && findPostcode) {
     findForm.addEventListener('submit', event => {
       event.preventDefault();
-      const postcode = findPostcode.value.trim();
+      const filters = collectDraftEaseFilters();
+      const postcode = filters.postcode;
       if (!/^\d{5}$/.test(postcode)) {
         findPostcode.setCustomValidity('Enter a 5-digit postcode.');
         findPostcode.reportValidity();
         return;
       }
       findPostcode.setCustomValidity('');
-      activeFindPostcode = postcode;
-      state.postcode = postcode;
+      filters.postcode = postcode;
+      applyEaseFilters(filters);
       saveSearchPostcode(postcode);
+      saveSearchCareType(filters.careType);
       state.answeredPreferences.distance = true;
       saveState();
+      saveAppliedEaseFilters();
       renderFindSitters();
       scrollFindResults();
     });
-    findPostcode.addEventListener('input', () => findPostcode.setCustomValidity(''));
-    findFilters.forEach(filter => filter.addEventListener('change', () => {
-      if (filter.id === 'filterCareType') saveSearchCareType(filter.value);
-      renderFindSitters();
-      scrollFindResults();
-    }));
+    findPostcode.addEventListener('input', () => {
+      findPostcode.setCustomValidity('');
+      updateFindDraftStatus();
+    });
+    findFilters.forEach(filter => filter.addEventListener('change', updateFindDraftStatus));
   }
 
   if (findSitterList) {
     findSitterList.addEventListener('click', event => {
-      if (event.target.closest('.preferences-expand-link, .preference-info')) return;
+      if (event.target.closest('.preferences-expand-link')) return;
       const card = event.target.closest('.find-sitter-card');
       if (!card) return;
       state.selectedSitterId = card.dataset.sitterId;
@@ -1931,21 +2015,14 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    if (findActiveFilters) {
-      findActiveFilters.addEventListener('click', event => {
-        if (!event.target.closest('.clear-filters-link')) return;
-        findFilters.forEach(filter => {
-          filter.value = filter.id === 'filterCareType' ? '' : '0';
-        });
-        saveSearchCareType('');
-        activeFindPostcode = '50450';
-        state.postcode = activeFindPostcode;
-        findPostcode.value = activeFindPostcode;
-        saveSearchPostcode(activeFindPostcode);
-        saveState();
-        renderFindSitters();
-      });
-    }
+  }
+
+  if (findActiveFilters) {
+    findActiveFilters.addEventListener('click', event => {
+      if (!event.target.closest('.clear-filters-link')) return;
+      clearEaseFilters();
+      renderFindSitters();
+    });
   }
 
   // View Profile buttons on Matches screen
@@ -2247,6 +2324,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   [btnProfileCompare, btnProfileMobileCompare].forEach(button => {
     if (button) button.addEventListener('click', () => {
+      compareProfileSitterId = state.selectedSitterId;
       state.comparedSitters = new Set([
         state.selectedSitterId,
         ...Array.from(state.comparedSitters).filter(id => id !== state.selectedSitterId),
@@ -2303,6 +2381,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const compareCompactColumns = document.getElementById('compareCompactColumns');
   const compareExpandedHeader = document.getElementById('compareExpandedHeader');
   const compareCompactBar = document.getElementById('compareCompactBar');
+  const compareScreenContainer = document.querySelector('#screenCompare .compare-screen-container');
+  const compareFilterSummary = document.getElementById('compareFilterSummary');
+  const compareEmptyState = document.getElementById('compareEmptyState');
+  const compareLimitedState = document.getElementById('compareLimitedState');
+  const compareLimitedMessage = document.getElementById('compareLimitedMessage');
   let compareCompactFrame = 0;
 
   function updateCompareCompactBar() {
@@ -2336,28 +2419,127 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('resize', scheduleCompareCompactBarUpdate, { passive: true });
   window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', scheduleCompareCompactBarUpdate);
 
+  function getEaseFilterLabels(filters) {
+    const labels = [];
+    if (filters.minRating) labels.push(`${filters.minRating} stars & up`);
+    if (filters.maxPrice) labels.push(`Up to RM ${filters.maxPrice}`);
+    if (filters.maxDistance) labels.push(`Within ${filters.maxDistance} km`);
+    if (filters.careType) labels.push(filters.careType);
+    if (filters.availability) {
+      const availability = typeof filters.availability === 'string'
+        ? filters.availability
+        : filters.availability.customDate || filters.availability.day ||
+          (filters.availability.when ? filters.availability.when.toLowerCase() : '');
+      if (availability) labels.push(`Available ${availability}`);
+    }
+    return labels;
+  }
+
+  function renderCompareFilterSummary(filters, matchingCount) {
+    const labels = getEaseFilterLabels(filters);
+    const chips = labels.length
+      ? labels.map(label => `
+          <span class="compare-filter-chip">
+            <span class="check-icon" aria-hidden="true">✓</span>${escapeHtml(label)}
+          </span>`).join('')
+      : '<span class="compare-filter-all">All babysitters</span>';
+    const countLabel = `${matchingCount} babysitter${matchingCount === 1 ? '' : 's'} ${matchingCount === 1 ? 'matches' : 'match'}`;
+    compareFilterSummary.innerHTML = `
+      <div class="compare-filter-summary-label">
+        <strong>Showing babysitters that match:</strong>
+        <div class="compare-filter-chips">${chips}</div>
+      </div>
+      <div class="compare-filter-summary-actions">
+        <strong class="compare-match-count">${escapeHtml(countLabel)}</strong>
+        <button type="button" class="compare-filter-link" data-compare-action="edit">Edit filters</button>
+        <button type="button" class="compare-filter-link" data-compare-action="clear">Clear filters</button>
+      </div>`;
+  }
+
+  function renderCompareEmptyState() {
+    compareEmptyState.innerHTML = `
+      <svg class="find-empty-state-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="7"></circle>
+        <line x1="16" y1="16" x2="21" y2="21"></line>
+      </svg>
+      <h2 class="card-title">No babysitters match your filters</h2>
+      <p>Try changing your filters to see more.</p>
+      <button type="button" class="btn btn-primary compare-edit-filters">Edit filters</button>`;
+  }
+
   function populateCompareTable() {
-    const selectedIds = Array.from(state.comparedSitters).filter(id => sittersData[id]).slice(0, 3);
-    const getSitterPreferenceCount = id => getPreferencesForSitter(sittersData[id]).filter(preference => preference.met).length;
-    const getSitterDistance = id => calculateDistanceKm(state.postcode, sittersData[id].postcode) ?? Number.POSITIVE_INFINITY;
-    const preferredIds = [
-      state.selectedSitterId,
-      ...Object.keys(sittersData).sort((a, b) =>
-        getSitterPreferenceCount(b) - getSitterPreferenceCount(a) ||
-        getSitterDistance(a) - getSitterDistance(b)
-      ),
-    ].filter(id => sittersData[id]);
-    const sitterIds = [...new Set([...selectedIds, ...preferredIds])].slice(0, Math.max(2, selectedIds.length));
-    const sitterSlots = [...sitterIds.map(id => sittersData[id]), null, null].slice(0, 3);
     if (!compareHeaderColumns || !compareFeatureSections || !compareCompactColumns) return;
 
-    state.comparedSitters = new Set(sitterIds);
+    const filters = appliedEaseFilters;
+    const matchingSitters = getMatchingSitters(filters);
+    const matchingIds = matchingSitters.map(sitter => sitter.id);
+    const matchingIdSet = new Set(matchingIds);
+    const profileSitter = compareProfileSitterId && sittersData[compareProfileSitterId]
+      ? sittersData[compareProfileSitterId]
+      : null;
+    const showProfileOverride = Boolean(profileSitter &&
+      !matchingIdSet.has(profileSitter.id) && getEaseFilterLabels(filters).length);
+    const candidateIds = [
+      ...(profileSitter ? [profileSitter.id] : []),
+      ...matchingIds.filter(id => !profileSitter || id !== profileSitter.id),
+    ];
+    const savedIds = (state.compareSelectionCustom ? Array.from(state.comparedSitters) : []).filter(id =>
+      matchingIdSet.has(id) || (showProfileOverride && profileSitter && id === profileSitter.id)
+    );
+    const orderedIds = [...new Set([
+      ...(profileSitter ? [profileSitter.id] : []),
+      ...savedIds,
+      ...candidateIds,
+    ])];
+    const selectedCount = orderedIds.length >= 3 && state.comparedSitters.size >= 3
+      ? 3
+      : Math.min(2, orderedIds.length);
+    const selectedIds = orderedIds.slice(0, selectedCount);
+    const needsThirdSlot = candidateIds.length >= 3 && selectedIds.length < 3;
+    const slotCount = Math.min(3, Math.max(selectedIds.length, needsThirdSlot ? 3 : 0));
+    const sitterSlots = Array.from({ length: slotCount }, (_, index) => {
+      const id = selectedIds[index];
+      if (!id) return null;
+      return matchingSitters.find(sitter => sitter.id === id) || sittersData[id];
+    });
+
+    renderCompareFilterSummary(filters, matchingSitters.length);
+    compareHeaderColumns.style.display = slotCount ? '' : 'none';
+    compareExpandedHeader.style.display = slotCount ? '' : 'none';
+    compareFeatureSections.style.display = slotCount ? '' : 'none';
+    compareCompactColumns.style.display = slotCount ? '' : 'none';
+    compareCompactBar.style.display = slotCount ? '' : 'none';
+    compareEmptyState.hidden = matchingSitters.length !== 0;
+    if (!matchingSitters.length) renderCompareEmptyState();
+    compareLimitedState.hidden = matchingSitters.length !== 1;
+    if (matchingSitters.length === 1) {
+      compareLimitedMessage.textContent = 'Only one babysitter matches your filters.';
+    }
+
+    if (!slotCount) {
+      compareHeaderColumns.innerHTML = '';
+      compareCompactColumns.innerHTML = '';
+      compareFeatureSections.innerHTML = '';
+      state.comparedSitters = new Set();
+      return;
+    }
+
+    state.comparedSitters = new Set(selectedIds);
+    saveState();
 
     compareHeaderColumns.dataset.sitterCount = String(sitterSlots.filter(Boolean).length);
     compareCompactColumns.dataset.sitterCount = String(sitterSlots.filter(Boolean).length);
+    if (compareScreenContainer) compareScreenContainer.style.setProperty('--cols', String(Math.max(1, slotCount)));
     compareHeaderColumns.innerHTML = sitterSlots.map((sitter, slot) => {
-      const options = Object.values(sittersData).map(option => {
-        const selectedElsewhere = sitterSlots.some((other, otherSlot) => otherSlot !== slot && other && other.id === option.id);
+      const optionIds = [
+        ...matchingIds,
+        ...(showProfileOverride && slot === 0 && profileSitter ? [profileSitter.id] : []),
+      ];
+      const options = optionIds.map(id => {
+        const option = sittersData[id];
+        const selectedElsewhere = sitterSlots.some((other, otherSlot) =>
+          otherSlot !== slot && other && other.id === option.id
+        );
         return `<option value="${option.id}"${sitter && sitter.id === option.id ? ' selected' : ''}${selectedElsewhere ? ' disabled' : ''}>${escapeHtml(option.name)}</option>`;
       }).join('');
       const emptyOption = `<option value=""${slot < 2 ? ' disabled' : ''}${sitter ? '' : ' selected'}>Choose a babysitter</option>`;
@@ -2378,7 +2560,9 @@ document.addEventListener('DOMContentLoaded', () => {
         </article>`;
       }
 
+      const isProfileMismatch = showProfileOverride && sitter.id === profileSitter.id;
       return `<article class="compare-sitter-column">${selector}
+        ${isProfileMismatch ? '<p class="compare-filter-mismatch-note">Does not match your filters</p>' : ''}
         <div class="compare-sitter-details">
           <div class="compare-header-identity" aria-label="${escapeHtml(sitter.name)}">
             <div class="photo-placeholder compare-header-photo" role="img" aria-label="Photo placeholder for ${escapeHtml(sitter.name)}">
@@ -2391,7 +2575,6 @@ document.addEventListener('DOMContentLoaded', () => {
               Ease Trained
             </span>
             <p class="compare-header-price">${escapeHtml(sitter.rateText)} / hr</p>
-            <div class="preference-summary-slot">${renderPreferenceSummary(sitter, undefined, false)}</div>
             <div class="compare-header-actions">
               <button type="button" class="compare-view-profile" data-sitter-id="${sitter.id}">
                 View profile
@@ -2472,6 +2655,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const currentIds = [...state.comparedSitters];
       const slots = [...currentIds, null, null].slice(0, 3);
       const newId = event.target.value;
+      const filters = appliedEaseFilters;
+      const matchingIds = new Set(getMatchingSitters(filters).map(sitter => sitter.id));
+      const isAllowedProfileOverride = slot === 0 && compareProfileSitterId === newId &&
+        !matchingIds.has(newId);
+      if (newId && !matchingIds.has(newId) && !isAllowedProfileOverride) {
+        populateCompareTable();
+        return;
+      }
       if (slot < 2 && !newId) {
         populateCompareTable();
         return;
@@ -2480,8 +2671,14 @@ document.addEventListener('DOMContentLoaded', () => {
         populateCompareTable();
         return;
       }
+      if (slot === 0 && compareProfileSitterId && newId !== compareProfileSitterId) {
+        compareProfileSitterId = null;
+      }
       slots[slot] = newId || null;
-      state.comparedSitters = new Set(slots.filter(Boolean));
+      state.comparedSitters = new Set(slots.filter(id =>
+        id && (matchingIds.has(id) || (compareProfileSitterId === id && isAllowedProfileOverride))
+      ));
+      state.compareSelectionCustom = true;
       saveState();
       populateCompareTable();
     });
@@ -2492,9 +2689,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (addButton) {
         const currentIds = Array.from(state.comparedSitters).filter(id => sittersData[id]);
         if (currentIds.length >= 3) return;
-        const nextId = Object.keys(sittersData).find(id => !currentIds.includes(id));
+        const filters = appliedEaseFilters;
+        const nextId = getMatchingSitters(filters).find(sitter => !currentIds.includes(sitter.id))?.id;
         if (!nextId) return;
         state.comparedSitters = new Set([...currentIds, nextId]);
+        state.compareSelectionCustom = true;
         populateCompareTable();
         saveState();
         return;
@@ -2507,6 +2706,29 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
+    });
+  }
+
+  if (compareFilterSummary) {
+    compareFilterSummary.addEventListener('click', event => {
+      if (!(event.target instanceof Element)) return;
+      const action = event.target.closest('[data-compare-action]')?.dataset.compareAction;
+      if (action === 'edit') {
+        showScreen('find');
+      } else if (action === 'clear') {
+        clearEaseFilters();
+        renderFindSitters();
+        populateCompareTable();
+      }
+    });
+  }
+
+  const compareScreen = document.getElementById('screenCompare');
+  if (compareScreen) {
+    compareScreen.addEventListener('click', event => {
+      if (event.target instanceof Element && event.target.closest('.compare-edit-filters')) {
+        showScreen('find');
+      }
     });
   }
 
@@ -4052,10 +4274,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const bookingSitter = sittersData[state.selectedSitterId] || sittersData['sarah-lim'];
     const nextBooking = getUpcomingBookings()[0] || null;
 
-    document.querySelectorAll('[data-preference-sitter]').forEach(slot => {
-      const sitter = sittersData[slot.dataset.preferenceSitter];
-      if (sitter) slot.innerHTML = renderPreferenceSummary(sitter);
-    });
     document.querySelectorAll('.home-sitter-card[data-sitter-id]').forEach(card => {
       const sitter = sittersData[card.dataset.sitterId];
       if (!sitter) return;
