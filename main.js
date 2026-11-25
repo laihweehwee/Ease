@@ -1,5 +1,5 @@
 // Ease Babysitter - Comprehensive Application Logic (Phase 1 & Phase 2)
-import { babysittersData as sittersData, careTypeLabels, postcodeLocations } from './data/babysitters.js';
+import { babysittersData as sittersData, careTypeLabels, getMatchingSitters, postcodeLocations } from './data/babysitters.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   const defaultBookingDate = new Date();
@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
       extras: false,
     },
     comparedSitters: new Set(),
+    compareSelectionCustom: false,
 
     // User & Auth state
     isLoggedIn: false,
@@ -68,10 +69,10 @@ document.addEventListener('DOMContentLoaded', () => {
     bookingIntent: true, // true if booking, false if messaging
     bookingData: {
       childName: 'Liam',
-      date: defaultBookingDateValue,
+      date: '2026-11-20',
       time: '14:00',
       hours: 4,
-      location: '50450 Kuala Lumpur',
+      location: 'Bangsar, Kuala Lumpur',
       specialReq: '',
       extraNotes: '',
       isTrial: false,
@@ -85,6 +86,13 @@ document.addEventListener('DOMContentLoaded', () => {
     selectedPaymentMethod: 'fpx',
   };
 
+  const sampleJobDateLabel = defaultBookingDate.toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' });
+  let savedJobStatuses = {};
+  try {
+    savedJobStatuses = JSON.parse(localStorage.getItem('ease_sitter_job_statuses') || '{}');
+  } catch (error) {
+    console.warn('Could not load sitter job statuses', error);
+  }
   const sampleJobRequests = [
     {
       id: 'job-001',
@@ -92,13 +100,16 @@ document.addEventListener('DOMContentLoaded', () => {
       area: 'Bangsar, Kuala Lumpur',
       childrenCount: '1 child',
       childAges: '2 years old',
-      date: 'Tomorrow',
+      date: sampleJobDateLabel,
+      dateKey: defaultBookingDateValue,
       time: '9:00 AM – 1:00 PM',
+      startTime: '09:00 AM',
+      endTime: '01:00 PM',
       location: 'Bangsar, Kuala Lumpur',
       tasks: 'Prepare snacks, playtime, and follow the nap routine.',
       specialNeeds: 'No special needs noted.',
       pay: 25,
-      status: 'available',
+      status: savedJobStatuses['job-001'] || 'available',
     },
     {
       id: 'job-002',
@@ -106,13 +117,16 @@ document.addEventListener('DOMContentLoaded', () => {
       area: 'Mont Kiara, Kuala Lumpur',
       childrenCount: '2 children',
       childAges: '3 and 6 years old',
-      date: 'Saturday',
-      time: '2:00 PM – 6:00 PM',
+      date: sampleJobDateLabel,
+      dateKey: defaultBookingDateValue,
+      time: '11:00 AM – 3:00 PM',
+      startTime: '11:00 AM',
+      endTime: '03:00 PM',
       location: 'Mont Kiara, Kuala Lumpur',
       tasks: 'Prepare a light meal, supervise play, and help with reading.',
       specialNeeds: 'No special needs noted.',
       pay: 28,
-      status: 'available',
+      status: savedJobStatuses['job-002'] || 'available',
     },
   ];
   let selectedJobRequestId = null;
@@ -181,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (state.children.length) state.child = state.children[0];
   ensureChildIds(state.children);
 
-  const bookingStatuses = ['waiting', 'accepted', 'declined', 'paid', 'confirmed', 'cancelled', 'completed'];
+  const bookingStatuses = ['waiting', 'accepted', 'paid', 'confirmed', 'in_progress', 'completed', 'declined', 'cancelled'];
   let activeBookingsTab = 'upcoming';
   let bookings = [];
   try {
@@ -266,6 +280,47 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function getRequestedAvailabilityFilter() {
+    if (!state.answeredPreferences.availability) return null;
+    if ((state.when === 'Pick a date' || state.when === 'Custom date') && !state.customDate) return null;
+    return {
+      when: state.when,
+      customDate: state.customDate,
+      time: state.bookingData && state.bookingData.time,
+    };
+  }
+
+  function readEaseFilters() {
+    try {
+      const saved = localStorage.getItem('easeFilters');
+      if (!saved) return null;
+      const parsed = JSON.parse(saved);
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
+      return {
+        postcode: /^\d{5}$/.test(String(parsed.postcode || '')) ? String(parsed.postcode) : '',
+        minRating: Number.isFinite(Number(parsed.minRating)) ? Math.max(0, Number(parsed.minRating)) : 0,
+        maxPrice: Number.isFinite(Number(parsed.maxPrice)) ? Math.max(0, Number(parsed.maxPrice)) : 0,
+        maxDistance: Number.isFinite(Number(parsed.maxDistance)) ? Math.max(0, Number(parsed.maxDistance)) : 0,
+        careType: careTypeLabels.includes(parsed.careType) ? parsed.careType : '',
+        availability: typeof parsed.availability === 'string' ||
+          (parsed.availability && typeof parsed.availability === 'object')
+          ? parsed.availability
+          : null,
+      };
+    } catch (e) {
+      console.warn('Could not load Ease filters', e);
+      return null;
+    }
+  }
+
+  function writeEaseFilters(filters) {
+    try {
+      localStorage.setItem('easeFilters', JSON.stringify(filters));
+    } catch (e) {
+      console.warn('Could not save Ease filters', e);
+    }
+  }
+
   function getDateValueOffset(dayOffset) {
     const date = new Date();
     date.setDate(date.getDate() + dayOffset);
@@ -288,7 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const today = getTodayDateValue();
     return bookings
       .filter(booking =>
-        ['waiting', 'accepted', 'paid', 'confirmed'].includes(booking.status) &&
+        ['waiting', 'accepted', 'paid', 'confirmed', 'in_progress'].includes(booking.status) &&
         booking.date >= today
       )
       .sort((a, b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime));
@@ -406,8 +461,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const normalizedHaversine = Math.min(1, Math.max(0, haversine));
     return 6371 * 2 * Math.atan2(Math.sqrt(normalizedHaversine), Math.sqrt(1 - normalizedHaversine));
   }
-
-  const preferenceTooltipText = 'This counts how many of your preferences this babysitter fits. It is not a rating.';
 
   function formatPreferenceTime(time) {
     const [hourText, minuteText] = String(time).split(':');
@@ -567,25 +620,6 @@ document.addEventListener('DOMContentLoaded', () => {
     return preferences;
   }
 
-  function renderPreferenceSummary(sitter, preferences = getPreferencesForSitter(sitter), showInfo = true) {
-    if (!preferences.length) return '';
-    const metCount = preferences.filter(preference => preference.met).length;
-    const allMet = metCount === preferences.length;
-    const label = preferences.length === 1 && allMet
-      ? '1 preference met'
-      : allMet
-        ? `All ${preferences.length} preferences met`
-        : `${metCount} of ${preferences.length} preferences met`;
-    return `
-      <span class="preference-summary-chip${allMet ? ' all-met' : ''}">
-        <svg class="preference-summary-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
-        <span>${escapeHtml(label)}</span>
-      </span>
-      ${showInfo ? `<span class="preference-info" title="${preferenceTooltipText}" aria-label="${preferenceTooltipText}" tabindex="0">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><line x1="12" y1="11" x2="12" y2="16"></line><line x1="12" y1="7" x2="12.01" y2="7"></line></svg>
-      </span>` : ''}`;
-  }
-
   function getListedPreferences(preferences) {
     return preferences.filter(preference => preference.key !== 'distance');
   }
@@ -727,6 +761,7 @@ document.addEventListener('DOMContentLoaded', () => {
     bookingStatus: document.getElementById('screenBookingStatus'),
     payment: document.getElementById('screenPayment'),
     bookingConfirmed: document.getElementById('screenBookingConfirmed'),
+    reschedule: document.getElementById('screenReschedule'),
     parentHome: document.getElementById('screenParentHome'),
     myChildren: document.getElementById('screenMyChildren'),
     babysitterHome: document.getElementById('screenBabysitterHome'),
@@ -734,9 +769,26 @@ document.addEventListener('DOMContentLoaded', () => {
     requestDetail: document.getElementById('screenRequestDetail'),
     parentProfile: document.getElementById('screenParentProfile'),
     chat: document.getElementById('screenChat'),
+    ...(window.easeAdditionalScreens || {}),
   };
+  const combinedPaymentCard = document.querySelector('#screenPayment .payment-card');
+  const acceptedStatusPanel = document.getElementById('statusStateAccepted');
+  if (combinedPaymentCard && acceptedStatusPanel) acceptedStatusPanel.appendChild(combinedPaymentCard);
 
   const hamburgerBtn = document.getElementById('hamburgerBtn');
+  const prototypeNav = document.getElementById('prototypeNav');
+  const prototypePageBanner = document.getElementById('prototypePageBanner');
+  const prototypePageTitle = document.getElementById('prototypePageTitle');
+  const prototypeScreens = ['bookingDetails', 'bookingStatus', 'payment', 'bookingConfirmed', 'reschedule', 'parentHome', 'matches'];
+  const prototypeScreenTitles = {
+    bookingDetails: 'Booking Details',
+    bookingStatus: 'Booking Status',
+    payment: 'Payment',
+    bookingConfirmed: "You're all set!",
+    reschedule: 'Reschedule / Cancel',
+    parentHome: 'Parent Home',
+    matches: 'Top Matches',
+  };
   const navDrawer = document.getElementById('navDrawer');
   const drawerOverlay = document.getElementById('drawerOverlay');
   const drawerCloseBtn = document.getElementById('drawerCloseBtn');
@@ -776,7 +828,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       saveBookings();
     }
-    if (demoControls) demoControls.hidden = !demoModeEnabled;
+    if (demoControls) demoControls.hidden = false;
     if (demoModeBadge) demoModeBadge.hidden = !demoModeEnabled;
     const sampleButton = document.getElementById('btnLoadSampleBookings');
     if (demoModeEnabled && bookingDemoActions && !sampleButton) {
@@ -812,6 +864,7 @@ document.addEventListener('DOMContentLoaded', () => {
   updateDemoModeUI();
 
   let currentScreen = 'welcome';
+  let compareProfileSitterId = null;
   let waitingCountdownInterval = null;
 
   function updateDrawerNavigation(screenId) {
@@ -876,22 +929,72 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function showScreen(screenId) {
     if (!screens[screenId]) return;
+    if (currentScreen === 'compare' && screenId !== 'compare') compareProfileSitterId = null;
+    if (screenId === 'payment') {
+      state.bookingStatusState = 'accepted';
+      screenId = 'bookingStatus';
+    }
     if (['bookingStatus', 'payment', 'bookingConfirmed'].includes(screenId)) {
       const activeBooking = getActiveBooking() || getLatestBooking();
       if (activeBooking) {
         syncBookingToState(activeBooking);
-        if (screenId === 'bookingStatus' && ['paid', 'confirmed', 'completed'].includes(activeBooking.status)) {
-          screenId = 'bookings';
-        }
-      } else {
-        screenId = 'bookings';
       }
     }
 
-    const loggedInOnlyScreens = ['addChild', 'bookingDetails', 'bookingStatus', 'payment', 'bookingConfirmed', 'parentHome', 'parentProfile', 'myChildren', 'chat', 'review'];
+    const loggedInOnlyScreens = [
+      'addChild',
+      'bookingDetails',
+      'bookingStatus',
+      'payment',
+      'bookingConfirmed',
+      'parentHome',
+      'parentProfile',
+      'myChildren',
+      'chat',
+      'review',
+      'sitterDocuments',
+      'sitterApplication',
+      'sitterSchedule',
+      'sitterEarnings'
+    ];
+
+    const roleRequired = {
+      bookings: 'parent',
+      addChild: 'parent',
+      parentHome: 'parent',
+      parentProfile: 'parent',
+      myChildren: 'parent',
+      reschedule: 'parent',
+      review: 'parent',
+      sitterDocuments: 'babysitter',
+      sitterApplication: 'babysitter',
+      sitterHome: 'babysitter',
+      babysitterHome: 'babysitter',
+      sitterSchedule: 'babysitter',
+      sitterEarnings: 'babysitter',
+      availableJobs: 'babysitter',
+      requestDetail: 'babysitter',
+      adminDashboard: 'admin',
+      adminReview: 'admin',
+    }[screenId];
+
+    if (roleRequired && (!state.isLoggedIn || state.user.role !== roleRequired)) {
+      state.authReturnScreen = screenId;
+      state.bookingIntent = false;
+      if (roleRequired === 'admin' && !state.isLoggedIn) {
+        screenId = 'adminLogin';
+      } else if (state.isLoggedIn) {
+        showToast(`Please log in as a ${roleRequired === 'admin' ? 'platform admin' : 'babysitter'} to continue.`);
+        screenId = 'welcome';
+      } else {
+        setAuthMode('signup', roleRequired === 'babysitter' ? 'babysitter' : null);
+        screenId = 'auth';
+      }
+    }
+
     if (!state.isLoggedIn && loggedInOnlyScreens.includes(screenId)) {
       state.bookingIntent = !['parentHome', 'parentProfile', 'chat', 'review'].includes(screenId);
-      state.authReturnScreen = ['parentHome', 'parentProfile', 'myChildren', 'chat', 'review'].includes(screenId) ? screenId : 'booking';
+      state.authReturnScreen = ['addChild', 'parentHome', 'parentProfile', 'myChildren', 'chat', 'review'].includes(screenId) ? screenId : 'booking';
       setAuthMode('signup');
       screenId = 'auth';
     }
@@ -907,6 +1010,16 @@ document.addEventListener('DOMContentLoaded', () => {
     currentScreen = screenId;
 
     window.location.hash = screenId === 'welcome' ? '#/' : `#/${screenId}`;
+    const isPrototypeScreen = prototypeScreens.includes(screenId);
+    document.body.classList.toggle('prototype-flow-active', isPrototypeScreen);
+    if (prototypeNav) prototypeNav.hidden = !isPrototypeScreen;
+    if (prototypePageBanner) prototypePageBanner.hidden = !isPrototypeScreen;
+    if (prototypePageTitle && isPrototypeScreen) prototypePageTitle.textContent = prototypeScreenTitles[screenId];
+    document.querySelectorAll('[data-prototype-screen]').forEach(button => {
+      button.classList.toggle('active', button.dataset.prototypeScreen === screenId);
+      if (button.dataset.prototypeScreen === screenId) button.setAttribute('aria-current', 'page');
+      else button.removeAttribute('aria-current');
+    });
     hamburgerBtn.style.display = 'flex';
     if (topbarLoginBtn) topbarLoginBtn.style.display = state.isLoggedIn ? 'none' : '';
     if (topbarGetStartedBtn) topbarGetStartedBtn.style.display = state.isLoggedIn ? 'none' : '';
@@ -943,11 +1056,8 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (screenId === 'q6') {
       syncQuestionOptions('#screenQ6', state.extras);
     } else if (screenId === 'find') {
-      const savedSearchPostcode = getSearchPostcode();
-      activeFindPostcode = savedSearchPostcode || state.postcode || '50450';
-      if (savedSearchPostcode) state.postcode = savedSearchPostcode;
-      if (findPostcode) findPostcode.value = activeFindPostcode;
       renderFindSitters();
+      updateFindDraftStatus();
     } else if (screenId === 'matches') {
       renderTopMatches();
     } else if (screenId === 'availableJobs') {
@@ -975,6 +1085,8 @@ document.addEventListener('DOMContentLoaded', () => {
       setupPaymentScreen();
     } else if (screenId === 'bookingConfirmed') {
       setupBookingConfirmed();
+    } else if (screenId === 'reschedule') {
+      setupRescheduleScreen();
     } else if (screenId === 'parentHome') {
       setupParentHome();
     } else if (screenId === 'parentProfile') {
@@ -987,7 +1099,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     updateDemoBadgePosition();
+    window.dispatchEvent(new CustomEvent('ease:screenchange', {
+      detail: { screenId, role: state.user.role, isLoggedIn: state.isLoggedIn },
+    }));
     saveState();
+  }
+
+  if (prototypeNav) {
+    prototypeNav.addEventListener('click', event => {
+      const button = event.target.closest('[data-prototype-screen]');
+      if (button) showScreen(button.dataset.prototypeScreen);
+    });
+  }
+
+  const prototypeBackButton = document.getElementById('prototypeBackButton');
+  if (prototypeBackButton) {
+    prototypeBackButton.addEventListener('click', () => {
+      if (currentScreen === 'reschedule') showScreen('parentHome');
+      else if (currentScreen === 'bookingStatus') showScreen('bookingDetails');
+      else if (currentScreen === 'payment') showScreen('bookingStatus');
+      else if (currentScreen === 'bookingConfirmed') showScreen('payment');
+      else showScreen('bookingDetails');
+    });
+  }
+
+  const btnMatchesBackToBooking = document.getElementById('btnMatchesBackToBooking');
+  if (btnMatchesBackToBooking) {
+    btnMatchesBackToBooking.addEventListener('click', () => showScreen('bookingDetails'));
   }
 
   // Topbar Logo goes to Welcome / Home
@@ -1099,7 +1237,13 @@ document.addEventListener('DOMContentLoaded', () => {
       if (card.id === 'roleNeedSitterCard') {
         showScreen('q1');
       } else {
-        showScreen('babysitterHome');
+        if (state.isLoggedIn) {
+          if (state.user.role === 'babysitter') showScreen('sitterHome');
+          else showToast('Log out of your current account to start a babysitter profile.');
+        } else {
+          state.user.role = 'babysitter';
+          showScreen('sitterQ1');
+        }
       }
     });
     card.addEventListener('keydown', (e) => {
@@ -1200,7 +1344,84 @@ document.addEventListener('DOMContentLoaded', () => {
         showScreen('availableJobs');
         return;
       }
+      if (button.id === 'btnAcceptRequest' && (!state.isLoggedIn || state.user.role !== 'babysitter')) {
+        state.authReturnScreen = 'requestDetail';
+        state.bookingIntent = false;
+        if (state.isLoggedIn) {
+          showToast('Log in with a babysitter account to accept this job.');
+          return;
+        }
+        setAuthMode('signup', 'babysitter');
+        showScreen('auth');
+        return;
+      }
+      if (button.id === 'btnAcceptRequest') {
+        const toMinutes = value => {
+          if (!value) return null;
+          const text = String(value).trim();
+          const match = text.match(/^(\d{1,2}):(\d{2})(?:\s*(AM|PM))?$/i);
+          if (!match) return null;
+          let hour = Number(match[1]);
+          const minute = Number(match[2]);
+          if (match[3]) {
+            const meridiem = match[3].toUpperCase();
+            if (meridiem === 'PM' && hour < 12) hour += 12;
+            if (meridiem === 'AM' && hour === 12) hour = 0;
+          }
+          return hour * 60 + minute;
+        };
+        let acceptedJobs = [];
+        let storedBookings = [];
+        try {
+          acceptedJobs = JSON.parse(localStorage.getItem('ease_sitter_jobs') || '[]');
+          storedBookings = JSON.parse(localStorage.getItem('easeBookings') || '[]');
+        } catch (error) {
+          console.error('Could not check the sitter schedule', error);
+          showToast('We could not check your schedule. Please try again.');
+          return;
+        }
+        const proposedStart = toMinutes(request.startTime);
+        const proposedEnd = toMinutes(request.endTime);
+        const overlaps = item => {
+          if (item.dateKey !== request.dateKey && item.date !== request.dateKey) return false;
+          const start = toMinutes(item.startTime || item.time);
+          const end = toMinutes(item.endTime) ?? (start == null ? null : start + Number(item.hours || 4) * 60);
+          return start != null && end != null && proposedStart < end && proposedEnd > start;
+        };
+        if (acceptedJobs.some(item => item.status === 'accepted' && overlaps(item)) ||
+          storedBookings.some(item => ['confirmed', 'paid'].includes(item.status) && overlaps(item))) {
+          window.alert('Schedule Conflict: You already have a confirmed booking on this date and time. You cannot accept overlapping jobs.');
+          return;
+        }
+        acceptedJobs.push({
+          id: request.id,
+          dateKey: request.dateKey,
+          startTime: request.startTime,
+          endTime: request.endTime,
+          time: request.time,
+          parent: request.parent,
+          location: request.location,
+          child: request.childAges,
+          amount: Number(request.pay) * 4,
+          status: 'accepted',
+        });
+        try {
+          localStorage.setItem('ease_sitter_jobs', JSON.stringify(acceptedJobs));
+        } catch (error) {
+          console.error('Could not save accepted sitter job', error);
+          showToast('We could not save this job. Please try again.');
+          return;
+        }
+      }
       request.status = button.id === 'btnAcceptRequest' ? 'accepted' : 'declined';
+      savedJobStatuses[request.id] = request.status;
+      try {
+        localStorage.setItem('ease_sitter_job_statuses', JSON.stringify(savedJobStatuses));
+      } catch (error) {
+        console.error('Could not save sitter job status', error);
+        showToast('We could not save this request status.');
+        return;
+      }
       renderAvailableJobs();
       showScreen('availableJobs');
       showToast(`Request ${request.status}.`);
@@ -1224,7 +1445,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   if (profileBtn) {
-    profileBtn.addEventListener('click', () => showScreen('parentProfile'));
+    profileBtn.addEventListener('click', () => {
+      if (state.user.role === 'babysitter') showScreen('sitterHome');
+      else if (state.user.role === 'admin') showScreen('adminDashboard');
+      else showScreen('parentProfile');
+    });
   }
   if (drawerLogoutBtn) {
     drawerLogoutBtn.addEventListener('click', () => {
@@ -1256,6 +1481,8 @@ document.addEventListener('DOMContentLoaded', () => {
       errorPostcode.style.display = 'none';
       state.postcode = val;
       saveSearchPostcode(val);
+      if (findPostcode) findPostcode.value = val;
+      updateFindDraftStatus();
       state.answeredPreferences.distance = true;
       saveState();
       return true;
@@ -1308,6 +1535,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       state.answeredPreferences.availability = val !== 'Pick a date' && val !== 'Custom date';
       saveState();
+      syncAvailabilityFilterFromState();
     });
   });
 
@@ -1321,6 +1549,7 @@ document.addEventListener('DOMContentLoaded', () => {
         state.answeredPreferences.availability = true;
       }
       saveState();
+      syncAvailabilityFilterFromState();
       showScreen('q3');
     });
   }
@@ -1339,6 +1568,10 @@ document.addEventListener('DOMContentLoaded', () => {
       card.setAttribute('aria-checked', 'true');
       state.careType = card.getAttribute('data-value');
       state.answeredPreferences.careType = true;
+      if (findCareTypeFilter) {
+        findCareTypeFilter.value = careTypeLabels.includes(state.careType) ? state.careType : '';
+        updateFindDraftStatus();
+      }
       saveState();
     });
   });
@@ -1346,6 +1579,11 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnNextQ3) {
     btnNextQ3.addEventListener('click', () => {
       state.answeredPreferences.careType = true;
+      if (findCareTypeFilter && !careTypeLabels.includes(findCareTypeFilter.value) &&
+        careTypeLabels.includes(state.careType)) {
+        findCareTypeFilter.value = state.careType;
+      }
+      updateFindDraftStatus();
       saveState();
       showScreen('q4');
     });
@@ -1514,34 +1752,125 @@ document.addEventListener('DOMContentLoaded', () => {
   const findActiveFilters = document.getElementById('findActiveFilters');
   const findResultsCount = document.getElementById('findResultsCount');
   const findEmptyState = document.getElementById('findEmptyState');
+  const findFiltersChangedMessage = document.getElementById('findFiltersChangedMessage');
   const findCareTypeFilter = document.getElementById('filterCareType');
   const matchesPostcodeError = document.getElementById('matchesPostcodeError');
   const matchesNearbyState = document.getElementById('matchesNearbyState');
   const findFilters = ['filterRating', 'filterPrice', 'filterDistance', 'filterCareType']
     .map(id => document.getElementById(id));
+  const savedEaseFilters = readEaseFilters();
+  const savedSearchPostcode = getSearchPostcode();
+  const savedCareType = getSearchCareType();
+  const questionCareType = state.answeredPreferences.careType && careTypeLabels.includes(state.careType)
+    ? state.careType
+    : '';
+  let activeFindPostcode = (savedEaseFilters && savedEaseFilters.postcode) ||
+    savedSearchPostcode || state.postcode || '50450';
+  let appliedEaseFilters = savedEaseFilters
+    ? { ...savedEaseFilters, postcode: activeFindPostcode }
+    : {
+      postcode: activeFindPostcode,
+      minRating: 0,
+      maxPrice: 0,
+      maxDistance: 0,
+      careType: '',
+      availability: null,
+    };
+  let draftAvailabilityFilter = savedEaseFilters
+    ? appliedEaseFilters.availability
+    : getRequestedAvailabilityFilter();
   if (findCareTypeFilter) {
     findCareTypeFilter.innerHTML = `
       <option value="">Any care type</option>
       ${careTypeLabels.map(careType => `<option value="${escapeHtml(careType)}">${escapeHtml(careType)}</option>`).join('')}
     `;
-    const savedCareType = getSearchCareType();
-    const questionCareType = state.answeredPreferences.careType && careTypeLabels.includes(state.careType)
-      ? state.careType
-      : '';
-    findCareTypeFilter.value = savedCareType ?? questionCareType;
+    findCareTypeFilter.value = savedEaseFilters
+      ? appliedEaseFilters.careType
+      : savedCareType ?? questionCareType;
   }
-  const savedSearchPostcode = getSearchPostcode();
-  let activeFindPostcode = savedSearchPostcode || state.postcode || '50450';
-  if (savedSearchPostcode) state.postcode = savedSearchPostcode;
+  document.getElementById('filterRating').value = String(appliedEaseFilters.minRating);
+  document.getElementById('filterPrice').value = String(appliedEaseFilters.maxPrice);
+  document.getElementById('filterDistance').value = String(appliedEaseFilters.maxDistance);
+  if (activeFindPostcode) state.postcode = activeFindPostcode;
   if (findPostcode) findPostcode.value = activeFindPostcode;
+  function collectDraftEaseFilters() {
+    return {
+      postcode: findPostcode ? findPostcode.value.trim() : activeFindPostcode,
+      minRating: Number(document.getElementById('filterRating').value) || 0,
+      maxPrice: Number(document.getElementById('filterPrice').value) || 0,
+      maxDistance: Number(document.getElementById('filterDistance').value) || 0,
+      careType: findCareTypeFilter ? findCareTypeFilter.value : '',
+      availability: draftAvailabilityFilter,
+    };
+  }
+
+  function saveAppliedEaseFilters() {
+    writeEaseFilters(appliedEaseFilters);
+  }
+
+  function applyEaseFilters(filters) {
+    appliedEaseFilters = { ...filters };
+    activeFindPostcode = filters.postcode || activeFindPostcode || '50450';
+    draftAvailabilityFilter = filters.availability;
+    state.postcode = activeFindPostcode;
+    if (findPostcode) findPostcode.value = activeFindPostcode;
+    document.getElementById('filterRating').value = String(filters.minRating);
+    document.getElementById('filterPrice').value = String(filters.maxPrice);
+    document.getElementById('filterDistance').value = String(filters.maxDistance);
+    if (findCareTypeFilter) findCareTypeFilter.value = filters.careType;
+    updateFindDraftStatus();
+  }
+
+  function clearEaseFilters() {
+    const findContainer = findResultsCount && findResultsCount.closest('.find-container');
+    if (findContainer) findContainer.style.paddingBottom = '';
+    applyEaseFilters({
+      postcode: '50450',
+      minRating: 0,
+      maxPrice: 0,
+      maxDistance: 0,
+      careType: '',
+      availability: null,
+    });
+    saveAppliedEaseFilters();
+    saveSearchPostcode(appliedEaseFilters.postcode);
+    saveSearchCareType('');
+    saveState();
+  }
+
+  function syncAvailabilityFilterFromState() {
+    draftAvailabilityFilter = getRequestedAvailabilityFilter();
+    updateFindDraftStatus();
+  }
+
+  function updateFindDraftStatus() {
+    if (!findFiltersChangedMessage) return;
+    const draft = collectDraftEaseFilters();
+    const isUnchanged = draft.postcode === appliedEaseFilters.postcode &&
+      draft.minRating === appliedEaseFilters.minRating &&
+      draft.maxPrice === appliedEaseFilters.maxPrice &&
+      draft.maxDistance === appliedEaseFilters.maxDistance &&
+      draft.careType === appliedEaseFilters.careType &&
+      JSON.stringify(draft.availability || null) === JSON.stringify(appliedEaseFilters.availability || null);
+    findFiltersChangedMessage.hidden = isUnchanged;
+  }
+
   let activeSitterFilter = 'all';
 
   function scrollFindResults() {
-    const resultsTarget = findSitterList && findSitterList.children.length
-      ? findResultsCount
-      : findEmptyState;
-    if (!resultsTarget || resultsTarget.style.display === 'none') return;
-    resultsTarget.scrollIntoView({
+    if (!findResultsCount) return;
+    const findContainer = findResultsCount.closest('.find-container');
+    const scrollElement = document.scrollingElement;
+    if (findContainer && scrollElement) {
+      findContainer.style.paddingBottom = '';
+      const heading = findResultsCount.getBoundingClientRect();
+      const minimumScrollToShowHeading = heading.bottom + window.scrollY - window.innerHeight + 8;
+      const maximumScroll = scrollElement.scrollHeight - window.innerHeight;
+      const extraSpace = Math.max(0, minimumScrollToShowHeading - maximumScroll);
+      if (extraSpace) findContainer.style.paddingBottom = `${extraSpace}px`;
+    }
+    findResultsCount.focus({ preventScroll: true });
+    findResultsCount.scrollIntoView({
       behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',
       block: 'start',
     });
@@ -1575,11 +1904,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
       clearHomeSearchError();
       state.postcode = postcode;
-      saveState();
-      saveSearchPostcode(postcode);
+      if (findPostcode) findPostcode.value = postcode;
       findFilters.forEach(filter => {
         if (filter.id !== 'filterCareType') filter.value = '0';
       });
+      applyEaseFilters(collectDraftEaseFilters());
+      saveAppliedEaseFilters();
+      saveSearchPostcode(postcode);
+      saveSearchCareType(appliedEaseFilters.careType);
+      saveState();
       showScreen('find');
       scrollFindResults();
     });
@@ -1607,10 +1940,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (mode === 'match') {
         return (matchScores[b.dataset.sitterId] || 0) - (matchScores[a.dataset.sitterId] || 0) ||
           Number(b.dataset.preferenceCount) - Number(a.dataset.preferenceCount) ||
-          Number(a.dataset.distanceKm) - Number(b.dataset.distanceKm);
-      }
-      if (mode === 'preferences') {
-        return Number(b.dataset.preferenceCount) - Number(a.dataset.preferenceCount) ||
           Number(a.dataset.distanceKm) - Number(b.dataset.distanceKm);
       }
       if (mode === 'rating') return Number(b.dataset.rating) - Number(a.dataset.rating);
@@ -1649,7 +1978,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const distanceText = `${sitter.area} · ${distanceKm.toFixed(1)} km away`;
       const preferences = getPreferencesForSitter(sitter);
-      const preferenceSummary = card.querySelector('[data-preference-summary]');
       const preferenceList = card.querySelector('[data-preference-list]');
       const careTypeChips = card.querySelector('[data-care-types]');
       const matchScore = card.querySelector('[data-match-score]');
@@ -1666,7 +1994,6 @@ document.addEventListener('DOMContentLoaded', () => {
         recommendationBox.append(title, whyRecommended);
         card.querySelector('.sitter-bottom')?.before(recommendationBox);
       }
-      if (preferenceSummary) preferenceSummary.innerHTML = renderPreferenceSummary(sitter, preferences);
       if (preferenceList) preferenceList.innerHTML = renderPreferenceCardList(preferences);
       if (careTypeChips) careTypeChips.innerHTML = renderCareTypeChips(sitter);
       if (matchScore) {
@@ -1739,6 +2066,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateCompareBar() {
     const checked = Array.from(compareInputs).filter(i => i.checked);
     state.comparedSitters = new Set(checked.map(i => i.getAttribute('data-sitter-id')));
+    state.compareSelectionCustom = true;
 
     if (checked.length >= 2) {
       compareFloatingBar.style.display = 'block';
@@ -1762,13 +2090,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function renderActiveFindFilters() {
-    const activeFilters = [];
-    if (activeFindPostcode !== '50450') activeFilters.push(`Postcode ${activeFindPostcode}`);
-    findFilters.forEach(filter => {
-      if (filter.value && filter.value !== '0') {
-        activeFilters.push(filter.options[filter.selectedIndex].textContent.trim());
-      }
-    });
+    const activeFilters = getEaseFilterLabels(appliedEaseFilters);
 
     findActiveFilters.innerHTML = activeFilters.length ? `
       <div class="find-filter-chips">
@@ -1784,46 +2106,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderFindSitters() {
     if (!findSitterList) return;
-    const minRating = Number(document.getElementById('filterRating').value);
-    const maxPrice = Number(document.getElementById('filterPrice').value);
-    const maxDistance = Number(document.getElementById('filterDistance').value);
-    const careType = findCareTypeFilter ? findCareTypeFilter.value : '';
-    if (!postcodeLocations[activeFindPostcode]) {
-      findSitterList.innerHTML = '';
-      findSitterList.style.display = 'none';
-      findResultsCount.textContent = '';
-      findEmptyState.innerHTML = '<p role="alert">We could not find that postcode. Try 50450, 59000 or 50480.</p>';
-      findEmptyState.style.display = 'block';
-      renderActiveFindFilters();
-      return;
-    }
+    const filters = appliedEaseFilters;
+    const filteredSitters = getMatchingSitters(filters)
+      .map(sitter => ({ ...sitter, preferences: getPreferencesForSitter(sitter) }));
 
-    const sitters = Object.values(sittersData).map(sitter => {
-      const distanceKm = calculateDistanceKm(activeFindPostcode, sitter.postcode);
-      if (distanceKm === null) {
-        throw new Error(`Missing postcode coordinates for ${sitter.id}`);
-      }
-      return { ...sitter, distanceKm, preferences: getPreferencesForSitter(sitter) };
-    });
-    const withinTravelAndDistance = sitters.filter(sitter =>
-      sitter.distanceKm <= sitter.travelKm && (!maxDistance || sitter.distanceKm <= maxDistance)
-    );
-    const filteredSitters = withinTravelAndDistance.filter(sitter => {
-      const availabilityPreference = sitter.preferences.find(preference => preference.key === 'availability');
-      const availableForRequest = !state.answeredPreferences.availability ||
-        !availabilityPreference || availabilityPreference.met;
-      const meetsCareType = !careType || (sitter.careTypes || []).includes(careType);
-      return sitter.ratingValue >= minRating &&
-        (!maxPrice || sitter.price <= maxPrice) &&
-        availableForRequest &&
-        meetsCareType;
-    }).sort((a, b) =>
-      b.preferences.filter(preference => preference.met).length -
-      a.preferences.filter(preference => preference.met).length ||
-      a.distanceKm - b.distanceKm
-    );
-
-    findSitterList.style.display = '';
+    findSitterList.style.display = filteredSitters.length ? '' : 'none';
     findSitterList.innerHTML = filteredSitters.map(sitter => {
       const certificateChips = sitter.certs.slice(0, 2).map(cert =>
         `<span class="chip"><span class="check-icon" aria-hidden="true">✓</span>${escapeHtml(cert.name)}</span>`
@@ -1846,11 +2133,10 @@ document.addEventListener('DOMContentLoaded', () => {
                   Ease Trained
                 </span>
               </div>
-              <span class="preference-summary-slot">${renderPreferenceSummary(sitter, sitter.preferences)}</span>
               <p class="sitter-meta">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>${sitter.age} years old ·
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="14" rx="2"></rect><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>${escapeHtml(sitter.exp)} experience ·
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>${escapeHtml(sitter.area)} · ${sitter.distanceKm.toFixed(1)} km away
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>${escapeHtml(sitter.area)} · ${Number.isFinite(sitter.distanceKm) ? `${sitter.distanceKm.toFixed(1)} km away` : 'distance unavailable'}
               </p>
               <div class="stars-row" aria-label="Rating: ${sitter.ratingValue} out of 5 stars">
                 <span class="find-stars">${stars}</span>
@@ -1876,8 +2162,13 @@ document.addEventListener('DOMContentLoaded', () => {
     findResultsCount.textContent = `${filteredSitters.length} ${filteredSitters.length === 1 ? 'babysitter' : 'babysitters'} found`;
     if (!filteredSitters.length) {
       findEmptyState.innerHTML = `
-        <p>No babysitters match these filters. Try a different care type.</p>
-        <button type="button" class="btn btn-secondary reset-find-filters">Reset filters</button>
+        <svg class="find-empty-state-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"></circle>
+          <line x1="16" y1="16" x2="21" y2="21"></line>
+        </svg>
+        <h2 class="card-title">No babysitters match your filters</h2>
+        <p>Try changing your filters to see more.</p>
+        <button type="button" class="clear-filters-link reset-find-filters">Clear filters</button>
       `;
       findEmptyState.style.display = 'block';
     } else {
@@ -1889,44 +2180,42 @@ document.addEventListener('DOMContentLoaded', () => {
   if (findEmptyState) {
     findEmptyState.addEventListener('click', event => {
       if (!event.target.closest('.reset-find-filters')) return;
-      findFilters.forEach(filter => {
-        filter.value = filter.id === 'filterCareType' ? '' : '0';
-      });
-      saveSearchCareType('');
+      clearEaseFilters();
       renderFindSitters();
-      scrollFindResults();
     });
   }
 
   if (findForm && findPostcode) {
     findForm.addEventListener('submit', event => {
       event.preventDefault();
-      const postcode = findPostcode.value.trim();
+      const filters = collectDraftEaseFilters();
+      const postcode = filters.postcode;
       if (!/^\d{5}$/.test(postcode)) {
         findPostcode.setCustomValidity('Enter a 5-digit postcode.');
         findPostcode.reportValidity();
         return;
       }
       findPostcode.setCustomValidity('');
-      activeFindPostcode = postcode;
-      state.postcode = postcode;
+      filters.postcode = postcode;
+      applyEaseFilters(filters);
       saveSearchPostcode(postcode);
+      saveSearchCareType(filters.careType);
       state.answeredPreferences.distance = true;
       saveState();
+      saveAppliedEaseFilters();
       renderFindSitters();
       scrollFindResults();
     });
-    findPostcode.addEventListener('input', () => findPostcode.setCustomValidity(''));
-    findFilters.forEach(filter => filter.addEventListener('change', () => {
-      if (filter.id === 'filterCareType') saveSearchCareType(filter.value);
-      renderFindSitters();
-      scrollFindResults();
-    }));
+    findPostcode.addEventListener('input', () => {
+      findPostcode.setCustomValidity('');
+      updateFindDraftStatus();
+    });
+    findFilters.forEach(filter => filter.addEventListener('change', updateFindDraftStatus));
   }
 
   if (findSitterList) {
     findSitterList.addEventListener('click', event => {
-      if (event.target.closest('.preferences-expand-link, .preference-info')) return;
+      if (event.target.closest('.preferences-expand-link')) return;
       const card = event.target.closest('.find-sitter-card');
       if (!card) return;
       state.selectedSitterId = card.dataset.sitterId;
@@ -1940,21 +2229,14 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    if (findActiveFilters) {
-      findActiveFilters.addEventListener('click', event => {
-        if (!event.target.closest('.clear-filters-link')) return;
-        findFilters.forEach(filter => {
-          filter.value = filter.id === 'filterCareType' ? '' : '0';
-        });
-        saveSearchCareType('');
-        activeFindPostcode = '50450';
-        state.postcode = activeFindPostcode;
-        findPostcode.value = activeFindPostcode;
-        saveSearchPostcode(activeFindPostcode);
-        saveState();
-        renderFindSitters();
-      });
-    }
+  }
+
+  if (findActiveFilters) {
+    findActiveFilters.addEventListener('click', event => {
+      if (!event.target.closest('.clear-filters-link')) return;
+      clearEaseFilters();
+      renderFindSitters();
+    });
   }
 
   // View Profile buttons on Matches screen
@@ -2256,6 +2538,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   [btnProfileCompare, btnProfileMobileCompare].forEach(button => {
     if (button) button.addEventListener('click', () => {
+      compareProfileSitterId = state.selectedSitterId;
       state.comparedSitters = new Set([
         state.selectedSitterId,
         ...Array.from(state.comparedSitters).filter(id => id !== state.selectedSitterId),
@@ -2312,6 +2595,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const compareCompactColumns = document.getElementById('compareCompactColumns');
   const compareExpandedHeader = document.getElementById('compareExpandedHeader');
   const compareCompactBar = document.getElementById('compareCompactBar');
+  const compareScreenContainer = document.querySelector('#screenCompare .compare-screen-container');
+  const compareFilterSummary = document.getElementById('compareFilterSummary');
+  const compareEmptyState = document.getElementById('compareEmptyState');
+  const compareLimitedState = document.getElementById('compareLimitedState');
+  const compareLimitedMessage = document.getElementById('compareLimitedMessage');
   let compareCompactFrame = 0;
 
   function updateCompareCompactBar() {
@@ -2345,28 +2633,127 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('resize', scheduleCompareCompactBarUpdate, { passive: true });
   window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', scheduleCompareCompactBarUpdate);
 
+  function getEaseFilterLabels(filters) {
+    const labels = [];
+    if (filters.minRating) labels.push(`${filters.minRating} stars & up`);
+    if (filters.maxPrice) labels.push(`Up to RM ${filters.maxPrice}`);
+    if (filters.maxDistance) labels.push(`Within ${filters.maxDistance} km`);
+    if (filters.careType) labels.push(filters.careType);
+    if (filters.availability) {
+      const availability = typeof filters.availability === 'string'
+        ? filters.availability
+        : filters.availability.customDate || filters.availability.day ||
+        (filters.availability.when ? filters.availability.when.toLowerCase() : '');
+      if (availability) labels.push(`Available ${availability}`);
+    }
+    return labels;
+  }
+
+  function renderCompareFilterSummary(filters, matchingCount) {
+    const labels = getEaseFilterLabels(filters);
+    const chips = labels.length
+      ? labels.map(label => `
+          <span class="compare-filter-chip">
+            <span class="check-icon" aria-hidden="true">✓</span>${escapeHtml(label)}
+          </span>`).join('')
+      : '<span class="compare-filter-all">All babysitters</span>';
+    const countLabel = `${matchingCount} babysitter${matchingCount === 1 ? '' : 's'} ${matchingCount === 1 ? 'matches' : 'match'}`;
+    compareFilterSummary.innerHTML = `
+      <div class="compare-filter-summary-label">
+        <strong>Showing babysitters that match:</strong>
+        <div class="compare-filter-chips">${chips}</div>
+      </div>
+      <div class="compare-filter-summary-actions">
+        <strong class="compare-match-count">${escapeHtml(countLabel)}</strong>
+        <button type="button" class="compare-filter-link" data-compare-action="edit">Edit filters</button>
+        <button type="button" class="compare-filter-link" data-compare-action="clear">Clear filters</button>
+      </div>`;
+  }
+
+  function renderCompareEmptyState() {
+    compareEmptyState.innerHTML = `
+      <svg class="find-empty-state-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="7"></circle>
+        <line x1="16" y1="16" x2="21" y2="21"></line>
+      </svg>
+      <h2 class="card-title">No babysitters match your filters</h2>
+      <p>Try changing your filters to see more.</p>
+      <button type="button" class="btn btn-primary compare-edit-filters">Edit filters</button>`;
+  }
+
   function populateCompareTable() {
-    const selectedIds = Array.from(state.comparedSitters).filter(id => sittersData[id]).slice(0, 3);
-    const getSitterPreferenceCount = id => getPreferencesForSitter(sittersData[id]).filter(preference => preference.met).length;
-    const getSitterDistance = id => calculateDistanceKm(state.postcode, sittersData[id].postcode) ?? Number.POSITIVE_INFINITY;
-    const preferredIds = [
-      state.selectedSitterId,
-      ...Object.keys(sittersData).sort((a, b) =>
-        getSitterPreferenceCount(b) - getSitterPreferenceCount(a) ||
-        getSitterDistance(a) - getSitterDistance(b)
-      ),
-    ].filter(id => sittersData[id]);
-    const sitterIds = [...new Set([...selectedIds, ...preferredIds])].slice(0, Math.max(2, selectedIds.length));
-    const sitterSlots = [...sitterIds.map(id => sittersData[id]), null, null].slice(0, 3);
     if (!compareHeaderColumns || !compareFeatureSections || !compareCompactColumns) return;
 
-    state.comparedSitters = new Set(sitterIds);
+    const filters = appliedEaseFilters;
+    const matchingSitters = getMatchingSitters(filters);
+    const matchingIds = matchingSitters.map(sitter => sitter.id);
+    const matchingIdSet = new Set(matchingIds);
+    const profileSitter = compareProfileSitterId && sittersData[compareProfileSitterId]
+      ? sittersData[compareProfileSitterId]
+      : null;
+    const showProfileOverride = Boolean(profileSitter &&
+      !matchingIdSet.has(profileSitter.id) && getEaseFilterLabels(filters).length);
+    const candidateIds = [
+      ...(profileSitter ? [profileSitter.id] : []),
+      ...matchingIds.filter(id => !profileSitter || id !== profileSitter.id),
+    ];
+    const savedIds = (state.compareSelectionCustom ? Array.from(state.comparedSitters) : []).filter(id =>
+      matchingIdSet.has(id) || (showProfileOverride && profileSitter && id === profileSitter.id)
+    );
+    const orderedIds = [...new Set([
+      ...(profileSitter ? [profileSitter.id] : []),
+      ...savedIds,
+      ...candidateIds,
+    ])];
+    const selectedCount = orderedIds.length >= 3 && state.comparedSitters.size >= 3
+      ? 3
+      : Math.min(2, orderedIds.length);
+    const selectedIds = orderedIds.slice(0, selectedCount);
+    const needsThirdSlot = candidateIds.length >= 3 && selectedIds.length < 3;
+    const slotCount = Math.min(3, Math.max(selectedIds.length, needsThirdSlot ? 3 : 0));
+    const sitterSlots = Array.from({ length: slotCount }, (_, index) => {
+      const id = selectedIds[index];
+      if (!id) return null;
+      return matchingSitters.find(sitter => sitter.id === id) || sittersData[id];
+    });
+
+    renderCompareFilterSummary(filters, matchingSitters.length);
+    compareHeaderColumns.style.display = slotCount ? '' : 'none';
+    compareExpandedHeader.style.display = slotCount ? '' : 'none';
+    compareFeatureSections.style.display = slotCount ? '' : 'none';
+    compareCompactColumns.style.display = slotCount ? '' : 'none';
+    compareCompactBar.style.display = slotCount ? '' : 'none';
+    compareEmptyState.hidden = matchingSitters.length !== 0;
+    if (!matchingSitters.length) renderCompareEmptyState();
+    compareLimitedState.hidden = matchingSitters.length !== 1;
+    if (matchingSitters.length === 1) {
+      compareLimitedMessage.textContent = 'Only one babysitter matches your filters.';
+    }
+
+    if (!slotCount) {
+      compareHeaderColumns.innerHTML = '';
+      compareCompactColumns.innerHTML = '';
+      compareFeatureSections.innerHTML = '';
+      state.comparedSitters = new Set();
+      return;
+    }
+
+    state.comparedSitters = new Set(selectedIds);
+    saveState();
 
     compareHeaderColumns.dataset.sitterCount = String(sitterSlots.filter(Boolean).length);
     compareCompactColumns.dataset.sitterCount = String(sitterSlots.filter(Boolean).length);
+    if (compareScreenContainer) compareScreenContainer.style.setProperty('--cols', String(Math.max(1, slotCount)));
     compareHeaderColumns.innerHTML = sitterSlots.map((sitter, slot) => {
-      const options = Object.values(sittersData).map(option => {
-        const selectedElsewhere = sitterSlots.some((other, otherSlot) => otherSlot !== slot && other && other.id === option.id);
+      const optionIds = [
+        ...matchingIds,
+        ...(showProfileOverride && slot === 0 && profileSitter ? [profileSitter.id] : []),
+      ];
+      const options = optionIds.map(id => {
+        const option = sittersData[id];
+        const selectedElsewhere = sitterSlots.some((other, otherSlot) =>
+          otherSlot !== slot && other && other.id === option.id
+        );
         return `<option value="${option.id}"${sitter && sitter.id === option.id ? ' selected' : ''}${selectedElsewhere ? ' disabled' : ''}>${escapeHtml(option.name)}</option>`;
       }).join('');
       const emptyOption = `<option value=""${slot < 2 ? ' disabled' : ''}${sitter ? '' : ' selected'}>Choose a babysitter</option>`;
@@ -2387,7 +2774,9 @@ document.addEventListener('DOMContentLoaded', () => {
         </article>`;
       }
 
+      const isProfileMismatch = showProfileOverride && sitter.id === profileSitter.id;
       return `<article class="compare-sitter-column">${selector}
+        ${isProfileMismatch ? '<p class="compare-filter-mismatch-note">Does not match your filters</p>' : ''}
         <div class="compare-sitter-details">
           <div class="compare-header-identity" aria-label="${escapeHtml(sitter.name)}">
             <div class="photo-placeholder compare-header-photo" role="img" aria-label="Photo placeholder for ${escapeHtml(sitter.name)}">
@@ -2400,7 +2789,6 @@ document.addEventListener('DOMContentLoaded', () => {
               Ease Trained
             </span>
             <p class="compare-header-price">${escapeHtml(sitter.rateText)} / hr</p>
-            <div class="preference-summary-slot">${renderPreferenceSummary(sitter, undefined, false)}</div>
             <div class="compare-header-actions">
               <button type="button" class="compare-view-profile" data-sitter-id="${sitter.id}">
                 View profile
@@ -2481,6 +2869,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const currentIds = [...state.comparedSitters];
       const slots = [...currentIds, null, null].slice(0, 3);
       const newId = event.target.value;
+      const filters = appliedEaseFilters;
+      const matchingIds = new Set(getMatchingSitters(filters).map(sitter => sitter.id));
+      const isAllowedProfileOverride = slot === 0 && compareProfileSitterId === newId &&
+        !matchingIds.has(newId);
+      if (newId && !matchingIds.has(newId) && !isAllowedProfileOverride) {
+        populateCompareTable();
+        return;
+      }
       if (slot < 2 && !newId) {
         populateCompareTable();
         return;
@@ -2489,8 +2885,14 @@ document.addEventListener('DOMContentLoaded', () => {
         populateCompareTable();
         return;
       }
+      if (slot === 0 && compareProfileSitterId && newId !== compareProfileSitterId) {
+        compareProfileSitterId = null;
+      }
       slots[slot] = newId || null;
-      state.comparedSitters = new Set(slots.filter(Boolean));
+      state.comparedSitters = new Set(slots.filter(id =>
+        id && (matchingIds.has(id) || (compareProfileSitterId === id && isAllowedProfileOverride))
+      ));
+      state.compareSelectionCustom = true;
       saveState();
       populateCompareTable();
     });
@@ -2501,9 +2903,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (addButton) {
         const currentIds = Array.from(state.comparedSitters).filter(id => sittersData[id]);
         if (currentIds.length >= 3) return;
-        const nextId = Object.keys(sittersData).find(id => !currentIds.includes(id));
+        const filters = appliedEaseFilters;
+        const nextId = getMatchingSitters(filters).find(sitter => !currentIds.includes(sitter.id))?.id;
         if (!nextId) return;
         state.comparedSitters = new Set([...currentIds, nextId]);
+        state.compareSelectionCustom = true;
         populateCompareTable();
         saveState();
         return;
@@ -2516,6 +2920,29 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
+    });
+  }
+
+  if (compareFilterSummary) {
+    compareFilterSummary.addEventListener('click', event => {
+      if (!(event.target instanceof Element)) return;
+      const action = event.target.closest('[data-compare-action]')?.dataset.compareAction;
+      if (action === 'edit') {
+        showScreen('find');
+      } else if (action === 'clear') {
+        clearEaseFilters();
+        renderFindSitters();
+        populateCompareTable();
+      }
+    });
+  }
+
+  const compareScreen = document.getElementById('screenCompare');
+  if (compareScreen) {
+    compareScreen.addEventListener('click', event => {
+      if (event.target instanceof Element && event.target.closest('.compare-edit-filters')) {
+        showScreen('find');
+      }
     });
   }
 
@@ -2570,11 +2997,17 @@ document.addEventListener('DOMContentLoaded', () => {
     groupParentChildren.style.display = isParent ? 'flex' : 'none';
     authForm.classList.toggle('sitter-mode', isSitter);
 
-    authHeadline.textContent = role
-      ? `Create your ${roleLabel} account`
-      : 'Create your Ease account';
+    authHeadline.textContent = role === 'parent'
+      ? 'Create an account to book'
+      : role === 'babysitter'
+        ? 'Create an account to submit your profile'
+        : 'Create your Ease account';
     authSubtext.hidden = !role;
-    authSubtext.textContent = role ? 'Enter your details below.' : '';
+    authSubtext.textContent = role === 'parent'
+      ? 'Set up your account to book trusted care.'
+      : role === 'babysitter'
+        ? 'Set up your account to submit your profile for review.'
+        : '';
     authRegistrationTitle.textContent = role
       ? `${isParent ? 'Parent' : 'Babysitter'} registration`
       : 'Create your account';
@@ -2595,7 +3028,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function setAuthMode(mode, role = ['parentHome', 'myChildren'].includes(state.authReturnScreen) ? null : 'parent') {
+  function setAuthMode(mode, role = ['addChild', 'parentHome', 'myChildren'].includes(state.authReturnScreen) ? null : 'parent') {
     authMode = mode;
     const isSignup = mode === 'signup';
     authDetailsSidebar.hidden = !isSignup;
@@ -2633,6 +3066,49 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     clearAuthErrors();
   }
+
+  window.easeApp = {
+    navigate: showScreen,
+    setRoleSession(role, user = {}) {
+      state.user = { ...state.user, ...user, role };
+      setLoggedIn(true);
+      saveState();
+    },
+    beginSignup(role, returnScreen) {
+      if (state.isLoggedIn && state.user.role !== role) setLoggedIn(false);
+      state.authReturnScreen = returnScreen;
+      state.bookingIntent = role === 'parent';
+      state.user.role = role;
+      setAuthMode('signup', role);
+      showScreen('auth');
+    },
+    beginLogin(returnScreen = 'parentHome') {
+      state.authReturnScreen = returnScreen;
+      state.bookingIntent = false;
+      setAuthMode('login');
+      showScreen('auth');
+    },
+    logout() {
+      setLoggedIn(false);
+      state.bookingIntent = false;
+      state.authReturnScreen = 'welcome';
+      saveState();
+      showScreen('welcome');
+    },
+    updateBookingStatus(bookingId, status) {
+      const booking = bookings.find(item => item.id === bookingId);
+      if (!booking) return false;
+      booking.status = status;
+      saveBookings();
+      if (currentScreen === 'bookings') renderBookingsPage();
+      if (currentScreen === 'parentHome') setupParentHome();
+      return true;
+    },
+    getSession() {
+      return { isLoggedIn: state.isLoggedIn, role: state.user.role, user: { ...state.user } };
+    },
+    toast: showToast,
+  };
 
   if (tabSignUp) tabSignUp.addEventListener('click', () => setAuthMode('signup'));
   if (tabLogIn) tabLogIn.addEventListener('click', () => setAuthMode('login'));
@@ -2748,12 +3224,17 @@ document.addEventListener('DOMContentLoaded', () => {
         saveState();
         if (completeSavedMessageIntent()) {
           return;
+        } else if (state.user.role === 'babysitter') {
+          const sitterReturn = ['requestDetail', 'availableJobs', 'sitterHome', 'babysitterHome', 'sitterSchedule', 'sitterEarnings', 'sitterApplication', 'sitterDocuments'];
+          showScreen(sitterReturn.includes(state.authReturnScreen) ? state.authReturnScreen : 'sitterHome');
         } else if (state.authReturnScreen === 'parentHome') {
           showScreen('parentHome');
         } else if (state.authReturnScreen === 'parentProfile') {
           showScreen('parentProfile');
         } else if (state.authReturnScreen === 'myChildren') {
           showScreen('myChildren');
+        } else if (state.authReturnScreen === 'addChild') {
+          showScreen('addChild');
         } else if (state.authReturnScreen === 'review') {
           showScreen('review');
         } else if (state.bookingIntent) {
@@ -2793,12 +3274,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (completeSavedMessageIntent()) {
         return;
+      } else if (state.user.role === 'babysitter') {
+        showScreen('sitterDocuments');
       } else if (state.authReturnScreen === 'parentHome') {
         showScreen('parentHome');
       } else if (state.authReturnScreen === 'parentProfile') {
         showScreen('parentProfile');
       } else if (state.authReturnScreen === 'myChildren') {
         showScreen('myChildren');
+      } else if (state.authReturnScreen === 'addChild') {
+        showScreen('addChild');
       } else if (state.authReturnScreen === 'review') {
         showScreen('review');
       } else if (state.bookingIntent && !state.hasAddedChild) {
@@ -3517,6 +4002,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // --------------------------------------------------------------------------
   // 14. Screen 10: Booking Details
   // --------------------------------------------------------------------------
+  const sampleBookingChildren = [
+    { id: 'sample-aiden', name: 'Aiden', gender: 'Boy', birthDate: '2023-11-24', displayAge: '3 yrs', allergies: 'None', medical: 'None', routine: 'Loves building blocks and bedtime stories.' },
+    { id: 'sample-maya', name: 'Maya', gender: 'Girl', birthDate: '2025-11-24', displayAge: '1 yr', allergies: 'None', medical: 'None', routine: 'Enjoys quiet play and an early bedtime.' },
+  ];
+
   function updateBookingChildSummaryCard(child) {
     const card = document.getElementById('bookingChildSummaryCard');
     const avatarEl = document.getElementById('bookingChildAvatar');
@@ -3553,11 +4043,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function setupBookingDetails() {
     const hasChildren = Array.isArray(state.children) && state.children.length > 0;
-    if (!hasChildren) {
+    if (!hasChildren && !prototypeScreens.includes(currentScreen)) {
       showToast('Please add your child\'s profile before booking.');
       showScreen('addChild');
       return;
     }
+    const children = hasChildren ? state.children : sampleBookingChildren;
 
     const sitter = sittersData[state.selectedSitterId] || sittersData['sarah-lim'];
 
@@ -3571,31 +4062,30 @@ document.addEventListener('DOMContentLoaded', () => {
     if (bookingLocationInput) bookingLocationInput.value = state.bookingData.location || `${state.postcode} Kuala Lumpur`;
 
     if (bookingChildSelect) {
-      // Determine which child should be selected
-      let selectedChild = state.children.find(c => c.id === state.bookingData.childId);
+      let selectedChild = children.find(child => child.id === state.bookingData.childId);
       if (!selectedChild) {
-        selectedChild = state.children[0];
+        selectedChild = children.find(child => child.name === state.bookingData.childName) || children[0];
         state.bookingData.childId = selectedChild.id;
         state.bookingData.childName = selectedChild.name;
         state.bookingData.child = selectedChild;
       }
 
-      bookingChildSelect.innerHTML = state.children.map(c => {
-        const ageStr = formatChildAge(c.birthDate);
-        const isSel = c.id === selectedChild.id ? 'selected' : '';
-        return `<option value="${c.id}" ${isSel}>${escapeHtml(c.name)} (${ageStr || c.gender})</option>`;
+      bookingChildSelect.innerHTML = children.map(child => {
+        const ageLabel = child.displayAge || formatChildAge(child.birthDate);
+        const isSelected = child.id === selectedChild.id ? 'selected' : '';
+        return `<option value="${escapeHtml(child.id)}" ${isSelected}>${escapeHtml(child.name)} (${escapeHtml(ageLabel || child.gender)})</option>`;
       }).join('');
 
       updateBookingChildSummaryCard(selectedChild);
 
       bookingChildSelect.onchange = () => {
         const chosenId = bookingChildSelect.value;
-        const chosenChild = state.children.find(c => c.id === chosenId) || state.children[0];
+        const chosenChild = children.find(child => child.id === chosenId) || children[0];
         if (chosenChild) {
           state.bookingData.childId = chosenChild.id;
           state.bookingData.childName = chosenChild.name;
           state.bookingData.child = chosenChild;
-          state.child = chosenChild;
+          if (hasChildren) state.child = chosenChild;
           updateBookingChildSummaryCard(chosenChild);
           saveState();
         }
@@ -3639,10 +4129,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const isTrial = trialOption ? trialOption.checked : false;
     const rate = sitter.price;
 
-    let totalHours = hours;
-    if (isTrial) totalHours += 1; // 1-hour trial session
-
-    const subtotal = totalHours * rate;
+    const baseSubtotal = hours * rate;
+    const trialAmount = isTrial ? rate : 0;
+    const subtotal = baseSubtotal + trialAmount;
     const fee = 5;
     const total = subtotal + fee;
 
@@ -3650,18 +4139,19 @@ document.addEventListener('DOMContentLoaded', () => {
     state.bookingData.isTrial = isTrial;
     state.bookingData.rate = rate;
     state.bookingData.subtotal = subtotal;
+    state.bookingData.fee = fee;
     state.bookingData.total = total;
 
     const priceBreakdownHours = document.getElementById('priceBreakdownHours');
     const priceBreakdownBase = document.getElementById('priceBreakdownBase');
+    const priceBreakdownTrial = document.getElementById('priceBreakdownTrial');
+    const priceBreakdownTrialAmount = document.getElementById('priceBreakdownTrialAmount');
     const priceBreakdownTotal = document.getElementById('priceBreakdownTotal');
 
-    if (priceBreakdownHours) {
-      priceBreakdownHours.textContent = isTrial
-        ? `${hours} hrs + 1 hr trial (${totalHours} hrs × RM ${rate}/hr)`
-        : `${hours} hours × RM ${rate}/hr`;
-    }
-    if (priceBreakdownBase) priceBreakdownBase.textContent = `RM ${subtotal}`;
+    if (priceBreakdownHours) priceBreakdownHours.textContent = `${hours} hours × RM ${rate}/hr`;
+    if (priceBreakdownBase) priceBreakdownBase.textContent = `RM ${baseSubtotal}`;
+    if (priceBreakdownTrial) priceBreakdownTrial.hidden = !isTrial;
+    if (priceBreakdownTrialAmount) priceBreakdownTrialAmount.textContent = `RM ${trialAmount}`;
     if (priceBreakdownTotal) priceBreakdownTotal.textContent = `RM ${total}`;
   }
 
@@ -3679,13 +4169,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const bookingChildSelect = document.getElementById('bookingChildSelect');
       const selectedId = bookingChildSelect ? bookingChildSelect.value : state.bookingData.childId;
-      const selectedChild = state.children.find(c => c.id === selectedId) || state.children[0] || state.child;
+      const bookingChildren = state.children.length ? state.children : sampleBookingChildren;
+      const selectedChild = bookingChildren.find(child => child.id === selectedId) || bookingChildren[0] || state.child;
 
       if (selectedChild) {
         state.bookingData.childId = selectedChild.id;
         state.bookingData.childName = selectedChild.name;
         state.bookingData.child = selectedChild;
-        state.child = selectedChild;
+        if (state.children.length) state.child = selectedChild;
       }
 
       state.bookingData.date = document.getElementById('bookingDateInput').value || defaultBookingDateValue;
@@ -3693,6 +4184,20 @@ document.addEventListener('DOMContentLoaded', () => {
       state.bookingData.location = document.getElementById('bookingLocationInput').value || '50450 Kuala Lumpur';
       state.bookingData.specialReq = document.getElementById('bookingSpecialReq').value;
       state.bookingData.extraNotes = document.getElementById('bookingExtraNotes').value;
+
+      if (!state.isLoggedIn || state.user.role !== 'parent') {
+        state.bookingIntent = true;
+        state.authReturnScreen = 'booking';
+        saveState();
+        if (state.isLoggedIn) {
+          showToast('A parent account is required to send a booking request.');
+          return;
+        }
+        setAuthMode('signup', 'parent');
+        showScreen('auth');
+        showToast('Create an account or log in to send your booking request.');
+        return;
+      }
 
       const sitter = sittersData[state.selectedSitterId] || sittersData['sarah-lim'];
       const bookingHours = state.bookingData.hours + (state.bookingData.isTrial ? 1 : 0);
@@ -3747,14 +4252,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const sitterNameWaiting = document.getElementById('statusSitterNameWaiting');
     const statusAcceptedHeadline = document.getElementById('statusAcceptedHeadline');
     const waitingDescription = document.querySelector('#statusStateWaiting .section-subtext');
+    const statusSummarySitter = document.getElementById('statusSummarySitter');
+    const statusSummaryDate = document.getElementById('statusSummaryDate');
+    const statusSummaryTotal = document.getElementById('statusSummaryTotal');
 
     if (sitterNameWaiting) sitterNameWaiting.textContent = sitter.name;
     if (waitingDescription) waitingDescription.innerHTML = `Waiting for <strong id="statusSitterNameWaiting">${escapeHtml(sitter.name)}</strong> to accept your booking for ${escapeHtml(formatBookingDate(state.bookingData.date))}.`;
+    if (statusSummarySitter) statusSummarySitter.textContent = sitter.name;
+    if (statusSummaryDate) statusSummaryDate.textContent = formatBookingDate(state.bookingData.date);
+    if (statusSummaryTotal) statusSummaryTotal.textContent = `RM ${state.bookingData.total || 105}`;
     if (statusAcceptedHeadline) statusAcceptedHeadline.textContent = `${sitter.name.split(' ')[0]} accepted.`;
 
     if (panelWaiting) panelWaiting.style.display = statusState === 'waiting' ? 'flex' : 'none';
     if (panelAccepted) panelAccepted.style.display = statusState === 'accepted' ? 'flex' : 'none';
     if (panelDeclined) panelDeclined.style.display = statusState === 'declined' ? 'flex' : 'none';
+    if (statusState === 'accepted') setupPaymentScreen();
 
     // Countdown Timer in Waiting state
     clearInterval(waitingCountdownInterval);
@@ -3804,7 +4316,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (btnPayNow) {
     btnPayNow.addEventListener('click', () => {
-      showScreen('payment');
+      showScreen('bookingStatus');
     });
   }
 
@@ -3829,16 +4341,21 @@ document.addEventListener('DOMContentLoaded', () => {
   // --------------------------------------------------------------------------
   function setupPaymentScreen() {
     const totalAmountDisplay = document.querySelector('.payment-total-amount');
+    const sitterSummaryDisplay = document.getElementById('paymentSitterSummary');
     const btnSubmitPayment = document.getElementById('btnSubmitPayment');
+    const btnSimulatePaymentFailure = document.getElementById('btnSimulatePaymentFailure');
     const btnRetryPayment = document.getElementById('btnRetryPayment');
     const paymentErrorBox = document.getElementById('paymentErrorBox');
 
     const total = state.bookingData.total || 105;
+    const sitter = sittersData[state.selectedSitterId] || sittersData['sarah-lim'];
     if (totalAmountDisplay) totalAmountDisplay.textContent = `RM ${total}`;
+    if (sitterSummaryDisplay) sitterSummaryDisplay.textContent = `${sitter.name} · ${formatBookingDate(state.bookingData.date)}`;
     if (btnSubmitPayment) {
-      btnSubmitPayment.textContent = `Pay RM ${total}`;
+      btnSubmitPayment.textContent = `Confirm & Pay RM ${total}`;
       btnSubmitPayment.style.display = 'block';
     }
+    if (btnSimulatePaymentFailure) btnSimulatePaymentFailure.style.display = 'block';
     if (btnRetryPayment) btnRetryPayment.style.display = 'none';
     if (paymentErrorBox) paymentErrorBox.style.display = 'none';
     paymentOptions.forEach(card => {
@@ -3863,30 +4380,44 @@ document.addEventListener('DOMContentLoaded', () => {
       state.selectedPaymentMethod = card.getAttribute('data-pay-method');
       saveState();
     });
+    card.addEventListener('keydown', event => {
+      if (event.target !== card) return;
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        card.click();
+      }
+    });
   });
 
   const btnSubmitPayment = document.getElementById('btnSubmitPayment');
+  const btnSimulatePaymentFailure = document.getElementById('btnSimulatePaymentFailure');
   const btnRetryPayment = document.getElementById('btnRetryPayment');
   const paymentErrorBox = document.getElementById('paymentErrorBox');
 
   if (btnSubmitPayment) {
     btnSubmitPayment.addEventListener('click', () => {
-      // First attempt fails deliberately with a clear error
+      state.paymentAttempts += 1;
+      updateActiveBookingStatus('paid');
+      showScreen('bookingConfirmed');
+    });
+  }
+
+  if (btnSimulatePaymentFailure) {
+    btnSimulatePaymentFailure.addEventListener('click', () => {
       state.paymentAttempts = 1;
-      btnSubmitPayment.style.display = 'none';
       if (paymentErrorBox) paymentErrorBox.style.display = 'flex';
+      if (btnSubmitPayment) btnSubmitPayment.style.display = 'none';
+      if (btnSimulatePaymentFailure) btnSimulatePaymentFailure.style.display = 'none';
       if (btnRetryPayment) btnRetryPayment.style.display = 'block';
     });
   }
 
   if (btnRetryPayment) {
     btnRetryPayment.addEventListener('click', () => {
-      // Second attempt succeeds
-      state.paymentAttempts = 2;
-      updateActiveBookingStatus('paid');
       if (paymentErrorBox) paymentErrorBox.style.display = 'none';
-      showToast('Payment successful! Your session is confirmed.');
-      showScreen('bookingConfirmed');
+      if (btnRetryPayment) btnRetryPayment.style.display = 'none';
+      if (btnSubmitPayment) btnSubmitPayment.style.display = 'block';
+      if (btnSimulatePaymentFailure) btnSimulatePaymentFailure.style.display = 'block';
     });
   }
 
@@ -3917,7 +4448,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (confirmedDate) confirmedDate.textContent = formatBookingDate(booking.date);
     if (confirmedTime) confirmedTime.textContent = formatBookingTime(booking.time, booking.hours + (booking.isTrial ? 1 : 0));
     if (confirmedChild) confirmedChild.textContent = booking.childName || (state.child && state.child.name) || '';
-    if (confirmedBookingId) confirmedBookingId.textContent = activeBooking ? activeBooking.id : '';
+    if (confirmedBookingId) confirmedBookingId.textContent = activeBooking ? activeBooking.id : 'BK001';
+    const confirmedAmountPaid = document.getElementById('confirmedAmountPaid');
+    if (confirmedAmountPaid) confirmedAmountPaid.textContent = `RM ${booking.total || 105}`;
     if (confirmedStatus) confirmedStatus.textContent = activeBooking
       ? activeBooking.status === 'confirmed' ? 'Confirmed' : activeBooking.status
       : '';
@@ -3936,6 +4469,7 @@ document.addEventListener('DOMContentLoaded', () => {
       declined: 'Declined',
       paid: 'Paid',
       confirmed: 'Confirmed',
+      in_progress: 'In progress',
       cancelled: 'Cancelled',
       completed: 'Completed',
     };
@@ -3949,6 +4483,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (booking.status === 'waiting') return { label: 'View request', screen: 'bookingStatus' };
     if (booking.status === 'accepted') return { label: 'Pay now', screen: 'payment' };
     if (['declined', 'cancelled'].includes(booking.status)) return { label: 'View booking', screen: 'bookingStatus' };
+    if (['confirmed', 'paid'].includes(booking.status)) return { label: 'Edit', screen: 'reschedule' };
     return { label: 'View booking', screen: 'bookingConfirmed' };
   }
 
@@ -4063,7 +4598,7 @@ document.addEventListener('DOMContentLoaded', () => {
       downloadLink.download = 'ease-booking.ics';
       downloadLink.click();
       setTimeout(() => URL.revokeObjectURL(calendarUrl), 1000);
-      showToast('Calendar event downloaded.');
+      showToast('Added to your calendar!');
     });
   }
 
@@ -4072,6 +4607,83 @@ document.addEventListener('DOMContentLoaded', () => {
       showScreen('parentHome');
     });
   }
+
+  function setupRescheduleScreen() {
+    const activeBooking = getActiveBooking() || getLatestBooking();
+    const sitter = activeBooking
+      ? sittersData[activeBooking.babysitterId] || sittersData[state.selectedSitterId] || sittersData['sarah-lim']
+      : sittersData[state.selectedSitterId] || sittersData['sarah-lim'];
+    const date = activeBooking ? activeBooking.date : state.bookingData.date;
+    const id = document.getElementById('rescheduleBookingId');
+    const summary = document.getElementById('rescheduleBookingSummary');
+    const dateInput = document.getElementById('rescheduleDate');
+    const timeSelect = document.getElementById('rescheduleTime');
+
+    if (id) id.textContent = activeBooking ? activeBooking.id : 'BK001';
+    if (summary) summary.textContent = `${sitter.name} · ${formatBookingDate(date)}`;
+    if (dateInput) dateInput.value = date || '2026-11-20';
+    if (timeSelect) timeSelect.value = activeBooking ? activeBooking.startTime : state.bookingData.time || '14:00';
+  }
+
+  const rescheduleForm = document.getElementById('rescheduleForm');
+  if (rescheduleForm) {
+    rescheduleForm.addEventListener('submit', event => {
+      event.preventDefault();
+      if (!rescheduleForm.reportValidity()) return;
+
+      const newDate = document.getElementById('rescheduleDate').value;
+      const newTime = document.getElementById('rescheduleTime').value;
+      const activeBooking = getActiveBooking();
+      const duration = activeBooking ? activeBooking.baseHours || activeBooking.hours || 4 : state.bookingData.hours || 4;
+      const [hour, minute] = newTime.split(':').map(Number);
+      const end = new Date(2000, 0, 1, hour, minute);
+      end.setHours(end.getHours() + duration);
+
+      state.bookingData.date = newDate;
+      state.bookingData.time = newTime;
+      if (activeBooking) {
+        activeBooking.date = newDate;
+        activeBooking.startTime = newTime;
+        activeBooking.endTime = `${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}`;
+        saveBookings();
+      }
+      saveState();
+      showToast('Booking updated successfully.');
+      setupRescheduleScreen();
+    });
+  }
+
+  const cancelBookingModal = document.getElementById('cancelBookingModal');
+  const btnOpenCancelBooking = document.getElementById('btnOpenCancelBooking');
+  const btnKeepBooking = document.getElementById('btnKeepBooking');
+  const btnConfirmCancelBooking = document.getElementById('btnConfirmCancelBooking');
+
+  if (btnOpenCancelBooking && cancelBookingModal) {
+    btnOpenCancelBooking.addEventListener('click', () => {
+      cancelBookingModal.hidden = false;
+      btnKeepBooking?.focus();
+    });
+  }
+  if (btnKeepBooking && cancelBookingModal) {
+    btnKeepBooking.addEventListener('click', () => {
+      cancelBookingModal.hidden = true;
+      btnOpenCancelBooking?.focus();
+    });
+  }
+  if (btnConfirmCancelBooking && cancelBookingModal) {
+    btnConfirmCancelBooking.addEventListener('click', () => {
+      updateActiveBookingStatus('cancelled');
+      cancelBookingModal.hidden = true;
+      showToast('Booking cancelled.');
+      showScreen('parentHome');
+    });
+  }
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && cancelBookingModal && !cancelBookingModal.hidden) {
+      cancelBookingModal.hidden = true;
+      btnOpenCancelBooking?.focus();
+    }
+  });
 
   // --------------------------------------------------------------------------
   // 18. Screen 14: Parent Home (Logged In Dashboard)
@@ -4089,17 +4701,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const homeBookingTime = document.getElementById('homeBookingTime');
     const homeBookingLocation = document.getElementById('homeBookingLocation');
     const homeBookingStatus = document.getElementById('homeBookingStatus');
+    const homeBookingId = document.getElementById('homeBookingId');
     const homeNextBookingCard = document.getElementById('homeNextBookingCard');
     const homeNoBooking = document.getElementById('homeNoBooking');
     const homeRecentMsgName = document.getElementById('homeRecentMsgName');
     const homeBookAgainName = document.getElementById('homeBookAgainName');
     const bookingSitter = sittersData[state.selectedSitterId] || sittersData['sarah-lim'];
-    const nextBooking = getUpcomingBookings()[0] || null;
+    const nextBooking = getUpcomingBookings()[0] || bookings.find(booking =>
+      booking.id === state.activeBookingId && ['waiting', 'accepted', 'paid', 'confirmed', 'in_progress'].includes(booking.status)
+    ) || null;
 
-    document.querySelectorAll('[data-preference-sitter]').forEach(slot => {
-      const sitter = sittersData[slot.dataset.preferenceSitter];
-      if (sitter) slot.innerHTML = renderPreferenceSummary(sitter);
-    });
     document.querySelectorAll('.home-sitter-card[data-sitter-id]').forEach(card => {
       const sitter = sittersData[card.dataset.sitterId];
       if (!sitter) return;
@@ -4109,8 +4720,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (careTypeChips) careTypeChips.innerHTML = renderCareTypeChips(sitter);
     });
 
-    const firstName = (state.user.name || 'Jessica').split(' ')[0];
-    if (greeting) greeting.textContent = `Welcome back, ${firstName}`;
+    const firstName = (state.user.name || 'Mei Ling').split(' ')[0];
+    if (greeting) greeting.textContent = `Hello, ${firstName}`;
     if (homeChildName) homeChildName.textContent = activeChildName;
     if (homeChildDetails) homeChildDetails.textContent = `${getChildAge(activeChild && activeChild.birthDate)} years old • ${(activeChild && activeChild.gender) || ''}`;
     if (homeChildSummary) {
@@ -4119,13 +4730,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (homeNextBookingCard) homeNextBookingCard.hidden = !nextBooking;
     if (homeNoBooking) homeNoBooking.hidden = Boolean(nextBooking);
     if (nextBooking) {
+      if (homeBookingId) homeBookingId.textContent = `Booking ID: ${nextBooking.id}`;
       if (homeBookingDate) homeBookingDate.textContent = `Next Booking • ${formatBookingDate(nextBooking.date)}`;
       if (homeBookingSitter) homeBookingSitter.textContent = nextBooking.babysitterName;
       if (homeBookingTime) homeBookingTime.textContent = `${formatBookingTime(nextBooking.startTime, nextBooking.hours || 4)} • ${nextBooking.child}`;
       if (homeBookingLocation) homeBookingLocation.textContent = `📍 ${nextBooking.location}`;
-      if (homeBookingStatus) homeBookingStatus.textContent = nextBooking.status;
+      if (homeBookingStatus) homeBookingStatus.textContent = nextBooking.status === 'confirmed' ? 'Confirmed' : nextBooking.status;
       if (btnHomeViewDetails) btnHomeViewDetails.textContent = getBookingAction(nextBooking).label;
       if (btnHomeMessageSarah) btnHomeMessageSarah.textContent = `Message ${nextBooking.babysitterName.split(' ')[0]}`;
+    }
+    if (btnHomeManageBooking) {
+      btnHomeManageBooking.hidden = !nextBooking || !['confirmed', 'paid'].includes(nextBooking.status);
+      btnHomeManageBooking.textContent = 'Edit booking';
     }
     if (homeRecentMsgName) homeRecentMsgName.textContent = bookingSitter.name;
     if (homeBookAgainName) homeBookAgainName.textContent = bookingSitter.name;
@@ -4133,6 +4749,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   const btnHomeViewDetails = document.getElementById('btnHomeViewDetails');
+  const btnHomeManageBooking = document.getElementById('btnHomeManageBooking');
   const btnHomeMessageSarah = document.getElementById('btnHomeMessageSarah');
   const btnHomeFindSitter = document.getElementById('btnHomeFindSitter');
   const btnHomeViewNur = document.getElementById('btnHomeViewNur');
@@ -4144,8 +4761,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (btnHomeViewDetails) {
     btnHomeViewDetails.addEventListener('click', () => {
-      const booking = getUpcomingBookings()[0];
+      const booking = getUpcomingBookings()[0] || getActiveBooking();
       if (booking) openBookingById(booking.id);
+    });
+  }
+
+  if (btnHomeManageBooking) {
+    btnHomeManageBooking.addEventListener('click', () => {
+      showScreen('bookings');
     });
   }
 
@@ -4215,14 +4838,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatSitterName = document.getElementById('chatSitterName');
     const chatSitterAvatar = document.getElementById('chatSitterAvatar');
     const chatMessagesArea = document.getElementById('chatMessagesArea');
+    const isBabysitter = state.user.role === 'babysitter';
 
-    if (chatSitterName) chatSitterName.textContent = sitter.name;
+    if (chatSitterName) chatSitterName.textContent = isBabysitter ? 'Mei Ling' : sitter.name;
     if (chatSitterAvatar) chatSitterAvatar.setAttribute('aria-label', `Photo placeholder for ${sitter.name}`);
     if (chatMessagesArea) {
+      const ownRole = isBabysitter ? 'sitter' : 'parent';
+      const otherRole = isBabysitter ? 'parent' : 'sitter';
       chatMessagesArea.innerHTML = `
-        <div class="chat-message chat-msg-parent"><p>Hello! Is Saturday free?</p><span class="chat-time">10:15 AM</span></div>
-        <div class="chat-message chat-msg-sitter"><p>Yes, I am free all day.</p><span class="chat-time">10:18 AM</span></div>
-        <div class="chat-message chat-msg-parent"><p>Great, can you do 9 am to 3 pm?</p><span class="chat-time">10:20 AM</span></div>
+        <div class="chat-message chat-msg-${ownRole}"><p>${isBabysitter ? 'Hello Mei Ling, I am ready for today’s session.' : 'Hello Sarah! How is Aiden doing?'}</p><span class="chat-time">Today</span></div>
+        <div class="chat-message chat-msg-${otherRole}"><p>${isBabysitter ? 'Thank you. Aiden’s routine is in his profile.' : 'He is enjoying story time. I will keep you updated.'}</p><span class="chat-time">Today</span></div>
       `;
     }
     if (chatMessagesArea) chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
@@ -4248,27 +4873,28 @@ document.addEventListener('DOMContentLoaded', () => {
       const now = new Date();
       const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-      // Append parent bubble
-      const parentBubble = document.createElement('div');
-      parentBubble.className = 'chat-message chat-msg-parent';
-      parentBubble.innerHTML = `
+      const ownRole = state.user.role === 'babysitter' ? 'sitter' : 'parent';
+      const otherRole = ownRole === 'sitter' ? 'parent' : 'sitter';
+      const ownBubble = document.createElement('div');
+      ownBubble.className = `chat-message chat-msg-${ownRole}`;
+      ownBubble.innerHTML = `
         <p>${escapeHtml(text)}</p>
         <span class="chat-time">${timeStr}</span>
       `;
-      chatMessagesArea.appendChild(parentBubble);
+      chatMessagesArea.appendChild(ownBubble);
       chatInputText.value = '';
       chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
 
       // Simulated auto-reply from sitter after 900ms
       setTimeout(() => {
         const replyTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        const sitterBubble = document.createElement('div');
-        sitterBubble.className = 'chat-message chat-msg-sitter';
-        sitterBubble.innerHTML = `
+        const replyBubble = document.createElement('div');
+        replyBubble.className = `chat-message chat-msg-${otherRole}`;
+        replyBubble.innerHTML = `
           <p>Thanks for your message! Looking forward to our session.</p>
           <span class="chat-time">${replyTime}</span>
         `;
-        chatMessagesArea.appendChild(sitterBubble);
+        chatMessagesArea.appendChild(replyBubble);
         chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
       }, 900);
     });

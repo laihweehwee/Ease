@@ -186,6 +186,12 @@
 
   <!-- Main App View Container -->
   <main id="appContainer">
+    <div class="prototype-page-banner" id="prototypePageBanner" hidden>
+      <div class="prototype-banner-inner">
+        <button type="button" class="prototype-back-button" id="prototypeBackButton" aria-label="Go back">←</button>
+        <h1 id="prototypePageTitle">Booking Details</h1>
+      </div>
+    </div>
 
     <!-- ====================================================================
          SCREEN 1: WELCOME (No Login)
@@ -264,7 +270,13 @@
 
           <form class="home-search-card" id="homeSearchForm" novalidate>
             <div class="search-card-badge">
-              <span>📍 Quick Search</span>
+              <span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path>
+                  <circle cx="12" cy="10" r="2.5"></circle>
+                </svg>
+                Quick Search
+              </span>
             </div>
             <h2 class="home-search-title">Find a babysitter near you</h2>
             <div class="home-search-row">
@@ -680,7 +692,12 @@
                 <label for="findPostcode">Postcode</label>
                 <input type="text" id="findPostcode" class="input-field" value="50450" inputmode="numeric" maxlength="5" pattern="[0-9]{5}" required>
               </div>
-              <button type="submit" class="btn btn-primary">Search</button>
+              <div class="find-search-actions">
+                <button type="submit" class="btn btn-primary">Search</button>
+                <span class="find-filter-dirty-message" id="findFiltersChangedMessage" role="status" aria-live="polite" hidden>
+                  Filters changed. Press Search to update.
+                </span>
+              </div>
             </div>
             <div class="find-filters">
               <div class="input-group">
@@ -717,11 +734,16 @@
             </div>
           </form>
           <div class="find-active-filters" id="findActiveFilters" aria-live="polite"></div>
-          <h2 class="section-heading find-results-count" id="findResultsCount" aria-live="polite"></h2>
+          <h2 class="section-heading find-results-count" id="findResultsCount" tabindex="-1" aria-live="polite"></h2>
           <div class="sitters-match-list find-sitter-list" id="findSitterList"></div>
-          <div class="card find-empty-state" id="findEmptyState" style="display: none;">
-            <h2 class="card-title">No babysitters found</h2>
-            <p>Try changing your postcode or filters.</p>
+          <div class="card find-empty-state" id="findEmptyState" style="display: none;" role="status">
+            <svg class="find-empty-state-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"></circle>
+              <line x1="16" y1="16" x2="21" y2="21"></line>
+            </svg>
+            <h2 class="card-title">No babysitters match your filters</h2>
+            <p>Try changing your filters to see more.</p>
+            <button type="button" class="clear-filters-link reset-find-filters">Clear filters</button>
           </div>
           <div class="find-trust-strip">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -745,6 +767,10 @@
       </div>
       <div class="content-section">
         <div class="container matches-container">
+          <div class="prototype-match-actions">
+            <p>These trusted sitters are ready to help.</p>
+            <button type="button" class="btn btn-secondary" id="btnMatchesBackToBooking">Back to Booking Details</button>
+          </div>
           <p class="section-subtext matches-access-note">No account needed to view your matches.</p>
           <div class="filters-sort-row">
             <div class="filter-chips-wrap">
@@ -757,7 +783,6 @@
               <label for="sortSittersSelect" class="sort-label">Sort by:</label>
               <select id="sortSittersSelect" class="input-field sort-select">
                 <option value="match" selected>Match (Highest)</option>
-                <option value="preferences">Preferences met (Most first)</option>
                 <option value="distance">Distance (Nearest)</option>
                 <option value="rating">Rating (Highest)</option>
                 <option value="price-asc">Price (Low to High)</option>
@@ -791,7 +816,6 @@
                   <div class="name-match-row">
                     <h3 class="card-title">Sarah Lim</h3>
                     <span class="match-score-badge" data-match-score></span>
-                    <span class="preference-summary-slot" data-preference-summary></span>
                   </div>
                   <span class="badge badge-ease-trained">
                     <svg class="badge-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C2456B"
@@ -854,7 +878,6 @@
                   <div class="name-match-row">
                     <h3 class="card-title">Nur Ain</h3>
                     <span class="match-score-badge" data-match-score></span>
-                    <span class="preference-summary-slot" data-preference-summary></span>
                   </div>
                   <span class="badge badge-ease-trained">
                     <svg class="badge-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C2456B"
@@ -916,7 +939,6 @@
                   <div class="name-match-row">
                     <h3 class="card-title">Aisyah</h3>
                     <span class="match-score-badge" data-match-score></span>
-                    <span class="preference-summary-slot" data-preference-summary></span>
                   </div>
                   <span class="badge badge-ease-trained">
                     <svg class="badge-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C2456B"
@@ -974,7 +996,6 @@
                 <div class="sitter-match-header">
                   <div class="name-match-row">
                     <h3 class="card-title">Mei Chen</h3>
-                    <span class="preference-summary-slot" data-preference-summary></span>
                   </div>
                   <span class="badge badge-ease-trained">
                     <svg class="badge-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
@@ -1025,7 +1046,6 @@
                 <div class="sitter-match-header">
                   <div class="name-match-row">
                     <h3 class="card-title">Kavitha Rao</h3>
-                    <span class="preference-summary-slot" data-preference-summary></span>
                   </div>
                   <span class="badge badge-ease-trained">
                     <svg class="badge-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
@@ -1242,11 +1262,17 @@
 
       <div class="content-section">
         <div class="container compare-screen-container">
+          <div class="compare-filter-summary" id="compareFilterSummary" aria-live="polite"></div>
           <div class="compare-expanded-header" id="compareExpandedHeader">
             <div class="compare-header-scroll" id="compareHeaderScroll" role="region" aria-label="Babysitter selectors" tabindex="0">
               <div class="compare-column-grid" id="compareHeaderColumns"></div>
             </div>
           </div>
+          <div class="compare-limited-state" id="compareLimitedState" hidden>
+            <p id="compareLimitedMessage"></p>
+            <button type="button" class="btn btn-secondary compare-edit-filters">Edit filters</button>
+          </div>
+          <div class="compare-filter-empty card find-empty-state" id="compareEmptyState" hidden role="status"></div>
           <div class="compare-compact-bar" id="compareCompactBar" aria-hidden="true">
             <div class="compare-compact-grid" id="compareCompactColumns"></div>
           </div>
@@ -1448,8 +1474,7 @@
             <p class="section-subtext">We sent a link to your email: <strong id="verifyEmailDisplay">jessica@example.com</strong>. Please check your inbox and tap the link.</p>
 
             <div class="verify-actions">
-              <button class="btn btn-primary full-width btn-large" id="btnEmailVerifiedDemo">I verified my
-                email</button>
+              <button class="btn btn-primary full-width btn-large" id="btnEmailVerifiedDemo">Verify &amp; Continue</button>
               <button class="btn btn-secondary full-width" id="btnResendEmail">Resend link</button>
             </div>
           </div>
@@ -1772,7 +1797,7 @@
 
             <!-- Sitter summary snippet -->
             <div class="booking-sitter-summary">
-              <span class="booking-sitter-avatar">👩‍🏫</span>
+              <span class="booking-sitter-avatar" aria-hidden="true">SL</span>
               <div>
                 <strong id="bookingSitterTitle">Sarah Lim</strong>
                 <span class="booking-rate" id="bookingSitterRate">RM 25 / hr • Ease Trained</span>
@@ -1783,7 +1808,7 @@
               <div class="form-row">
                 <div class="input-group">
                   <div class="booking-child-select-header">
-                    <label for="bookingChildSelect">Child</label>
+                    <label for="bookingChildSelect">Select Child</label>
                     <button type="button" class="inline-action-link" id="btnBookingAddChild">+ Add another
                       child</button>
                   </div>
@@ -1828,7 +1853,7 @@
 
               <div class="input-group">
                 <label for="bookingLocationInput">Location</label>
-                <input type="text" id="bookingLocationInput" class="input-field" value="50450 Kuala Lumpur" required>
+                <input type="text" id="bookingLocationInput" class="input-field" value="Bangsar, Kuala Lumpur" required>
               </div>
 
               <div class="input-group">
@@ -1857,6 +1882,10 @@
                   <span id="priceBreakdownHours">4 hours × RM 25/hr</span>
                   <span id="priceBreakdownBase">RM 100</span>
                 </div>
+                <div class="price-breakdown-row" id="priceBreakdownTrial" hidden>
+                  <span>1-hour trial session</span>
+                  <span id="priceBreakdownTrialAmount">RM 25</span>
+                </div>
                 <div class="price-breakdown-row">
                   <span>Ease Safety & Support Fee</span>
                   <span>RM 5</span>
@@ -1870,7 +1899,7 @@
 
               <!-- Cancellation & Replacement Policy Note -->
               <div class="note-box note-box-yellow">
-                <span class="note-icon">🛡️</span>
+                <span class="note-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg></span>
                 <p><strong>Cancellation & Replacement Policy:</strong> Free 100% cancellation up to 24 hours prior. If
                   your sitter ever cancels, Ease guarantees an immediate certified replacement or instant full refund.
                 </p>
@@ -1893,9 +1922,14 @@
 
             <!-- STATE 1: WAITING -->
             <div id="statusStateWaiting" class="status-state-panel">
-              <div class="status-icon-wrap status-icon-waiting">⏳</div>
+              <div class="status-icon-wrap status-icon-waiting" aria-hidden="true"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></div>
               <h1 class="section-heading">Request Sent</h1>
               <p class="section-subtext">Waiting for <strong id="statusSitterNameWaiting">Sarah Lim</strong> to accept your booking.</p>
+              <div class="booking-status-summary">
+                <strong id="statusSummarySitter">Sarah Lim</strong>
+                <span id="statusSummaryDate">20 Nov 2026</span>
+                <span>Total <strong id="statusSummaryTotal">RM 105</strong></span>
+              </div>
               
               <div class="status-timer-box">
                 <span class="timer-label">Response window:</span>
@@ -1922,7 +1956,6 @@
               <h1 class="section-heading" id="statusAcceptedHeadline">Sarah accepted your booking!</h1>
               <p class="section-subtext">Your booking request has been accepted. Complete payment to secure your
                 session.</p>
-              <button class="btn btn-primary full-width btn-large" id="btnPayNow">Pay now</button>
             </div>
 
             <!-- STATE 3: DECLINED -->
@@ -1936,11 +1969,11 @@
               </div>
               <h1 class="section-heading">Booking cancelled.</h1>
               <p class="section-subtext">The caregiver is unavailable for this timeslot. You can easily find another qualified sitter.</p>
-              <button class="btn btn-secondary full-width btn-large" id="btnFindAnotherSitter">Find another babysitter</button>
+              <button class="btn btn-primary full-width btn-large" id="btnFindAnotherSitter">Find another babysitter</button>
             </div>
 
             <!-- Demo Switcher Buttons for Testing States -->
-            <div class="demo-controls-box" hidden>
+            <div class="demo-controls-box">
               <span class="demo-label">Demo Controls (Test States):</span>
               <div class="demo-btn-group">
                 <button type="button" class="btn btn-secondary" id="btnDemoWaiting">Waiting</button>
@@ -1966,7 +1999,10 @@
 
             <!-- Order Snippet -->
             <div class="payment-summary-box">
-              <span>Total amount:</span>
+              <span>
+                <strong>Total amount:</strong>
+                <small class="payment-sitter-summary" id="paymentSitterSummary">Sarah Lim · 20 Nov 2026</small>
+              </span>
               <strong class="payment-total-amount">RM 105</strong>
             </div>
 
@@ -1977,6 +2013,14 @@
                 <div class="option-card-content">
                   <div class="option-title">FPX Online Banking</div>
                   <div class="option-desc">Maybank, CIMB, Public Bank, RHB</div>
+                  <label class="payment-bank-label" for="paymentBankSelect">Choose your bank</label>
+                  <select class="input-field payment-bank-select" id="paymentBankSelect">
+                    <option>Maybank2u</option>
+                    <option>CIMB Clicks</option>
+                    <option>Public Bank</option>
+                    <option>RHB Now</option>
+                    <option>Hong Leong Connect</option>
+                  </select>
                 </div>
                 <div class="option-check-icon">✓</div>
               </div>
@@ -2009,23 +2053,18 @@
             <!-- Escrow Note -->
             <div class="note-box note-box-yellow">
               <span class="note-icon">🔒</span>
-              <p><strong>Payment Protection:</strong> Payment is held until the session is complete.</p>
+              <p><strong>Payment Protection:</strong> Note: Payment is held securely until the session is complete.</p>
             </div>
 
             <!-- Error message on first attempt -->
             <div class="payment-error-box" id="paymentErrorBox" style="display: none;">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5"
-                stroke-linecap="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="8" x2="12" y2="12"></line>
-                <line x1="12" y1="16" x2="12.01" y2="16"></line>
-              </svg>
-              <span>Payment failed. Bank connection timed out. Please retry.</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              <span>Payment unsuccessful. Please check your balance or try another method.</span>
             </div>
 
-            <button class="btn btn-primary full-width btn-large" id="btnSubmitPayment">Pay RM 105</button>
-            <button class="btn btn-primary full-width btn-large" id="btnRetryPayment" style="display: none;">Retry
-              payment</button>
+            <button class="btn btn-primary full-width btn-large" id="btnSubmitPayment">Confirm &amp; Pay RM 105</button>
+            <button class="btn btn-secondary full-width" id="btnSimulatePaymentFailure">Simulate Payment Failure</button>
+            <button class="btn btn-primary full-width btn-large" id="btnRetryPayment" style="display: none;">Retry payment</button>
           </div>
         </div>
       </div>
@@ -2074,11 +2113,58 @@
                 <span class="receipt-label">Status</span>
                 <span class="badge badge-verified" id="confirmedStatus"></span>
               </div>
+              <div class="receipt-row">
+                <span class="receipt-label">Amount Paid</span>
+                <strong class="receipt-val" id="confirmedAmountPaid">RM 105</strong>
+              </div>
             </div>
 
             <div class="confirmed-actions">
               <button class="btn btn-secondary full-width" id="btnAddCalendar">Add to calendar</button>
               <button class="btn btn-primary full-width btn-large" id="btnGoHome">Go to Home</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SCREEN 5: RESCHEDULE / CANCEL
+         ==================================================================== -->
+    <section class="app-screen" id="screenReschedule" style="display: none;">
+      <div class="content-section">
+        <div class="container reschedule-container">
+          <div class="card reschedule-card">
+            <p class="eyebrow">Manage booking</p>
+            <h2 class="section-heading">Booking ID: <span id="rescheduleBookingId">BK001</span></h2>
+            <p class="section-subtext" id="rescheduleBookingSummary">Sarah Lim · 20 Nov 2026</p>
+
+            <form id="rescheduleForm" class="reschedule-form">
+              <h3 class="card-title">Reschedule your session</h3>
+              <div class="input-group">
+                <label for="rescheduleDate">New date</label>
+                <input type="date" id="rescheduleDate" class="input-field" required>
+              </div>
+              <div class="input-group">
+                <label for="rescheduleTime">New time slot</label>
+                <select id="rescheduleTime" class="input-field">
+                  <option value="14:00">2:00 PM – 6:00 PM</option>
+                  <option value="15:00">3:00 PM – 7:00 PM</option>
+                  <option value="16:00">4:00 PM – 8:00 PM</option>
+                </select>
+              </div>
+              <button type="submit" class="btn btn-primary full-width">Update Booking</button>
+            </form>
+
+            <div class="note-box note-box-yellow">
+              <span class="note-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2456B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg></span>
+              <p><strong>Cancellation &amp; Replacement Policy:</strong> Free 100% cancellation up to 24 hours prior. If your sitter ever cancels, Ease guarantees an immediate certified replacement or instant full refund.</p>
+            </div>
+
+            <div class="cancel-booking-section">
+              <h3 class="card-title">Cancel this booking</h3>
+              <p class="section-subtext">You can cancel free of charge up to 24 hours before the session.</p>
+              <button type="button" class="btn btn-cancel-outline full-width" id="btnOpenCancelBooking">Cancel Booking</button>
             </div>
           </div>
         </div>
@@ -2209,6 +2295,7 @@
               <span class="badge badge-ease-trained" id="homeBookingDate"></span>
               <span class="booking-status-tag" id="homeBookingStatus"></span>
             </div>
+            <p class="home-booking-id" id="homeBookingId">Booking ID: BK001</p>
             <div class="next-booking-body">
               <div class="sitter-mini-avatar">👩‍🏫</div>
               <div class="next-booking-info">
@@ -2219,6 +2306,7 @@
             </div>
             <div class="next-booking-actions">
               <button class="btn btn-secondary" id="btnHomeViewDetails">View booking</button>
+              <button class="btn btn-secondary" id="btnHomeManageBooking">Edit booking</button>
               <button class="btn btn-primary" id="btnHomeMessageSarah">Message</button>
             </div>
           </div>
@@ -2260,7 +2348,6 @@
               <div class="card home-sitter-card" data-sitter-id="nur-ain">
                 <div class="home-sitter-header">
                   <strong>Nur Ain</strong>
-                  <span class="preference-summary-slot" data-preference-sitter="nur-ain"></span>
                 </div>
                 <span class="home-sitter-meta">⭐ 4.8 • RM 22/hr</span>
                 <p class="sitter-languages home-sitter-languages" data-sitter-languages></p>
@@ -2271,7 +2358,6 @@
               <div class="card home-sitter-card" data-sitter-id="aisyah">
                 <div class="home-sitter-header">
                   <strong>Aisyah</strong>
-                  <span class="preference-summary-slot" data-preference-sitter="aisyah"></span>
                 </div>
                 <span class="home-sitter-meta">⭐ 4.7 • RM 20/hr</span>
                 <p class="sitter-languages home-sitter-languages" data-sitter-languages></p>
@@ -2364,12 +2450,11 @@
 
         <!-- Chat Input Bar -->
         <form id="chatForm" class="chat-input-bar">
-          <button type="button" class="btn-chat-attach" id="btnChatAttach" aria-label="Attach file">
+          <button type="button" class="btn-chat-attach" id="btnChatAttach" aria-label="Capture live update" title="Capture live update">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6E5A66" stroke-width="2"
-              stroke-linecap="round" stroke-linejoin="round">
-              <path
-                d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48">
-              </path>
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 7h3l2-3h6l2 3h3a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Z"></path>
+              <circle cx="12" cy="13" r="3"></circle>
             </svg>
           </button>
           <div class="chat-message-input-group">
@@ -2603,6 +2688,27 @@
       <span>Profile</span>
     </button>
   </nav>
+
+  <nav class="prototype-nav" id="prototypeNav" aria-label="Prototype screen navigation" hidden>
+    <button type="button" data-prototype-screen="bookingDetails" aria-label="Screen 1: Booking details">1 <span>Details</span></button>
+    <button type="button" data-prototype-screen="bookingStatus" aria-label="Screen 2: Booking status">2 <span>Status</span></button>
+    <button type="button" data-prototype-screen="payment" aria-label="Screen 3: Payment">3 <span>Payment</span></button>
+    <button type="button" data-prototype-screen="bookingConfirmed" aria-label="Screen 4: Booking confirmed">4 <span>Confirmed</span></button>
+    <button type="button" data-prototype-screen="reschedule" aria-label="Screen 5: Reschedule or cancel">5 <span>Manage</span></button>
+    <button type="button" data-prototype-screen="parentHome" aria-label="Parent Home">⌂ <span>Home</span></button>
+    <button type="button" data-prototype-screen="matches" aria-label="Top Matches">☆ <span>Matches</span></button>
+  </nav>
+
+  <div class="cancel-booking-modal" id="cancelBookingModal" hidden>
+    <div class="cancel-modal-card" role="dialog" aria-modal="true" aria-labelledby="cancelBookingTitle" aria-describedby="cancelBookingDescription">
+      <h2 class="card-title" id="cancelBookingTitle">Cancel this booking?</h2>
+      <p id="cancelBookingDescription">This will cancel your session with Sarah Lim.</p>
+      <div class="cancel-modal-actions">
+        <button type="button" class="btn btn-secondary" id="btnKeepBooking">Keep booking</button>
+        <button type="button" class="btn btn-cancel-outline" id="btnConfirmCancelBooking">Yes, cancel booking</button>
+      </div>
+    </div>
+  </div>
   <button type="button" class="demo-mode-badge" id="demoModeBadge" aria-label="Turn demo mode off" hidden>Demo mode</button>
 
   <!-- Toast Notification -->
@@ -2617,6 +2723,7 @@
   </div>
 
   <script type="module" src="main.js"></script>
+  <script type="module" src="role-experience.js"></script>
 </body>
 
 </html>
